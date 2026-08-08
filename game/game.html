@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rvrv3210-大亨遊戲</title>
+    <link rel="icon" sizes="400x500" href="loge.jpg">
+    <style>
+        body{
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+        }
+        #money{
+            border: 10px double #555;
+            border-radius: 50px;
+            background-color: #ccc;
+            color: #000;
+            transition: 0.2s;
+            font-size: 30px;
+            transform: scale(100%);
+        }
+        #money:hover{
+            color: #ffff00;
+            border: 5px double #ffcc00;
+        }
+        #money:active{
+            transform: scale(80%);
+            transition: 0.2s;
+        }
+        div{
+            text-align:center;
+            border-radius: 10px;
+            border:5px solid #000;
+            background-color: #eeeeee;
+
+        }
+        .corner-btn{
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index:100;
+        }
+        img{
+            animation: rotates 5s linear infinite;
+        }
+        @keyframes rotates{
+            0%{
+                rotate:0deg
+            }
+            100%{
+                rotate: 360deg;
+            }
+        }
+        #Show-Hide{
+            z-index:90;
+        }
+    </style>
+</head>
+<body>
+    <h1>v0.5</h1>
+    <div style="position: fixed; width:1000px; height:500px;" id="Show-Hide">
+    <h1>抽獎</h1>
+        <h2></h2>
+        <button>抽獎</button>
+    </div>
+    <h1 id="show_money">你有10$</h1>
+    <button  onclick="renew_money()" id="money" class="All-inclusive">按我賺0$</button>
+    <div style="width:1000px;
+    height:500px;">
+        <h2>升級</h2>
+        <h3 id="upgrade_earn_money">按一次賺0$</h3>
+        <button id="upgrade_earn_money_button" onclick="confirm_upgrade_earn_money()">升級(費用:10$)</button>
+        <h3 id="upgrade_per_second">每秒賺0$</h3>
+        <button id="upgrade_per_second_button" onclick="confirm_upgrade_per_second_earn_money()">升級(費用:15$)</button>      
+    </div>
+    <button onclick="resetGame()">重置遊戲</button>
+    <img src="go.png" class="corner-btn" width="192px" height="128px" onclick="toggleTitle()">
+    <script>
+        let money = 10
+        let add_money = 0
+        let The_money_needed = 10
+        let per_second = 0
+        let The_money_needed2 = 15
+        let title = document.getElementById("Show-Hide")
+        let Show_Hide = document.getElementById("All-inclusive")
+        title.style.display = "none"
+        function saveGame(){
+            localStorage.setItem("money", money)
+            localStorage.setItem("add_money", add_money)
+            localStorage.setItem("The_money_needed", The_money_needed)
+            localStorage.setItem("per_second", per_second)
+            localStorage.setItem("The_money_needed2", The_money_needed2)
+
+        }
+        function loadGame(){
+            money =
+            Number(localStorage.getItem("money")) || 10
+            add_money =
+            Number(localStorage.getItem("add_money")) || 0
+            The_money_needed =
+            Number(localStorage.getItem("The_money_needed")) || 10
+            per_second =
+            Number(localStorage.getItem("per_second")) || 0
+            The_money_needed2 =
+            Number(localStorage.getItem("The_money_needed2")) || 15
+            updateScreen()
+        }
+        function updateScreen(){
+            document.getElementById("show_money")
+            .textContent = "你有" + money + "$"
+            document.getElementById("money")
+            .textContent = "按我賺" + add_money + "$"
+            document.getElementById("upgrade_earn_money")
+            .textContent = "按一次賺" + add_money + "$"
+            document.getElementById("upgrade_earn_money_button")
+            .textContent = "升級(費用:" + The_money_needed + "$)"
+            document.getElementById("upgrade_per_second")
+            .textContent = "每秒賺" + per_second + "$"
+            document.getElementById("upgrade_per_second_button")
+            .textContent = "升級(費用:" + The_money_needed2 + "$)"
+        }
+        function renew_money(){
+            //money += add_money
+            //document.getElementById("show_money").textContent = "你有" + money + "$"
+            money += add_money
+            updateScreen()
+            saveGame()
+        }
+        setInterval(function(){
+            money += per_second
+            document.getElementById("show_money").textContent = "你有" + money + "$"
+            updateScreen()
+            saveGame()
+        },1000)
+        function confirm_upgrade_earn_money(){
+            if(money >= The_money_needed){
+                money -= The_money_needed
+                The_money_needed = Math.floor(The_money_needed * 1.6)
+                add_money += 1
+                document.getElementById("upgrade_earn_money").textContent = "按一次賺" + add_money+"$";
+                document.getElementById("upgrade_earn_money_button").textContent = "升級(費用:" + The_money_needed +"$)";
+                document.getElementById("money").textContent = "按我賺" + add_money + "$";
+                document.getElementById("show_money").textContent = "你有" + money + "$";
+            }
+            else{
+                alert("你的錢不夠!");
+            }
+        }
+        function confirm_upgrade_per_second_earn_money(){
+            if(money >= The_money_needed2){
+                money -= The_money_needed2;
+                The_money_needed2 = Math.floor(The_money_needed2 * 1.8);
+                per_second += 1;
+                document.getElementById("upgrade_per_second").textContent = "每秒賺" + per_second +"$";
+                document.getElementById("upgrade_per_second_button").textContent = "升級(費用:" + The_money_needed2 +"$)";
+                document.getElementById("show_money").textContent = "你有" + money + "$";
+            }
+            else{
+                alert("你的錢不夠!");
+            }
+        }
+        function resetGame(){
+            localStorage.clear();
+            location.reload();
+        }
+        function toggleTitle(){
+            let title = document.getElementById("Show-Hide")
+            if(title.style.display == "none"){
+                title.style.display = "block";
+                Show_Hide.style.display = "none";
+            }
+            else{
+                title.style.display = "none";
+                Show_Hide.style.display = "block";
+            }
+        }
+        console.log(Math.random())
+        loadGame();
+    </script>
+</body>
+</html>

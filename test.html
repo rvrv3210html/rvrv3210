@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rvrv3210網站-測試</title>
+   <link rel="icon" sizes="400x500" href="https://musicgrc3520-star.github.io/rvrv3210-1/loge.jpg">
+    <style>
+        body{
+            background-color: #00b0cb;
+            scrollbar-color: red orange;
+        }
+        header{
+            text-align:center;
+            color:#ffffff;
+            background:linear-gradient(to right,
+            #ff0000,
+            #ff8800,
+            #ffff00,
+            #00ff00,
+            #00ffff,
+            #0000ff,
+            #aa00aa,
+            #0000ff,
+            #00ffff,
+            #00ff00,
+            #ffff00,
+            #ff8800,
+            #ff0000);
+            background-size: 400%;
+            white-space: nowrap; 
+            overflow: hidden; 
+            animation: rainbow 15s linear infinite;            
+        }
+        main{
+            text-align:center;
+            background-color: #000;
+            color: #fff;
+            animation: Black_to_White_to_Black 10s infinite; 
+            box-shadow: 10px 10px 10px 0px #777;
+        }
+        footer{
+            background: linear-gradient(to right,#ffffff,#000000);
+            text-align:center;
+            background-size: 200%;
+            animation: Black_and_white 2s infinite; 
+                      
+        }
+        footer button{
+            font-size: 25px;
+            color: #fff;
+            background: linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0000ff,#aa00aa);
+            border-radius: 20px;   
+            transition: 1s;
+            text-align:center;
+        }
+        footer button:hover{
+            color: #000;           
+        }
+        nav button{
+            border-radius: 20px;
+            background: linear-gradient(to right,#000000,#ffffff);
+            color: #eeff00;
+            background-size: 200%;
+            transition: 1s;
+        }
+        nav button:hover{
+            font-size: 25px;
+            background-position:100%;
+            color: #ff0000;
+        }
+        main button{
+            color: #fff;
+            background-color: #000;
+            border-radius: 20px;
+        }
+        nav{
+            background: linear-gradient(to right,#ffffff,#000000);
+            animation: Black_to_White_to_Black 2s infinite; 
+        }
+        main div{
+            color: #000;
+            border: 10px #000 groove;
+        }
+        b{
+            font-size: 35px;
+        }
+        b img{
+            transform: translate(0,4px);
+        }
+        @keyframes Black_to_White_to_Black{
+            0%{
+                color: #fff;
+                background-color: #000;
+            }
+            50%{
+                color: #000;
+                background-color: #fff;
+            }
+            100%{
+                color: #fff;
+                background-color: #000;           
+            }
+        }
+        @keyframes rainbow{
+            0%{
+                background-position:0%
+            }
+            50%{
+                background-position:400%
+            }
+            100%{
+                background-position:800%
+            }
+        }
+        @keyframes Black_and_white{
+            0%{
+                background-position:0%
+            }
+            50%{
+                background-position:100%
+            }
+            100%{
+                background-position:0%
+            }
+        }
+        progress{
+            accent-color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <b>歡迎來到rvrv3210網站<img src="https://musicgrc3520-star.github.io/rvrv3210-1/loge.jpg"></b>      
+    </header>
+    <nav>
+        <a href="https://musicgrc3520-star.github.io/rvrv3210-1"><button>首頁</button></a>
+        <a href="https://musicgrc3520-star.github.io/rvrv3210-2"><button>設定</button></a>
+        <a><button style="color: #fff;">測試</button></a>
+        <a href="https://musicgrc3520-star.github.io/rvrv3210-2/renew.htm"><button>更新日誌</button></a>
+    <br>
+    </nav>
+    <main>
+    <h2 id="homepage">測試</h2>
+    <br>
+    <select id="mySelect">
+        <option value="apple">蘋果</option>
+        <option value="banana">香蕉</option>
+    </select>
+    <br>
+    <button onclick="addOption()">新增</button>
+    新增選項<input type="text" id="nameInput">
+    <button onclick="movere()">清空</button>
+    刪除選項(輸入數字)<input type="number" id="numberInput">
+    <button onclick="Clear()">全部清空</button>
+    <button onclick="saveOptions()">儲存</button>
+    <button onclick="localStorage2()">加載</button>
+    <br>
+    儲存文字<textarea placeholder="" id="textinput"></textarea>
+    <br>
+    <button onclick="text()">上次儲存</button>
+    <button onclick="Stora()">儲存</button>
+    <br>
+    <h2 id=title>這是一段文字</h2>
+    <button onclick="Show_Hide()" id="button1">隱藏</button>
+    <br>
+    <progress id="progress1" value="0" max="100"></progress>
+    最大值進度條<input type="text" id="max1">
+    <button onclick="max1()">確定</button>
+    <button onclick="addProgress()">進度條</button>
+    <select id="Select1">
+        <option value="Show">增加</option>
+        <option value="Hide">減少</option>
+    </select>
+    <h2 id="text1">0</h2>
+    <br>
+    <input type="color" id="color1">
+    <button></button>
+    <script>
+    let select = document.getElementById("mySelect");
+    function addOption(){
+        let value = document.getElementById("nameInput").value;
+        let option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+    }
+    function Clear(){
+        select.innerHTML = "";
+    }
+    function movere(){
+        let number = Number(document.getElementById("numberInput").value);
+        if(number >= 1 && number <= select.options.length){
+            select.remove(number - 1);
+        }
+        else{
+            alert("喔喔，沒這選項!");
+        }
+    }
+    function Stora(){
+        let local = document.getElementById("textinput").value;
+        console.log(local);
+        localStorage.setItem("name", local);
+    }
+    function text(){
+        let name = localStorage.getItem("name");
+        console.log(name);
+        document.getElementById("textinput").value = name;
+    }
+    function saveOptions(){
+        let data = [];
+        for(let option of select.options){
+            data.push({
+                value: option.value,
+                text: option.textContent
+            });
+        }
+        localStorage.setItem(
+            "options",
+            //轉成json
+            JSON.stringify(data)
+        );
+    }
+    function localStorage2(){
+        let data = localStorage.getItem("options");
+        if(data === null){
+            alert("目前沒有儲存的選項!");
+            return;
+        }
+        //JSON.parse():讀取
+        data = JSON.parse(data);
+        select.innerHTML = "";
+        for(let item of data){
+            let option = document.createElement("option");
+            option.value = item.value;
+            option.textContent = item.text;
+            select.appendChild(option);
+        }
+    }
+    function Show_Hide(){
+        let title = document.getElementById("title");
+        let button1 = document.getElementById("button1");
+        //偵測顯示/隱藏
+        if(title.style.display == "none"){
+            title.style.display = "block"
+            button1.textContent = "隱藏"
+        }
+        else{
+            title.style.display = "none"
+            button1.textContent = "顯示"
+        }
+    }
+    function addProgress(){
+        let select1 = document.getElementById("Select1");
+        let progress = document.getElementById("progress1");
+        let text = document.getElementById("text1");
+        //偵測select1的選項
+        if(select1.value == "Show"){
+            progress.value = Math.min(progress.value +10 , progress.max);
+        }
+        else{
+            progress.value = Math.max(progress.value -10 , 0);
+        }
+        text.textContent = progress.value;
+    }
+    function max1(){
+        let progress = document.getElementById("progress1");
+        let max = Number(document.getElementById("max1").value);
+        progress.max = max;
+    }
+
+     // 設定=
+    // 比較==
+    // 嚴格比較=== 
+    </script>
+    <h2>我的其他連結</h2>
+        <a href="https://musicgrc3520-star.github.io/rvrv3210-1/game/game.html"><button>大亨遊戲</button></a>
+    </main>
+    <footer>
+        <a href="https://www.youtube.com/channel/UCGQrk3LofChvqrj4Y7XpYYw" target="_blank"><button>前往我的yt</button></a>
+    </footer>
+</body>
+</html>
+<!--
+Math.min():(js用)取最小值
+Math.max():(js用)F取最大值>

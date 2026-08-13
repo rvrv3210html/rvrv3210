@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>3D Voxel World (250x250 水流與物理完全修復版)</title>
+  <title>世界生成器</title>
   <style>
     body {
       margin: 0;
@@ -71,7 +71,6 @@
 <div id="instructions">
   <h1 style="font-size: 36px; margin-bottom: 10px;">點擊畫面進入世界</h1>
   <p style="font-size: 18px; line-height: 1.8; text-align: center;">
-    🗺️ <b>地圖大小</b>：250 x 250 超大世界<br>
     ⌨️ <b>W, A, S, D</b>：前後左右移動<br>
     🚀 <b>Space</b>：跳躍（無蜘蛛網減速，自然物理體感）<br>
     ⛏️ <b>左鍵</b>：破壞方塊（水無法破壞）<br>
@@ -292,7 +291,63 @@ function updateVisibleChunks() {
     }
   }
 }
+// 判斷相鄰方塊是否會透光/可見
+function isSideVisible(myType, neighborType) {
+  if (!neighborType) return true; // 相鄰是空氣，必須繪製
+  if (myType !== 'water' && neighborType === 'water') return true; // 實體方塊碰到水，必須繪製
+  if (myType === 'water' && neighborType !== 'water') return true; // 水碰到實體方塊，必須繪製
+  return false; // 同種類或實體擋實體，隱藏內部網格
+}
 
+// 動態更新玩家周圍可見方塊
+function updateVisibleChunks() {
+  const px = Math.round(camera.position.x);
+  const pz = Math.round(camera.position.z);
+
+  // 1. 清理視線外的 Mesh
+  activeMeshes.forEach((mesh, key) => {
+    const { x, z } = mesh.userData;
+    if (Math.abs(x - px) > RENDER_RADIUS || Math.abs(z - pz) > RENDER_RADIUS) {
+      scene.remove(mesh);
+      activeMeshes.delete(key);
+    }
+  });
+
+  // 2. 載入視線內的 Mesh
+  for (let x = px - RENDER_RADIUS; x <= px + RENDER_RADIUS; x++) {
+    for (let z = pz - RENDER_RADIUS; z <= pz + RENDER_RADIUS; z++) {
+      if (Math.abs(x) > HALF_MAP || Math.abs(z) > HALF_MAP) continue;
+      
+      const h = getTerrainHeight(x, z);
+      const maxY = Math.max(h, WATER_LEVEL) + 5;
+
+      for (let y = 0; y <= maxY; y++) {
+        const key = `${x},${y},${z}`;
+        if (!activeMeshes.has(key)) {
+          const type = getBlockType(x, y, z);
+          if (type) {
+            // 修正：檢查六個面，只要有一面鄰近空氣或透光介質（水）就繪製 Mesh
+            const isExposed = 
+              isSideVisible(type, getBlockType(x + 1, y, z)) ||
+              isSideVisible(type, getBlockType(x - 1, y, z)) ||
+              isSideVisible(type, getBlockType(x, y + 1, z)) ||
+              isSideVisible(type, getBlockType(x, y - 1, z)) ||
+              isSideVisible(type, getBlockType(x, y, z + 1)) ||
+              isSideVisible(type, getBlockType(x, y, z - 1));
+
+            if (isExposed) {
+              const mesh = new THREE.Mesh(boxGeometry, materials[type]);
+              mesh.position.set(x, y, z);
+              mesh.userData = { x, y, z, type };
+              scene.add(mesh);
+              activeMeshes.set(key, mesh);
+            }
+          }
+        }
+      }
+    }
+  }
+}
 // 初始化玩家起始高度
 const startH = getTerrainHeight(0, 0);
 camera.position.set(0, Math.max(startH + 3, WATER_LEVEL + 3), 0);
@@ -350,11 +405,10 @@ function updateWaterSimulation(now) {
 let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
 let canJump = false;
 const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
 
-const PLAYER_RADIUS = 0.3;
-const PLAYER_HEIGHT = 1.7;
-const EYE_HEIGHT = 1.5;
+const PLAYER_RADIUS = 0.3;  // 玩家半徑
+const PLAYER_HEIGHT = 1.7;  // 玩家總身高
+const EYE_HEIGHT = 1.5;     // 眼睛到腳底的距離
 
 window.addEventListener('keydown', (e) => {
   switch (e.code) {
@@ -384,7 +438,7 @@ window.addEventListener('keyup', (e) => {
   }
 });
 
-// AABB 實體牆面阻擋判定 (完全排除水，不減速)
+// 精確 AABB 方塊碰撞阻擋 (方塊世界座標 x, y, z 之範圍為 [x-0.5, x+0.5])
 function checkCollision(pos) {
   const pMinX = pos.x - PLAYER_RADIUS;
   const pMaxX = pos.x + PLAYER_RADIUS;
@@ -393,6 +447,7 @@ function checkCollision(pos) {
   const pMinZ = pos.z - PLAYER_RADIUS;
   const pMaxZ = pos.z + PLAYER_RADIUS;
 
+  // 正確對齊方塊網格邊界 (方塊中心為整數，半寬為 0.5)
   const minX = Math.floor(pMinX + 0.5);
   const maxX = Math.floor(pMaxX + 0.5);
   const minY = Math.floor(pMinY + 0.5);
@@ -404,7 +459,8 @@ function checkCollision(pos) {
     for (let y = minY; y <= maxY; y++) {
       for (let z = minZ; z <= maxZ; z++) {
         const type = getBlockType(x, y, z);
-        if (type && type !== 'water') { // 水方塊無視碰撞
+        if (type && type !== 'water') { // 水無視碰撞
+          // 重疊條件判定
           if (pMaxX > x - 0.5 && pMinX < x + 0.5 &&
               pMaxY > y - 0.5 && pMinY < y + 0.5 &&
               pMaxZ > z - 0.5 && pMinZ < z + 0.5) {
@@ -416,7 +472,6 @@ function checkCollision(pos) {
   }
   return false;
 }
-
 // ==========================================
 // 7. 互動機制 (水不可破壞 / 水中放置方塊)
 // ==========================================
@@ -481,49 +536,61 @@ let prevTime = performance.now();
 function animate(now) {
   requestAnimationFrame(animate);
 
-  // 1. 計算水流擴散
   updateWaterSimulation(now);
 
   if (controls.isLocked) {
     const delta = Math.min((now - prevTime) / 1000, 0.1);
 
-    // 2. 動態更新區塊 Mesh
     updateVisibleChunks();
 
-    // 3. 正常自然物理移動 (移除蜘蛛網，無任何減速)
+    // 1. 阻尼與重力
     velocity.x -= velocity.x * 10.0 * delta;
     velocity.z -= velocity.z * 10.0 * delta;
-    velocity.y -= 25.0 * delta; // 重力加速度
+    velocity.y -= 25.0 * delta;
 
-    direction.z = Number(moveForward) - Number(moveBackward);
-    direction.x = Number(moveRight) - Number(moveLeft);
-    direction.normalize();
+    // 2. 計算視角前進與側移的世界座標平面向量 (忽略 Y 軸俯仰角)
+    const frontVector = new THREE.Vector3();
+    const sideVector = new THREE.Vector3();
+    
+    camera.getWorldDirection(frontVector);
+    frontVector.y = 0;
+    frontVector.normalize();
 
-    if (moveForward || moveBackward) velocity.z -= direction.z * 45.0 * delta;
-    if (moveLeft || moveRight) velocity.x -= direction.x * 45.0 * delta;
+    sideVector.crossVectors(camera.up, frontVector).normalize(); // 右方向量
 
-    // 分軸碰撞解算
-    // X 軸
-    const oldX = camera.position.x;
-    controls.moveRight(-velocity.x * delta);
+    const inputZ = Number(moveForward) - Number(moveBackward);
+    const inputX = Number(moveRight) - Number(moveLeft);
+
+    const moveDir = new THREE.Vector3();
+    if (inputZ !== 0) moveDir.addScaledVector(frontVector, inputZ);
+    if (inputX !== 0) moveDir.addScaledVector(sideVector, -inputX);
+    if (moveDir.lengthSq() > 0) moveDir.normalize();
+
+    if (moveForward || moveBackward || moveLeft || moveRight) {
+      velocity.x += moveDir.x * 45.0 * delta;
+      velocity.z += moveDir.z * 45.0 * delta;
+    }
+
+    // 3. 嚴格的世界座標獨立分軸碰撞解算 (防止斜向穿牆與視角拉扯)
+
+    // X 軸移動與碰撞判定
+    camera.position.x += velocity.x * delta;
     if (checkCollision(camera.position)) {
-      camera.position.x = oldX;
+      camera.position.x -= velocity.x * delta;
       velocity.x = 0;
     }
 
-    // Z 軸
-    const oldZ = camera.position.z;
-    controls.moveForward(-velocity.z * delta);
+    // Z 軸移動與碰撞判定
+    camera.position.z += velocity.z * delta;
     if (checkCollision(camera.position)) {
-      camera.position.z = oldZ;
+      camera.position.z -= velocity.z * delta;
       velocity.z = 0;
     }
 
-    // Y 軸 (跳躍與重力)
-    const oldY = camera.position.y;
+    // Y 軸移動與碰撞判定 (重力與跳躍)
     camera.position.y += velocity.y * delta;
     if (checkCollision(camera.position)) {
-      camera.position.y = oldY;
+      camera.position.y -= velocity.y * delta;
       if (velocity.y < 0) {
         canJump = true; // 著地
       }

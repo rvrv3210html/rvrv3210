@@ -846,8 +846,8 @@ function play(mode) {
       sandTimer = 0;
     }
 
-    const timeInDay = (now / 1000) % 10;
-    const angle = (timeInDay / 10) * Math.PI * 2;
+    const timeInDay = (now / 1000) % 600;
+    const angle = (timeInDay / 600) * Math.PI * 2;
     const sunHeight = Math.sin(angle);
     
     dirLight.position.set(Math.cos(angle) * 60, sunHeight * 60, 50);

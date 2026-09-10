@@ -136,7 +136,175 @@
     <br>
     </nav>
     <main>
-        <h2 id="homepage">設定</h2>
+        <h2 id="homepage">計算機</h2>
+          <div>
+    <!-- 移除 readonly，讓使用者可以點擊並移動游標；加入 inputmode="none" 防止行動裝置彈出原生鍵盤 -->
+    <input type="text" placeholder="0" id="display" inputmode="none">
+    
+    <div class="keypad">
+      <button onclick="press('1')">1</button> 
+      <button onclick="press('2')">2</button> 
+      <button onclick="press('3')">3</button> 
+      <button onclick="press('+')">+</button>
+      <button onclick="pressCustomRoot()">ⁿ√x</button>
+
+      <button onclick="press('4')">4</button> 
+      <button onclick="press('5')">5</button> 
+      <button onclick="press('6')">6</button> 
+      <button onclick="press('-')">-</button>
+      <button onclick="press('**')">xʸ</button>
+
+      <button onclick="press('7')">7</button> 
+      <button onclick="press('8')">8</button> 
+      <button onclick="press('9')">9</button> 
+      <button onclick="press('*')">*</button>
+      <button onclick="toggleSignAtCursor()">±</button>
+      
+      <button onclick="press('.')">.</button> 
+      <button onclick="press('0')">0</button> 
+      <button onclick="backspace()">⌫</button> 
+      <button onclick="press('/')">/</button>
+      <button onclick="press('(')">(</button>
+
+      <button onclick="clearAll()">C</button> 
+      <button onclick="ster()">=</button> 
+      <button onclick="percent()">%</button> 
+      <button onclick="teaching()">教學</button>
+      <button onclick="press(')')">)</button>
+    </div>
+  </div>
+
+  <script>
+    const inputField = document.getElementById('display');
+
+    // 在游標當前位置插入內容
+    function insertAtCursor(text) {
+      const start = inputField.selectionStart ?? inputField.value.length;
+      const end = inputField.selectionEnd ?? inputField.value.length;
+      const val = inputField.value;
+
+      inputField.value = val.slice(0, start) + text + val.slice(end);
+      const newPos = start + text.length;
+      inputField.setSelectionRange(newPos, newPos);
+      inputField.focus();
+    }
+
+    function press(value) {
+      insertAtCursor(value);
+    }
+
+    // 刪除游標前一個字元
+    function backspace() {
+      const start = inputField.selectionStart;
+      const end = inputField.selectionEnd;
+      if (start === null) return;
+
+      const val = inputField.value;
+      if (start !== end) {
+        inputField.value = val.slice(0, start) + val.slice(end);
+        inputField.setSelectionRange(start, start);
+      } else if (start > 0) {
+        inputField.value = val.slice(0, start - 1) + val.slice(start);
+        inputField.setSelectionRange(start - 1, start - 1);
+      }
+      inputField.focus();
+    }
+
+    function clearAll() {
+      inputField.value = '';
+      inputField.focus();
+    }
+
+    // 自訂開根號：輸入 √(
+    function pressCustomRoot() {
+      insertAtCursor('√(');
+    }
+
+    // 依據游標位置精確切換 ± 正負號
+    function toggleSignAtCursor() {
+      let val = inputField.value;
+      let pos = inputField.selectionStart ?? val.length;
+
+      // 尋找游標所在的數字或括號區域
+      const leftPart = val.slice(0, pos);
+      const rightPart = val.slice(pos);
+
+      // 情況 1：游標落在 (-數字) 或 數字 附近，進行括號與正負號替換
+      // 匹配類似 (-123.45) 轉為 123.45
+      const parenNegMatch = leftPart.match(/\(-(\d+\.?\d*)$/);
+      if (parenNegMatch && rightPart.startsWith(')')) {
+        const num = parenNegMatch[1];
+        const newLeft = leftPart.slice(0, leftPart.length - parenNegMatch[0].length) + num;
+        const newRight = rightPart.slice(1);
+        inputField.value = newLeft + newRight;
+        const newPos = newLeft.length;
+        inputField.setSelectionRange(newPos, newPos);
+        inputField.focus();
+        return;
+      }
+
+      // 匹配單純數字 123.45 轉為 (-123.45)
+      const numMatch = leftPart.match(/(\d+\.?\d*)$/);
+      if (numMatch) {
+        const num = numMatch[1];
+        const newLeft = leftPart.slice(0, leftPart.length - num.length) + `(-${num})`;
+        inputField.value = newLeft + rightPart;
+        const newPos = newLeft.length - 1; // 游標落在括號內數字後面
+        inputField.setSelectionRange(newPos, newPos);
+        inputField.focus();
+        return;
+      }
+
+      // 若游標不在數字上，則直接在游標處插入 (-
+      insertAtCursor('');
+    }
+
+    // 解析算式 (包含根號處理)
+    function parseExpression(expr) {
+      // 處理自訂根號：如 3√(8) -> (8)**(1/3) ; √(9) -> (9)**(1/2)
+      let parsed = expr.replace(/(\d+)?√\(([^)]+)\)/g, (match, root, num) => {
+        const r = root ? root : '2';
+        return `((${num})**(1/${r}))`;
+      });
+      return parsed;
+    }
+
+    function ster() {
+      if (!inputField.value) return;
+      try {
+        const parsedExpr = parseExpression(inputField.value);
+        const result = new Function(`return ${parsedExpr}`)();
+        if (result === undefined || !isFinite(result)) {
+          inputField.value = 'Error';
+        } else {
+          inputField.value = result;
+        }
+      } catch (error) {
+        inputField.value = 'Error';
+      }
+    }
+
+    function percent() {
+      if (!inputField.value) return;
+      try {
+        const parsedExpr = parseExpression(inputField.value);
+        const result = new Function(`return ${parsedExpr}`)();
+        if (isFinite(result)) {
+          inputField.value = result / 100;
+        } else {
+          inputField.value = 'Error';
+        }
+      } catch {
+        inputField.value = 'Error';
+      }
+    }
+    function teaching(){
+      alert("進入教學模式囉") 
+      alert("因為是js寫的，因此會稍不同。")
+      alert("按了xʸ，會出現**(這是正常現象，ʸ打在**後。)")
+      alert("要再數字後按了±(有效)，+變-,-變+。)")
+    }
+  </script>
         <h2>我的其他連結</h2> 
     <footer>
         <a href="https://www.youtube.com/channel/UCGQrk3LofChvqrj4Y7XpYYw" target="_blank"><button>前往我的yt</button></a>

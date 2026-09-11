@@ -8,6 +8,8 @@
     <style>
         body{
             background-color: #00b0cb;  
+            margin: 0;
+            padding: 0;
         }
         header{
             text-align:center;
@@ -37,13 +39,14 @@
             color: #fff;
             animation: Black_to_White_to_Black 10s infinite; 
             box-shadow: 10px 10px 10px 0px #777;
+            padding: 10px;
         }
         footer{
             background: linear-gradient(to right,#ffffff,#000000);
             text-align:center;
             background-size: 200%;
             animation: Black_and_white 2s infinite; 
-                      
+            padding: 10px 0;
         }
         footer button{
             font-size: 25px;
@@ -54,7 +57,7 @@
             text-align:center;
         }
         footer button:hover{
-            color: #000;           
+            color: #000;         
         }
         nav button{
             border-radius: 20px;
@@ -125,28 +128,18 @@
             }
         }/*css可增加(但不可減)*/
 
-        /* 擴充計算機專用樣式 */
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(5, 80px);
-            gap: 12px;
-            justify-content: center;
+        /* 響應式螢幕調適 CSS */
+        main div.keypad {
+            max-width: 500px;
+            margin: 0 auto;
+            box-sizing: border-box;
             padding: 10px;
         }
-        .keypad button {
-            font-size: 26px;
-            height: 80px;
-            cursor: pointer;
-            background-color: #333;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 8px;
-        }
+
         input#display {
-            width: calc(100% - 40px);
-            max-width: 440px;
-            height: 50px;
-            font-size: 28px;
+            width: 100%;
+            height: 60px;
+            font-size: clamp(20px, 5vw, 32px);
             text-align: right;
             padding: 5px 12px;
             box-sizing: border-box;
@@ -154,9 +147,31 @@
             color: white;
             border: 1px solid #555;
             border-radius: 8px;
-            margin: 12px auto;
+            margin-bottom: 12px;
             outline: none;
-            display: block;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .keypad button {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            font-size: clamp(16px, 4vw, 24px);
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
     </style>
 </head>
@@ -170,40 +185,49 @@
     </nav>
     <main>
         <h2 id="homepage">計算機</h2>
-        <div>
-            <!-- 輸入框：移除 readonly 允許點擊定位游標；使用 inputmode="none" 避免手機跳出虛擬鍵盤 -->
+        <div class="calc-wrapper">
             <input type="text" placeholder="0" id="display" inputmode="none">
             
             <div class="keypad">
+                <button onclick="press('e')">e</button>
                 <button onclick="press('1')">1</button> 
                 <button onclick="press('2')">2</button> 
                 <button onclick="press('3')">3</button> 
                 <button onclick="press('+')">+</button>
                 <button onclick="pressCustomRoot()">ⁿ√x</button>
+                <button></button>
 
+                <button></button>
                 <button onclick="press('4')">4</button> 
                 <button onclick="press('5')">5</button> 
                 <button onclick="press('6')">6</button> 
                 <button onclick="press('-')">-</button>
                 <button onclick="press('**')">xʸ</button>
+                <button></button>
 
+                <button></button>
                 <button onclick="press('7')">7</button> 
                 <button onclick="press('8')">8</button> 
                 <button onclick="press('9')">9</button> 
                 <button onclick="press('*')">*(x)</button>
                 <button onclick="toggleSignAtCursor()">±</button>
+                <button></button>
                 
+                <button></button>
                 <button onclick="press('.')">.</button> 
                 <button onclick="press('0')">0</button> 
                 <button onclick="backspace()">⌫</button> 
                 <button onclick="press('/')">/(÷)</button>
-                <button onclick="teaching()">教學</button>
+                <button onclick="press('(')">(</button>
+                <button></button>
 
+                <button></button>
                 <button onclick="clearAll()">C</button> 
                 <button onclick="ster()">=</button> 
                 <button onclick="percent()">%</button> 
-                <button onclick="press('(')">(</button>                
+                <button onclick="teaching()">教學</button>
                 <button onclick="press(')')">)</button>
+                <button></button>
             </div>
         </div>
         <h2>我的其他連結</h2> 
@@ -215,7 +239,6 @@
     <script>
         const inputField = document.getElementById('display');
 
-        // 在游標當前位置插入內容
         function insertAtCursor(text) {
             const start = inputField.selectionStart ?? inputField.value.length;
             const end = inputField.selectionEnd ?? inputField.value.length;
@@ -231,7 +254,6 @@
             insertAtCursor(value);
         }
 
-        // 刪除游標前一個字元
         function backspace() {
             const start = inputField.selectionStart;
             const end = inputField.selectionEnd;
@@ -253,12 +275,10 @@
             inputField.focus();
         }
 
-        // 自訂開根號：輸入 √(
         function pressCustomRoot() {
             insertAtCursor('√(');
         }
 
-        // 依據游標位置精確切換 ± 正負號
         function toggleSignAtCursor() {
             let val = inputField.value;
             let pos = inputField.selectionStart ?? val.length;
@@ -292,7 +312,6 @@
             insertAtCursor('(-');
         }
 
-        // 解析算式 (包含根號處理)
         function parseExpression(expr) {
             let parsed = expr.replace(/(\d+)?√\(([^)]+)\)/g, (match, root, num) => {
                 const r = root ? root : '2';
@@ -336,6 +355,7 @@
             alert("因為是js寫的，因此會稍不同。");
             alert("按了xʸ，會出現**(這是正常現象，ʸ打在**後。)");
             alert("要再數字後按了±(有效)，+變-,-變+。)");
+            alert("e的用法:1e+1=10,1e+0(或1e-0)=1,1e-1=-1,3e+3=3000。)");
         }
     </script>
 </body>

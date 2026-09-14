@@ -1,1 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rvrv3210-2048 game</title>
+    <link rel="icon" sizes="400x500" href="game/loge.jpg">
+    <style>
+        body {
+            background-color: #b7a95b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
 
+        .game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            width: 25%;
+            box-sizing: border-box;
+            padding: 5px;
+            background-color: #77450c;
+            font-size: 20px;
+        }
+
+        .game div {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(16px, 2.5vw, 32px);
+            font-weight: bold;
+            background-color: #e8eabc;
+            color: rgb(0, 0, 0);
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+
+        .info {
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .score-box {
+            margin: 8px;
+            padding: 8px;
+            background: #77450c;
+            color: white;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+    
+        #message {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        #message .message-box {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        #message h2 {
+            margin: 0 0 15px;
+            font-size: 36px;
+        }
+        #message button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        /* ===== 2048 遊戲動畫 ===== */
+        .game div {
+            will-change: transform, opacity;
+        }
+
+        .game.anim-left div  { animation: tileLeft .18s ease-out; }
+        .game.anim-right div { animation: tileRight .18s ease-out; }
+        .game.anim-up div    { animation: tileUp .18s ease-out; }
+        .game.anim-down div  { animation: tileDown .18s ease-out; }
+
+        .game div.spawn {
+            animation: spawnTile .22s cubic-bezier(.2,1.5,.5,1) both;
+        }
+
+        .game div.changed {
+            animation: mergeTile .28s ease-out both;
+        }
+        #message {
+            animation: overlayIn .22s ease-out;
+        }
+
+        #message .message-box {
+            animation: messagePop .35s cubic-bezier(.2,1.35,.5,1);
+        }
+
+        @keyframes tileLeft {
+            from { transform: translateX(10px); opacity: .55; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes tileRight {
+            from { transform: translateX(-10px); opacity: .55; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes tileUp {
+            from { transform: translateY(10px); opacity: .55; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes tileDown {
+            from { transform: translateY(-10px); opacity: .55; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spawnTile {
+            0%   { transform: scale(.2); opacity: 0; }
+            70%  { transform: scale(1.12); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes mergeTile {
+            0%   { transform: scale(1); }
+            45%  { transform: scale(1.22); }
+            100% { transform: scale(1); }
+        }
+        @keyframes overlayIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes messagePop {
+            0%   { transform: scale(.65); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .game div, #message, #message .message-box {
+                animation: none !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="info">
+        <div class="score-box">
+            <sup>分數</sup><br>
+            <span id="score">0</span>
+        </div>
+
+        <div class="score-box">
+            <sup>最高分數</sup><br>
+            <span id="bestScore">0</span>
+        </div>
+
+        <button onclick="new_game()" id="game">啟動</button>
+    </div>
+
+    <div class="game">
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+    </div>
+
+<script>
+let board = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+];
+let game = 0
+let score = 0;
+let bestScore = Number(localStorage.getItem("bestScore")) || 0;
+let cells = document.querySelectorAll(".game div");
+
+
+// ======================
+// 一排的移動與合併
+// ======================
+function mergeLine(line) {
+
+    line = line.filter(value => value !== 0);
+
+    for (let i = 0; i < line.length - 1; i++) {
+
+        if (line[i] === line[i + 1]) {
+            line[i] = line[i] * 2;
+
+            // ⭐ 合併後增加分數
+            score += line[i];
+
+            line[i + 1] = 0;
+        }
+    }
+
+    line = line.filter(value => value !== 0);
+
+    while (line.length < 4) {
+        line.push(0);
+    }
+
+    return line;
+}
+
+
+// ======================
+// 左移
+// ======================
+function moveLeft() {
+
+    let oldBoard = JSON.stringify(board);
+
+    for (let row = 0; row < 4; row++) {
+        board[row] = mergeLine(board[row]);
+    }
+
+    return oldBoard !== JSON.stringify(board);
+}
+
+
+// ======================
+// 右移
+// ======================
+function moveRight() {
+
+    let oldBoard = JSON.stringify(board);
+
+    for (let row = 0; row < 4; row++) {
+        board[row] = mergeLine(board[row].slice().reverse()).reverse();
+    }
+
+    return oldBoard !== JSON.stringify(board);
+}
+
+
+// ======================
+// 上移
+// ======================
+function moveUp() {
+
+    let oldBoard = JSON.stringify(board);
+
+    for (let col = 0; col < 4; col++) {
+
+        let line = [];
+
+        for (let row = 0; row < 4; row++) {
+            line.push(board[row][col]);
+        }
+
+        line = mergeLine(line);
+
+        for (let row = 0; row < 4; row++) {
+            board[row][col] = line[row];
+        }
+    }
+
+    return oldBoard !== JSON.stringify(board);
+}
+
+
+// ======================
+// 下移
+// ======================
+function moveDown() {
+
+    let oldBoard = JSON.stringify(board);
+
+    for (let col = 0; col < 4; col++) {
+
+        let line = [];
+
+        for (let row = 0; row < 4; row++) {
+            line.push(board[row][col]);
+        }
+
+        line = mergeLine(line.reverse()).reverse();
+
+        for (let row = 0; row < 4; row++) {
+            board[row][col] = line[row];
+        }
+    }
+
+    return oldBoard !== JSON.stringify(board);
+}
+
+
+// ======================
+// 隨機產生 2 或 4
+// ======================
+function addRandomTile() {
+
+    let emptyCells = [];
+
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+            if (board[row][col] === 0) {
+                emptyCells.push([row, col]);
+            }
+        }
+    }
+
+    if (emptyCells.length === 0) {
+        return null;
+    }
+
+    let randomIndex = Math.floor(Math.random() * emptyCells.length);
+    let [row, col] = emptyCells[randomIndex];
+
+    board[row][col] = Math.random() < 0.9 ? 2 : 4;
+
+    return [row, col];
+}
+
+
+// ======================
+// 更新畫面
+// ======================
+function updateBoard(newTile = null, direction = null, oldValues = []) {
+
+    cells.forEach(cell => {
+        cell.classList.remove("spawn", "changed");
+    });
+
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+
+            let index = row * 4 + col;
+            let value = board[row][col];
+
+            cells[index].textContent = value || "";
+
+            // 數字改變時放大一下，模擬合併效果
+            if (oldValues[index] !== undefined &&
+                oldValues[index] !== value &&
+                value !== 0) {
+                cells[index].classList.add("changed");
+            }
+        }
+    }
+
+    // 新生成的 2 / 4 從小變大
+    if (newTile) {
+        let index = newTile[0] * 4 + newTile[1];
+        cells[index].classList.remove("changed");
+        cells[index].classList.add("spawn");
+    }
+
+    // 整個棋盤依方向做快速滑動效果
+    if (direction) {
+        let game = document.querySelector(".game");
+        game.classList.remove(
+            "anim-left", "anim-right", "anim-up", "anim-down"
+        );
+        void game.offsetWidth;
+        game.classList.add("anim-" + direction);
+
+        setTimeout(() => {
+            game.classList.remove(
+                "anim-left", "anim-right", "anim-up", "anim-down"
+            );
+        }, 200);
+    }
+
+    document.getElementById("score").textContent = score;
+
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem("bestScore", bestScore);
+    }
+
+    document.getElementById("bestScore").textContent = bestScore;
+}
+
+
+
+// ======================
+// 重新開始
+// ======================
+function new_game() {
+
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ];
+    if(game == 1){
+        document.getElementById("game").textConten = "重新開始"
+    }  
+    game = 1
+    score = 0;
+    gameWon = false;
+    gameOver = false;
+    hideMessage();
+
+    addRandomTile();
+    addRandomTile();
+
+    updateBoard();
+}
+
+
+// ======================
+// 鍵盤控制
+// ======================
+
+let gameWon = false;
+let gameOver = false;
+
+function checkWin() {
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+            if (board[row][col] === 2048) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function canMove() {
+    // 還有空格，就還可以移動
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+            if (board[row][col] === 0) return true;
+        }
+    }
+
+    // 左右有相同數字，可以合併
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 3; col++) {
+            if (board[row][col] === board[row][col + 1]) return true;
+        }
+    }
+
+    // 上下有相同數字，可以合併
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 4; col++) {
+            if (board[row][col] === board[row + 1][col]) return true;
+        }
+    }
+
+    return false;
+}
+
+function showMessage(text) {
+    document.getElementById("messageText").textContent = text;
+    document.getElementById("message").style.display = "flex";
+}
+
+function hideMessage() {
+    document.getElementById("message").style.display = "none";
+}
+
+function checkGameState() {
+    if (!gameWon && checkWin()) {
+        gameWon = true;
+        showMessage("🎉 恭喜你！得到 2048！");
+        return;
+    }
+
+    if (!canMove()) {
+        gameOver = true;
+        showMessage("💥 遊戲結束！");
+    }
+}
+
+document.addEventListener("keydown", function(event) {
+    if (gameWon || gameOver) return;
+
+    let moved = false;
+    let direction = null;
+
+    if (event.key === "ArrowLeft") {
+        direction = "left";
+        moved = moveLeft();
+    } else if (event.key === "ArrowRight") {
+        direction = "right";
+        moved = moveRight();
+    } else if (event.key === "ArrowUp") {
+        direction = "up";
+        moved = moveUp();
+    } else if (event.key === "ArrowDown") {
+        direction = "down";
+        moved = moveDown();
+    } else {
+        return;
+    }
+
+    if (moved) {
+        let oldValues = Array.from(cells).map(
+            cell => Number(cell.textContent) || 0
+        );
+
+        let newTile = addRandomTile();
+        updateBoard(newTile, direction, oldValues);
+    }
+
+    // 就算這次不能移動，也要檢查遊戲是否結束
+    checkGameState();
+});
+
+// ======================
+// 手機 / 觸控滑動控制
+// ======================
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.querySelector(".game").addEventListener("touchstart", function(event) {
+    const touch = event.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}, { passive: true });
+
+document.querySelector(".game").addEventListener("touchend", function(event) {
+    if (gameWon || gameOver) return;
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
+
+    let moved = false;
+    let direction;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        direction = dx > 0 ? "right" : "left";
+        moved = direction === "right" ? moveRight() : moveLeft();
+    } else {
+        direction = dy > 0 ? "down" : "up";
+        moved = direction === "down" ? moveDown() : moveUp();
+    }
+
+    if (moved) {
+        let oldValues = Array.from(cells).map(
+            cell => Number(cell.textContent) || 0
+        );
+
+        let newTile = addRandomTile();
+        updateBoard(newTile, direction, oldValues);
+    }
+
+    checkGameState();
+}, { passive: true });
+
+
+
+// 開始遊戲
+new_game();
+</script>
+
+
+    <div id="message">
+        <div class="message-box">
+            <h2 id="messageText"></h2>
+            <button onclick="new_game()">重新開始</button>
+        </div>
+    </div>
+</body>
+</html>

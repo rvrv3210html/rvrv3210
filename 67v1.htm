@@ -1,1 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
 
+<head>
+    <meta charset="UTF-8">
+    <title>3d射擊遊戲</title>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+        b{
+          position: fixed;
+          left: 50%;
+        }
+        input{
+              position: fixed;
+              left: 50%;
+        }
+        #start {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+
+            transform: translate(-50%, -50%);
+
+            padding: 20px 40px;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            z-index: 10;
+        }
+        div{
+            position: fixed;
+            left: 100%;
+        }
+        #crosshair {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 30px;
+            pointer-events: none;
+        }
+        #coords {
+            position: fixed;
+            left: 50%;
+            top: 12px;
+            color: white;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 8px 10px;
+            border-radius: 5px;
+            font: 14px monospace;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #shotMessage {
+            position: fixed;
+            left: 50%;
+            top: calc(50% + 30px);
+            transform: translateX(-50%);
+            color: white;
+            font: bold 15px monospace;
+            text-shadow: 1px 1px 3px #000;
+            z-index: 6;
+            pointer-events: none;
+        }
+        #gameHud {
+            position: fixed;
+            left: 12px;
+            bottom: 12px;
+            padding: 9px 12px;
+            color: white;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 5px;
+            font: 15px monospace;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #pauseOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #resumeButton {
+            padding: 12px 28px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* 手機控制按鈕樣式 */
+        #mobileControls {
+            display: none;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 15;
+        }
+        #joystickZone {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        #joystickKnob {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .mobileBtn {
+            position: absolute;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #jumpBtn { right: 30px; bottom: 130px; width: 75px; height: 75px; border-radius: 50%; }
+        #shootBtn { right: 120px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; background: rgba(200, 50, 50, 0.6); }
+        #reloadBtn { right: 30px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; }
+    </style>
+</head>
+
+<body>
+<div id="page">
+   <button id="start">
+    開始新世界
+   </button>
+</div>
+<div id="settings">
+   <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;靈敏度</b>
+   <input type="range" min="0.001" max="0.01" step="0.001"  value="0.002" id="Sensitive">
+   <hr><hr>
+    <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#16s160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;世界最高度</b>
+   <input type="number" min="10" value="10" id="tallest">
+   <hr><hr>
+   <b>反向操作</b>
+   <br>
+   <input type="checkbox" id="operation">
+</div>
+<div id="play">
+    <div id="crosshair">
+        +
+    </div>
+    <div id="coords">X: 0 | Y: 0 | Z: 0</div>
+    <div id="shotMessage"></div>
+    <div id="gameHud">生命值：100 | 錢：0<br>WASD 移動．左鍵射擊</div>
+    <div id="pauseOverlay">
+        <h1>遊戲暫停</h1>
+        <p>按 Esc 或點擊按鈕繼續</p>
+        <button id="resumeButton">繼續遊戲</button>
+    </div>
+    <!-- 手機控制介面 -->
+    <div id="mobileControls">
+        <div id="joystickZone">
+            <div id="joystickKnob"></div>
+        </div>
+        <div id="jumpBtn" class="mobileBtn">跳躍</div>
+        <div id="shootBtn" class="mobileBtn">射擊</div>
+        <div id="reloadBtn" class="mobileBtn">裝填</div>
+    </div>
+</div>
+
+<script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+<script type="module">
+document.getElementById("play").style.display = "none";
+
+const startButton = document.getElementById("start");
+const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+startButton.addEventListener(
+    "click",
+    function() {
+        document.getElementById("play").style.display = "block";
+        document.getElementById("settings").style.display = "none";
+        startButton.style.display = "none";
+        Sensitive.style.display = "none";
+        document.getElementById("page").style.display = "none";
+
+        if (isMobile) {
+            document.getElementById("mobileControls").style.display = "block";
+        } else {
+            document.body.requestPointerLock();
+        }
+        play();
+    }
+);
+
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import Stats from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/libs/stats.module.js';
+
+const stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
+
+function play(){
+let isPaused = false;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 5, 35);
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+camera.position.set(0, 15, 15);
+scene.add(camera);
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+function createBlock(x, y, z, material) {
+    const block = new THREE.Mesh(boxGeometry, material);
+    block.position.set(x, y, z);
+    scene.add(block);
+    obstacles.push(block);
+    return block;
+}
+
+const gun = new THREE.Group();
+gun.position.set(0.32, -0.28, -0.58);
+camera.add(gun);
+
+function addGunPart(geometry, color, x, y, z, rotationX = 0) {
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color }));
+    mesh.position.set(x, y, z);
+    mesh.rotation.x = rotationX;
+    gun.add(mesh);
+    return mesh;
+}
+
+addGunPart(new THREE.BoxGeometry(0.20, 0.18, 0.48), 0x343a40, 0, 0, 0);
+addGunPart(new THREE.BoxGeometry(0.17, 0.14, 0.22), 0x60452c, 0, -0.02, 0.31);
+addGunPart(new THREE.BoxGeometry(0.11, 0.22, 0.13), 0x493222, 0, -0.17, 0.05, 0.18);
+addGunPart(new THREE.CylinderGeometry(0.035, 0.045, 0.48, 8), 0x20252a, 0, 0.015, -0.43, Math.PI / 2);
+addGunPart(new THREE.BoxGeometry(0.05, 0.05, 0.07), 0x111111, 0, 0.12, -0.18);
+
+const muzzleFlash = new THREE.Mesh(
+    new THREE.SphereGeometry(0.085, 8, 6),
+    new THREE.MeshBasicMaterial({ color: 0xffcc55 })
+);
+muzzleFlash.position.set(0, 0.02, -0.69);
+muzzleFlash.visible = false;
+gun.add(muzzleFlash);
+let recoil = 0;
+let flashTimer = 0;
+
+const monsters = [];
+const enemyBullets = [];
+
+let playerHealth = 100;
+let monsterKills = 0;
+
+const magazineSize = 20;
+let magazineAmmo = 20;
+let reserveAmmo = 200;
+
+let isReloading = false;
+let reloadTimer = 0;
+const reloadDuration = 1.2;
+
+function updateGameHud() {
+    const totalAmmo = magazineAmmo + reserveAmmo;
+    const boxesLeft = Math.ceil(totalAmmo / magazineSize);
+    document.getElementById('gameHud').innerHTML =
+        `生命值：${Math.max(0, Math.ceil(playerHealth))} | 錢：${monsterKills}<br>` +
+        `彈匣：${magazineAmmo}/${magazineSize} | 備彈：${reserveAmmo}<br>` +
+        `剩餘約 ${boxesLeft}/10 盒 | ` +
+        (isReloading ? '裝填中...' :
+         playerHealth > 1 ? (isMobile ? '虛擬搖桿移動' : '左鍵射擊．R 裝填．Esc 暫停') : '你被打敗了！按 R 或點擊重生');
+}
+
+function startReload() {
+    if (isReloading || playerHealth <= 0) return;
+    if (magazineAmmo >= magazineSize) {
+        showShotMessage('彈匣已滿');
+        return;
+    }
+    if (reserveAmmo <= 0) {
+        showShotMessage('沒有備用子彈了！');
+        return;
+    }
+
+    isReloading = true;
+    reloadTimer = reloadDuration;
+    updateGameHud();
+    showShotMessage('裝填中...');
+}
+
+function finishReload() {
+    const needed = magazineSize - magazineAmmo;
+    const loaded = Math.min(needed, reserveAmmo);
+    magazineAmmo += loaded;
+    reserveAmmo -= loaded;
+    isReloading = false;
+    updateGameHud();
+    showShotMessage('裝填完成！');
+}
+
+function updateWeapon(delta) {
+    if (recoil > 0) {
+        recoil -= delta * 10;
+        if (recoil < 0) recoil = 0;
+        gun.position.z = -0.58 + recoil * 0.05;
+    }
+
+    if (flashTimer > 0) {
+        flashTimer -= delta;
+        if (flashTimer <= 0) {
+            muzzleFlash.visible = false;
+        }
+    }
+}
+
+function updateReload(delta) {
+    if (!isReloading) return;
+    reloadTimer -= delta;
+    if (reloadTimer <= 0) finishReload();
+}
+
+function showShotMessage(message) {
+    const label = document.getElementById('shotMessage');
+    label.textContent = message;
+    if (label._timer) clearTimeout(label._timer);
+    label._timer = setTimeout(() => {
+        if (label.textContent === message) label.textContent = '';
+    }, 700);
+}
+
+function createMonster(x, z, ownerChunkKey, isGunner = false) {
+    const group = new THREE.Group();
+    const bodyMat = new THREE.MeshBasicMaterial({ color: isGunner ? 0x704040 : 0x438e42 });
+    const headMat = new THREE.MeshBasicMaterial({ color: isGunner ? 0xa83a3a : 0x2b7133 });
+    const blackMat = new THREE.MeshBasicMaterial({ color: 0x151515 });
+    const mouthMat = new THREE.MeshBasicMaterial({ color: 0xa82020 });
+    const gunMat = new THREE.MeshBasicMaterial({ color: 0x252a30 });
+
+    function part(geometry, material, px, py, pz) {
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(px, py, pz);
+        group.add(mesh);
+        return mesh;
+    }
+
+    if (isGunner) {
+        part(new THREE.BoxGeometry(0.42, 0.16, 0.54), gunMat, 0.48, 1.35, -0.28);
+        part(new THREE.BoxGeometry(0.09, 0.09, 0.42), gunMat, 0.48, 1.39, -0.70);
+        part(new THREE.BoxGeometry(0.12, 0.23, 0.13), gunMat, 0.48, 1.19, -0.31);
+    }
+
+    part(new THREE.BoxGeometry(0.9, 1.1, 0.55), bodyMat, 0, 1.12, 0);
+    part(new THREE.BoxGeometry(0.78, 0.72, 0.72), headMat, 0, 2.02, 0);
+    part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, -0.20, 2.10, -0.38);
+    part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, 0.20, 2.10, -0.38);
+    part(new THREE.BoxGeometry(0.34, 0.09, 0.06), mouthMat, 0, 1.83, -0.39);
+    part(new THREE.BoxGeometry(0.24, 0.82, 0.28), bodyMat, -0.60, 1.12, 0);
+    part(new THREE.BoxGeometry(0.24, 0.82, 0.28), bodyMat, 0.60, 1.12, 0);
+    part(new THREE.BoxGeometry(0.30, 0.62, 0.32), headMat, -0.22, 0.31, 0);
+    part(new THREE.BoxGeometry(0.30, 0.62, 0.32), headMat, 0.22, 0.31, 0);
+
+    group.position.set(x, getTerrainHeight(x, z), z);
+    const monster = {
+        group,
+        isGunner,
+        health: isGunner ? 5 : 3,
+        maxHealth: isGunner ? 5 : 3,
+        speed: isGunner ? 1.05 : 1.35,
+        attackCooldown: isGunner ? 1.3 : 0,
+        ownerChunkKey
+    };
+    group.traverse(obj => { if (obj.isMesh) obj.userData.monster = monster; });
+    scene.add(group);
+    monsters.push(monster);
+    return monster;
+}
+
+function removeMonster(monster) {
+    scene.remove(monster.group);
+    const i = monsters.indexOf(monster);
+    if (i !== -1) monsters.splice(i, 1);
+    const ownerChunk = chunks.get(monster.ownerChunkKey);
+    if (ownerChunk) {
+        const j = ownerChunk.enemies.indexOf(monster);
+        if (j !== -1) ownerChunk.enemies.splice(j, 1);
+    }
+}
+
+function shootTarget() {
+    if (
+        (!isMobile && document.pointerLockElement !== document.body) ||
+        playerHealth <= 0 ||
+        isPaused ||
+        isReloading
+    ) return;
+
+    if (magazineAmmo <= 0) {
+        showShotMessage("沒子彈！請裝填");
+        return;
+    }
+
+    magazineAmmo--;
+    updateGameHud();
+
+    recoil = 1;
+    flashTimer = 0.075;
+    muzzleFlash.visible = true;
+    camera.updateMatrixWorld(true);
+    scene.updateMatrixWorld(true);
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.far = 70;
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    const hits = raycaster.intersectObjects(obstacles.concat(monsters.map(m => m.group)), true);
+    if (!hits.length) {
+        showShotMessage('未命中');
+        return;
+    }
+
+    let object = hits[0].object;
+    let monster = null;
+    while (object) {
+        if (object.userData && object.userData.monster) {
+            monster = object.userData.monster;
+            break;
+        }
+        object = object.parent;
+    }
+
+    if (monster) {
+        monster.health -= 1;
+        if (monster.health <= 0) {
+            removeMonster(monster);
+            monsterKills += 10;
+            updateGameHud();
+            showShotMessage('怪物被擊倒！');
+        } else {
+            showShotMessage(`命中怪物！還需要 ${monster.health} 發`);
+        }
+        return;
+    }
+
+    showShotMessage('擊中方塊');
+}
+
+document.addEventListener('mousedown', event => {
+    if (event.button === 0) shootTarget();
+});
+
+function updateMonsters(delta) {
+    for (const monster of [...monsters]) {
+        const group = monster.group;
+
+        const dx = camera.position.x - group.position.x;
+        const dz = camera.position.z - group.position.z;
+        const distance = Math.hypot(dx, dz);
+        const monsterSpeed = 0.08;
+
+        if (!monster.isGunner && distance > 2.2 && distance < 38) {
+            const step = monsterSpeed * delta * 60;
+            const nextX = group.position.x + dx / distance * step;
+            const nextZ = group.position.z + dz / distance * step;
+
+            const currentGround = getTerrainHeight(group.position.x, group.position.z);
+            const nextGround = getTerrainHeight(nextX, nextZ);
+
+            if (nextGround <= currentGround + blockSize) {
+                group.position.x = nextX;
+                group.position.z = nextZ;
+                group.position.y = getTerrainHeight(group.position.x, group.position.z);
+            }
+
+            group.rotation.y = Math.atan2(dx, dz) + Math.PI;
+        }
+
+        if (monster.isGunner && distance < 38) {
+            group.rotation.y = Math.atan2(dx, dz) + Math.PI;
+
+            if (distance > 12) {
+                const step = monsterSpeed * delta * 60;
+                const nextX = group.position.x + dx / distance * step;
+                const nextZ = group.position.z + dz / distance * step;
+
+                const currentGround = getTerrainHeight(group.position.x, group.position.z);
+                const nextGround = getTerrainHeight(nextX, nextZ);
+
+                if (nextGround <= currentGround + blockSize) {
+                    group.position.x = nextX;
+                    group.position.z = nextZ;
+                    group.position.y = getTerrainHeight(group.position.x, group.position.z);
+                }
+            }
+
+            if (distance < 30) {
+                monster.attackCooldown -= delta;
+                if (monster.attackCooldown <= 0 && playerHealth > 0) {
+                    fireEnemyBullet(monster);
+                    monster.attackCooldown = 1.6;
+                }
+            }
+        }
+
+        if (!monster.isGunner && distance <= 2.2) {
+            monster.attackCooldown -= delta;
+            if (monster.attackCooldown <= 0 && playerHealth > 0) {
+                playerHealth = Math.max(0, playerHealth - 8);
+                monster.attackCooldown = 1.2;
+                updateGameHud();
+                showShotMessage(playerHealth > 0 ? "怪物攻擊了你！" : "你被打敗了！點擊重生");
+            }
+        }
+    }
+}
+
+function fireEnemyBullet(monster) {
+    const start = new THREE.Vector3(
+        monster.group.position.x,
+        monster.group.position.y + 1.45,
+        monster.group.position.z
+    );
+    const target = new THREE.Vector3(
+        camera.position.x,
+        camera.position.y - 0.4,
+        camera.position.z
+    );
+    const direction = target.sub(start).normalize();
+
+    const bullet = new THREE.Mesh(
+        new THREE.SphereGeometry(0.11, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0xff5533 })
+    );
+
+    bullet.position.copy(start);
+    scene.add(bullet);
+
+    enemyBullets.push({
+        mesh: bullet,
+        velocity: direction.multiplyScalar(17),
+        life: 3,
+        damage: 7
+    });
+}
+
+function updateEnemyBullets(delta) {
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const bullet = enemyBullets[i];
+        bullet.mesh.position.addScaledVector(bullet.velocity, delta);
+        bullet.life -= delta;
+
+        if (bullet.mesh.position.distanceTo(camera.position) < 0.8) {
+            if (playerHealth > 0) {
+                playerHealth = Math.max(0, playerHealth - bullet.damage);
+                updateGameHud();
+                showShotMessage(playerHealth > 0 ? "被敵人子彈擊中！" : "你被打敗了！點擊重生");
+            }
+            scene.remove(bullet.mesh);
+            enemyBullets.splice(i, 1);
+        } else if (bullet.life <= 0) {
+            scene.remove(bullet.mesh);
+            enemyBullets.splice(i, 1);
+        }
+    }
+}
+
+function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function randomGradient(ix, iz) {
+    const random = Math.sin(ix * 127.1 + iz * 311.7) * 43758.5453;
+    const r = random - Math.floor(random);
+    const angle = r * Math.PI * 2;
+    return { x: Math.cos(angle), z: Math.sin(angle) };
+}
+
+function dotGridGradient(ix, iz, x, z) {
+    const gradient = randomGradient(ix, iz);
+    return (x - ix) * gradient.x + (z - iz) * gradient.z;
+}
+
+function perlinNoise(x, z) {
+    const x0 = Math.floor(x);
+    const x1 = x0 + 1;
+    const z0 = Math.floor(z);
+    const z1 = z0 + 1;
+    const sx = fade(x - x0);
+    const sz = fade(z - z0);
+
+    const n0 = dotGridGradient(x0, z0, x, z);
+    const n1 = dotGridGradient(x1, z0, x, z);
+    const ix0 = lerp(n0, n1, sx);
+
+    const n2 = dotGridGradient(x0, z1, x, z);
+    const n3 = dotGridGradient(x1, z1, x, z);
+    const ix1 = lerp(n2, n3, sx);
+
+    return lerp(ix0, ix1, sz);
+}
+
+const obstacles = [];
+const blockSize = 2;
+const boxGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+
+const grassMaterial = new THREE.MeshBasicMaterial({ color: 0x55aa55 });
+const dirtMaterial = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
+const stoneMaterial = new THREE.MeshBasicMaterial({ color: 0x777777 });
+
+const chunkSize = 16;
+const chunkWorldSize = chunkSize * blockSize;
+const renderDistance = 1;
+const chunks = new Map();
+const terrainHeights = new Map();
+const noiseScale = 0.08;
+const maxHeight = Math.max(1, Number(document.getElementById("tallest").value) || 10);
+
+function terrainKey(x, z) { return `${x},${z}`; }
+
+function getTerrainHeight(x, z) {
+    const gridX = Math.round(x / blockSize) * blockSize;
+    const gridZ = Math.round(z / blockSize) * blockSize;
+    return terrainHeights.get(terrainKey(gridX, gridZ)) ?? 0;
+}
+
+function chunkKey(chunkX, chunkZ) { return `${chunkX},${chunkZ}`; }
+
+function generateChunk(chunkX, chunkZ) {
+    const key = chunkKey(chunkX, chunkZ);
+    if (chunks.has(key)) return;
+
+    const chunk = { blocks: [], columns: [], enemies: [] };
+
+    for (let ix = 0; ix < chunkSize; ix++) {
+        for (let iz = 0; iz < chunkSize; iz++) {
+            const x = (chunkX * chunkSize + ix) * blockSize;
+            const z = (chunkZ * chunkSize + iz) * blockSize;
+            const noise = perlinNoise(x * noiseScale, z * noiseScale);
+            const height = Math.max(0, Math.floor(((noise + 1) / 2) * maxHeight));
+
+            const columnKey = terrainKey(x, z);
+            terrainHeights.set(columnKey, height * blockSize + blockSize / 2);
+            chunk.columns.push(columnKey);
+
+            for (let y = 0; y <= height; y++) {
+                let material;
+                if (y === height) material = grassMaterial;
+                else if (y > height - 3) material = dirtMaterial;
+                else material = stoneMaterial;
+
+                chunk.blocks.push(createBlock(x, y * blockSize, z, material));
+            }
+        }
+    }
+
+    chunks.set(key, chunk);
+
+    for (let i = 0; i < 2; i++) {
+        for (let attempt = 0; attempt < 16; attempt++) {
+            const x = (chunkX * chunkSize + Math.floor(Math.random() * chunkSize)) * blockSize;
+            const z = (chunkZ * chunkSize + Math.floor(Math.random() * chunkSize)) * blockSize;
+            const Rebirth = Math.hypot(x - camera.position.x, z - camera.position.z);
+            if (Rebirth < 5 || Rebirth > 25) continue;
+            const isGunner = Math.random() < 0.4;
+            chunk.enemies.push(createMonster(x, z, key, isGunner));
+            break;
+        }
+    }
+}
+
+function removeChunk(chunkX, chunkZ) {
+    const key = chunkKey(chunkX, chunkZ);
+    const chunk = chunks.get(key);
+    if (!chunk) return;
+
+    for (const block of chunk.blocks) {
+        scene.remove(block);
+        const index = obstacles.indexOf(block);
+        if (index !== -1) obstacles.splice(index, 1);
+    }
+
+    for (const columnKey of chunk.columns) {
+        terrainHeights.delete(columnKey);
+    }
+    for (const enemy of [...chunk.enemies]) {
+        scene.remove(enemy.group);
+        const i = monsters.indexOf(enemy);
+        if (i !== -1) monsters.splice(i, 1);
+    }
+
+    chunks.delete(key);
+}
+
+let lastChunkX = Infinity;
+let lastChunkZ = Infinity;
+
+function updateChunks() {
+    const playerChunkX = Math.floor(camera.position.x / chunkWorldSize);
+    const playerChunkZ = Math.floor(camera.position.z / chunkWorldSize);
+
+    if (playerChunkX === lastChunkX && playerChunkZ === lastChunkZ) return;
+    lastChunkX = playerChunkX;
+    lastChunkZ = playerChunkZ;
+
+    for (let dx = -renderDistance; dx <= renderDistance; dx++) {
+        for (let dz = -renderDistance; dz <= renderDistance; dz++) {
+            generateChunk(playerChunkX + dx, playerChunkZ + dz);
+        }
+    }
+
+    for (const key of Array.from(chunks.keys())) {
+        const [cx, cz] = key.split(",").map(Number);
+        if (
+            Math.abs(cx - playerChunkX) > renderDistance ||
+            Math.abs(cz - playerChunkZ) > renderDistance
+        ) {
+            removeChunk(cx, cz);
+        }
+    }
+}
+
+updateChunks();
+
+const keys = { w: false, a: false, s: false, d: false, shift: false };
+let mobileInput = { x: 0, z: 0 };
+
+// 虛擬搖桿控制邏輯
+if (isMobile) {
+    const zone = document.getElementById("joystickZone");
+    const knob = document.getElementById("joystickKnob");
+    let touchId = null;
+    let zoneRect = null;
+
+    zone.addEventListener("touchstart", (e) => {
+        if (touchId !== null) return;
+        const touch = e.changedTouches[0];
+        touchId = touch.identifier;
+        zoneRect = zone.getBoundingClientRect();
+        handleJoystick(touch);
+    });
+
+    zone.addEventListener("touchmove", (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === touchId) {
+                handleJoystick(touch);
+            }
+        }
+    });
+
+    function endJoystick(e) {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === touchId) {
+                touchId = null;
+                mobileInput.x = 0;
+                mobileInput.z = 0;
+                knob.style.transform = `translate(0px, 0px)`;
+            }
+        }
+    }
+
+    zone.addEventListener("touchend", endJoystick);
+    zone.addEventListener("touchcancel", endJoystick);
+
+    function handleJoystick(touch) {
+        const centerX = zoneRect.left + zoneRect.width / 2;
+        const centerY = zoneRect.top + zoneRect.height / 2;
+        let dx = touch.clientX - centerX;
+        let dz = touch.clientY - centerY;
+        const distance = Math.hypot(dx, dz);
+        const maxRadius = 45;
+
+        if (distance > maxRadius) {
+            dx = (dx / distance) * maxRadius;
+            dz = (dz / distance) * maxRadius;
+        }
+
+        knob.style.transform = `translate(${dx}px, ${dz}px)`;
+        mobileInput.x = dx / maxRadius;
+        mobileInput.z = dz / maxRadius;
+    }
+
+    document.getElementById("jumpBtn").addEventListener("touchstart", () => {
+        if (isGrounded && playerHealth > 0) {
+            velocityY = jumpPower;
+            isGrounded = false;
+        }
+    });
+
+    document.getElementById("shootBtn").addEventListener("touchstart", () => {
+        shootTarget();
+    });
+
+    document.getElementById("reloadBtn").addEventListener("touchstart", () => {
+        if (playerHealth <= 1) {
+            respawnPlayer();
+        } else {
+            startReload();
+        }
+    });
+}
+
+function respawnPlayer() {
+    playerHealth = 100;
+    monsterKills = 0;
+    reserveAmmo = 200;
+    magazineAmmo = 20;
+    camera.position.set(0, getTerrainHeight(0, 0) + 2, 0);
+    velocityY = 0;
+    isGrounded = false;
+    updateGameHud();
+    showShotMessage('重新出發！');
+}
+
+function resumeGame() {
+    if (!isPaused) return;
+    isPaused = false;
+    document.getElementById('pauseOverlay').style.display = 'none';
+    document.getElementById("settings").style.display = "none";
+    if (!isMobile) document.body.requestPointerLock();
+}
+
+document.getElementById('resumeButton').addEventListener('click', resumeGame);
+
+document.addEventListener('keydown', function(event) {
+    const key = event.key.toLowerCase();
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        if (isPaused) {
+            resumeGame();
+        } else {
+            isPaused = true;
+            document.getElementById('pauseOverlay').style.display = 'flex';
+            keys.w = keys.a = keys.s = keys.d = keys.shift = false;
+            if (!isMobile && document.pointerLockElement) document.exitPointerLock();
+        }
+        return;
+    }
+
+    if (isPaused) return;
+
+    if (key === 'w') keys.w = true;
+    if (key === 'a') keys.a = true;
+    if (key === 's') keys.s = true;
+    if (key === 'd') keys.d = true;
+    if (event.key === 'Shift') keys.shift = true;
+
+    if (key === 'r') {
+        if (playerHealth <= 1) {
+            respawnPlayer();
+        } else {
+            startReload();
+        }
+    }
+
+    if (event.code === 'Space' && playerHealth > 0) {
+        event.preventDefault();
+        if (isGrounded) {
+            velocityY = jumpPower;
+            isGrounded = false;
+        }
+    }
+});
+
+document.addEventListener('keyup', function(event) {
+    const key = event.key.toLowerCase();
+    if (key === 'w') keys.w = false;
+    if (key === 'a') keys.a = false;
+    if (key === 's') keys.s = false;
+    if (key === 'd') keys.d = false;
+    if (event.key === 'Shift') keys.shift = false;
+});
+
+let yaw = 0;
+let pitch = 0;
+
+// 滑鼠與手機觸控轉動視角
+if (isMobile) {
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let lookingTouchId = null;
+
+    document.addEventListener("touchstart", (e) => {
+        for (let touch of e.changedTouches) {
+            // 如果觸控點在畫面右半邊且不是按鈕，則用來轉動視角
+            if (touch.clientX > window.innerWidth / 2 && lookingTouchId === null) {
+                lookingTouchId = touch.identifier;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+            }
+        }
+    });
+
+    document.addEventListener("touchmove", (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === lookingTouchId) {
+                const dx = touch.clientX - lastTouchX;
+                const dy = touch.clientY - lastTouchY;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+
+                const Sensitive = document.getElementById("Sensitive");
+                const sensVal = Sensitive.value * 1.5;
+
+                if (document.getElementById("operation").checked == false) {
+                    yaw -= dx * sensVal;
+                    pitch -= dy * sensVal;
+                } else {
+                    yaw += dx * sensVal;
+                    pitch += dy * sensVal;
+                }
+                pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+            }
+        }
+    });
+
+    function endLook(e) {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === lookingTouchId) {
+                lookingTouchId = null;
+            }
+        }
+    }
+    document.addEventListener("touchend", endLook);
+    document.addEventListener("touchcancel", endLook);
+} else {
+    document.addEventListener(
+        "mousemove",
+        function(event) {
+            const Sensitive = document.getElementById("Sensitive");
+            if (document.pointerLockElement !== document.body) return;
+
+            if (document.getElementById("operation").checked == false) {
+                yaw -= event.movementX * Sensitive.value;
+                pitch -= event.movementY * Sensitive.value;
+            } else {
+                yaw += event.movementX * Sensitive.value;
+                pitch += event.movementY * Sensitive.value;            
+            }
+            pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+        }
+    );
+}
+
+let speed = 0.1;
+const gravity = 0.015;
+const jumpPower = 0.28;
+
+let velocityY = 0;
+let isGrounded = false;
+
+function movePlayer() {
+    let moveX = 0;
+    let moveZ = 0;
+    const currentSpeed = keys.shift ? 0.3 : speed;
+
+    if (isMobile) {
+        // 手機搖桿方向對應
+        moveX += (-Math.sin(yaw) * mobileInput.z + Math.cos(yaw) * mobileInput.x) * speed * 1.5;
+        moveZ += (-Math.cos(yaw) * mobileInput.z - Math.sin(yaw) * mobileInput.x) * speed * 1.5;
+    } else {
+        if (keys.w) {
+            moveX -= Math.sin(yaw) * currentSpeed;
+            moveZ -= Math.cos(yaw) * currentSpeed;
+        }
+        if (keys.s) {
+            moveX += Math.sin(yaw) * currentSpeed;
+            moveZ += Math.cos(yaw) * currentSpeed;
+        }
+        if (keys.a) {
+            moveX -= Math.cos(yaw) * currentSpeed;
+            moveZ += Math.sin(yaw) * currentSpeed;
+        }
+        if (keys.d) {
+            moveX += Math.cos(yaw) * currentSpeed;
+            moveZ -= Math.sin(yaw) * currentSpeed;
+        }
+    }
+
+    const playerHeight = 2;
+    const feetY = camera.position.y - playerHeight;
+    const maxStep = blockSize;
+
+    const tryX = camera.position.x + moveX;
+    const heightX = getTerrainHeight(tryX, camera.position.z);
+    if (heightX <= feetY + maxStep) camera.position.x = tryX;
+
+    const tryZ = camera.position.z + moveZ;
+    const heightZ = getTerrainHeight(camera.position.x, tryZ);
+    if (heightZ <= feetY + maxStep) camera.position.z = tryZ;
+
+    velocityY -= gravity;
+    camera.position.y += velocityY;
+
+    const groundHeight = getTerrainHeight(camera.position.x, camera.position.z);
+    const groundY = groundHeight + playerHeight;
+
+    if (camera.position.y <= groundY) {
+        camera.position.y = groundY;
+        velocityY = 0;
+        isGrounded = true;
+    } else {
+        isGrounded = false;
+    }
+}
+
+function updateCamera() {
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
+}
+
+function updateCoordinates() {
+    const coords = document.getElementById("coords");
+    coords.textContent =
+        `X: ${camera.position.x.toFixed(1)} | ` +
+        `Y: ${camera.position.y.toFixed(1)} | ` +
+        `Z: ${camera.position.z.toFixed(1)}`;
+}
+
+const gameClock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = Math.min(gameClock.getDelta(), 0.05);
+
+    if (!isPaused) {
+        if (playerHealth > 0) {
+            movePlayer();
+        }
+
+        updateCamera();
+        updateCoordinates();
+        updateChunks();
+        updateMonsters(delta);
+        updateEnemyBullets(delta);
+        updateWeapon(delta);
+        updateReload(delta);
+    }
+
+    renderer.render(scene, camera);
+    stats.update();
+}
+
+animate();
+updateGameHud();
+
+window.addEventListener(
+    "resize",
+    function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+);
+}
+</script>
+
+</body>
+
+</html>

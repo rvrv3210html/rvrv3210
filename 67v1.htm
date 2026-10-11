@@ -3,41 +3,51 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>3d_Three.js</title>
+    <title>3d射擊遊戲v2</title>
 
     <style>
-        body {
+        body, html {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            touch-action: none;
+            background-color: #87ceeb;
         }
-        b{
-          position: fixed;
-          left: 50%;
+        b {
+            position: fixed;
+            left: 50%;
         }
-        input{
-              position: fixed;
-              left: 50%;
+        input {
+            position: fixed;
+            left: 50%;
         }
-        #start {
+        h2{
+            left: 50%;
+            /* top: 50%; */
+        }
+        #page {
             position: fixed;
             left: 50%;
             top: 50%;
-
             transform: translate(-50%, -50%);
-
+            color: #ff0000;
+            animation: rainbow 5s linear infinite;    
+        }
+        #start{
             padding: 20px 40px;
-
             font-size: 24px;
-
             cursor: pointer;
-
             z-index: 10;
         }
-        div{
+        /* 避免影響其他特定介面 div */
+        body > div:not(#play):not(#page):not(#settings):not(#mobileControls) {
             position: fixed;
             left: 100%;
         }
         #crosshair {
+            position: fixed;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
@@ -49,6 +59,7 @@
             position: fixed;
             left: 50%;
             top: 12px;
+            transform: translateX(-50%);
             color: white;
             background: rgba(0, 0, 0, 0.45);
             padding: 8px 10px;
@@ -81,28 +92,107 @@
             pointer-events: none;
         }
         #pauseOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-}
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-#resumeButton {
-    padding: 12px 28px;
-    font-size: 20px;
-    cursor: pointer;
-}
+        #resumeButton {
+            padding: 12px 28px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* 手機控制按鈕與搖桿樣式 */
+        #mobileControls {
+            display: none;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 15;
+            left: 0 !important;
+        }
+        #joystickZone {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        #joystickKnob {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .mobileBtn {
+            position: absolute;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #jumpBtn { right: 30px; bottom: 130px; width: 75px; height: 75px; border-radius: 50%; }
+        #shootBtn { right: 120px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; background: rgba(200, 50, 50, 0.6); }
+        #reloadBtn { right: 30px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; }
+        @keyframes rainbow{
+            0%{
+                color: #ff0000;
+            }
+            10%{
+                color: #ffaa00;                
+            }
+            20%{
+                color: #eeff00;                
+            }
+            40%{
+                color: #00ff00;                
+
+            }
+            50%{
+                color: #00ff99;
+            }
+            70%{
+                color: #00ffff;
+            }
+            80%{
+                color: #0000ff;
+            }            
+            1000%{
+                color:#ea00ff ;
+            }
+
+        }
     </style>
 </head>
 
 <body>
 <div id="page">
+    <h1>3d射擊遊戲 v2(支持手機板)</h1>
    <button id="start">
     開始新世界
    </button>
@@ -110,10 +200,10 @@
 <div id="settings">
    <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;靈敏度</b>
    <input type="range" min="0.001" max="0.01" step="0.001"  value="0.002" id="Sensitive">
-   <hr><hr>
+   <br><br>
     <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;世界最高度</b>
    <input type="number" min="10" value="10" id="tallest">
-   <hr><hr>
+   <br><br>
    <b>反向操作</b>
    <br>
    <input type="checkbox" id="operation">
@@ -130,6 +220,15 @@
         <p>按 Esc 或點擊按鈕繼續</p>
         <button id="resumeButton">繼續遊戲</button>
     </div>
+    <!-- 手機控制介面 -->
+    <div id="mobileControls">
+        <div id="joystickZone">
+            <div id="joystickKnob"></div>
+        </div>
+        <div id="jumpBtn" class="mobileBtn">跳躍</div>
+        <div id="shootBtn" class="mobileBtn">射擊</div>
+        <div id="reloadBtn" class="mobileBtn">裝填</div>
+    </div>
 </div>
 <script type="importmap">
     {
@@ -143,16 +242,22 @@
 document.getElementById("play").style.display = "none";
 
 const startButton = document.getElementById("start");
+const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
 startButton.addEventListener(
     "click",
     function() {
         document.getElementById("play").style.display = "block";
-        document.body.requestPointerLock();
         document.getElementById("settings").style.display = "none";
         startButton.style.display = "none";
         Sensitive.style.display = "none";
         document.getElementById("page").style.display = "none";
+
+        if (isMobile) {
+            document.getElementById("mobileControls").style.display = "block";
+        } else {
+            document.body.requestPointerLock();
+        }
         play();
     }
 );
@@ -243,7 +348,7 @@ function updateGameHud() {
         `彈匣：${magazineAmmo}/${magazineSize} | 備彈：${reserveAmmo}<br>` +
         `剩餘約 ${boxesLeft}/10 盒 | ` +
         (isReloading ? '裝填中...' :
-         playerHealth > 1 ? '左鍵射擊．R 裝填．Esc 暫停' : '你被打敗了！按 R 重生');
+         playerHealth > 1 ? (isMobile ? '虛擬搖桿移動' : '左鍵射擊．R 裝填．Esc 暫停') : '你被打敗了！點擊裝填鈕重生');
 }
 
 function startReload() {
@@ -363,14 +468,14 @@ function removeMonster(monster) {
 
 function shootTarget() {
     if (
-        document.pointerLockElement !== document.body ||
+        (!isMobile && document.pointerLockElement !== document.body) ||
         playerHealth <= 0 ||
         isPaused ||
         isReloading
     ) return;
 
     if (magazineAmmo <= 0) {
-        showShotMessage("沒子彈！按 R 裝填");
+        showShotMessage("沒子彈！請裝填");
         return;
     }
 
@@ -429,21 +534,16 @@ function updateMonsters(delta) {
         const dx = camera.position.x - group.position.x;
         const dz = camera.position.z - group.position.z;
         const distance = Math.hypot(dx, dz);
-
-        // 怪物移動速度 (0.08)
         const monsterSpeed = 0.08;
 
-        // 1. 普通怪物追逐玩家
         if (!monster.isGunner && distance > 2.2 && distance < 38) {
-            const step = monsterSpeed * delta * 60; // 配合每幀耗時調整移動步長
-
+            const step = monsterSpeed * delta * 60;
             const nextX = group.position.x + dx / distance * step;
             const nextZ = group.position.z + dz / distance * step;
 
             const currentGround = getTerrainHeight(group.position.x, group.position.z);
             const nextGround = getTerrainHeight(nextX, nextZ);
 
-            // 碰到牆壁/高低差過大時抵銷移動
             if (nextGround <= currentGround + blockSize) {
                 group.position.x = nextX;
                 group.position.z = nextZ;
@@ -453,12 +553,10 @@ function updateMonsters(delta) {
             group.rotation.y = Math.atan2(dx, dz) + Math.PI;
         }
 
-        // 2. 配槍怪物移動與射擊：距離大於 12 時會靠近玩家，小於 12 則停下或保持距離射擊
         if (monster.isGunner && distance < 38) {
             group.rotation.y = Math.atan2(dx, dz) + Math.PI;
 
             if (distance > 12) {
-                // 距離大於 12 單位時會朝玩家移動
                 const step = monsterSpeed * delta * 60;
                 const nextX = group.position.x + dx / distance * step;
                 const nextZ = group.position.z + dz / distance * step;
@@ -466,7 +564,6 @@ function updateMonsters(delta) {
                 const currentGround = getTerrainHeight(group.position.x, group.position.z);
                 const nextGround = getTerrainHeight(nextX, nextZ);
 
-                // 碰到牆壁/高差過大時抵銷移動
                 if (nextGround <= currentGround + blockSize) {
                     group.position.x = nextX;
                     group.position.z = nextZ;
@@ -474,10 +571,8 @@ function updateMonsters(delta) {
                 }
             }
 
-            // 在 30 單位內朝玩家射擊
             if (distance < 30) {
                 monster.attackCooldown -= delta;
-
                 if (monster.attackCooldown <= 0 && playerHealth > 0) {
                     fireEnemyBullet(monster);
                     monster.attackCooldown = 1.6;
@@ -485,21 +580,13 @@ function updateMonsters(delta) {
             }
         }
 
-        // 3. 普通怪物近身攻擊
         if (!monster.isGunner && distance <= 2.2) {
             monster.attackCooldown -= delta;
-
             if (monster.attackCooldown <= 0 && playerHealth > 0) {
                 playerHealth = Math.max(0, playerHealth - 8);
                 monster.attackCooldown = 1.2;
-
                 updateGameHud();
-
-                showShotMessage(
-                    playerHealth > 0
-                        ? "怪物攻擊了你！"
-                        : "你被打敗了！按 R 重生"
-                );
+                showShotMessage(playerHealth > 0 ? "怪物攻擊了你！" : "你被打敗了！按 R 重生");
             }
         }
     }
@@ -712,6 +799,100 @@ function updateChunks() {
 updateChunks();
 
 const keys = { w: false, a: false, s: false, d: false, shift: false };
+let mobileInput = { x: 0, z: 0 };
+
+// ==========================================
+// 【搖桿方向的程式】手機虛擬搖桿觸控與移動控制邏輯
+// ==========================================
+if (isMobile) {
+    const zone = document.getElementById("joystickZone");
+    const knob = document.getElementById("joystickKnob");
+    let touchId = null;
+    let zoneRect = null;
+
+    zone.addEventListener("touchstart", (e) => {
+        if (touchId !== null) return;
+        const touch = e.changedTouches[0];
+        touchId = touch.identifier;
+        zoneRect = zone.getBoundingClientRect();
+        handleJoystick(touch);
+    });
+
+    zone.addEventListener("touchmove", (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === touchId) {
+                handleJoystick(touch);
+            }
+        }
+    });
+
+    function endJoystick(e) {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === touchId) {
+                touchId = null;
+                mobileInput.x = 0;
+                mobileInput.z = 0;
+                knob.style.transform = `translate(0px, 0px)`;
+            }
+        }
+    }
+
+    zone.addEventListener("touchend", endJoystick);
+    zone.addEventListener("touchcancel", endJoystick);
+
+    function handleJoystick(touch) {
+        const centerX = zoneRect.left + zoneRect.width / 2;
+        const centerY = zoneRect.top + zoneRect.height / 2;
+        let dx = touch.clientX - centerX;
+        let dz = touch.clientY - centerY;
+        const distance = Math.hypot(dx, dz);
+        const maxRadius = 45;
+
+        if (distance > maxRadius) {
+            dx = (dx / distance) * maxRadius;
+            dz = (dz / distance) * maxRadius;
+        }
+
+        knob.style.transform = `translate(${dx}px, ${dz}px)`;
+        // 搖桿正規化輸入
+        mobileInput.x = dx / maxRadius;
+        mobileInput.z = dz / maxRadius;
+    }
+
+    document.getElementById("jumpBtn").addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (isGrounded && playerHealth > 0) {
+            velocityY = jumpPower;
+            isGrounded = false;
+        }
+    });
+
+    document.getElementById("shootBtn").addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        shootTarget();
+    });
+
+    document.getElementById("reloadBtn").addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (playerHealth <= 1) {
+            respawnPlayer();
+        } else {
+            startReload();
+        }
+    });
+}
+
+function respawnPlayer() {
+    playerHealth = 100;
+    monsterKills = 0;
+    reserveAmmo = 180;
+    magazineAmmo = 20;
+    camera.position.set(0, getTerrainHeight(0, 0) + 2, 0);
+    velocityY = 0;
+    isGrounded = false;
+    updateGameHud();
+    showShotMessage('重新出發！');
+}
 
 function resumeGame() {
     if (!isPaused) return;
@@ -719,7 +900,7 @@ function resumeGame() {
     document.getElementById('pauseOverlay').style.display = 'none';
     document.getElementById("settings").style.display = "block";
     document.getElementById("settings").style.display = "none";
-    document.body.requestPointerLock();
+    if (!isMobile) document.body.requestPointerLock();
 }
 
 document.getElementById('resumeButton').addEventListener('click', resumeGame);
@@ -735,7 +916,7 @@ document.addEventListener('keydown', function(event) {
             isPaused = true;
             document.getElementById('pauseOverlay').style.display = 'flex';
             keys.w = keys.a = keys.s = keys.d = keys.shift = false;
-            if (document.pointerLockElement) document.exitPointerLock();
+            if (!isMobile && document.pointerLockElement) document.exitPointerLock();
         }
         return;
     }
@@ -750,15 +931,7 @@ document.addEventListener('keydown', function(event) {
 
     if (key === 'r') {
         if (playerHealth <= 1) {
-            playerHealth = 100;
-            monsterKills = 0
-            reserveAmmo = 180
-            magazineAmmo = 20
-            camera.position.set(0, getTerrainHeight(0, 0) + 2, 0);
-            velocityY = 0;
-            isGrounded = false;
-            updateGameHud();
-            showShotMessage('重新出發！');
+            respawnPlayer();
         } else {
             startReload();
         }
@@ -785,25 +958,74 @@ document.addEventListener('keyup', function(event) {
 let yaw = 0;
 let pitch = 0;
 
-document.addEventListener(
-    "mousemove",
-    function(event) {
-        const Sensitive = document.getElementById("Sensitive");
-        if (document.pointerLockElement !== document.body) {
-            return;
-        }
+if (isMobile) {
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let lookingTouchId = null;
 
-        // 修正：使用加號讓滑鼠轉動方向正確
-        if(document.getElementById("operation").checked == false){
-            yaw -= event.movementX * Sensitive.value;
-            pitch -= event.movementY * Sensitive.value;
-        }else{
-            yaw += event.movementX * Sensitive.value;
-            pitch += event.movementY * Sensitive.value;            
+    document.addEventListener("touchstart", (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.clientX > window.innerWidth / 2 && lookingTouchId === null) {
+                if (touch.clientY > window.innerHeight - 220 && touch.clientX > window.innerWidth - 220) continue;
+                lookingTouchId = touch.identifier;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+            }
         }
-        pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+    });
+
+    document.addEventListener("touchmove", (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === lookingTouchId) {
+                const dx = touch.clientX - lastTouchX;
+                const dy = touch.clientY - lastTouchY;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+
+                const Sensitive = document.getElementById("Sensitive");
+                const sensVal = Sensitive.value * 1.5;
+
+                if (document.getElementById("operation").checked == false) {
+                    yaw -= dx * sensVal;
+                    pitch -= dy * sensVal;
+                } else {
+                    yaw += dx * sensVal;
+                    pitch += dy * sensVal;            
+                }
+                pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+            }
+        }
+    });
+
+    function endLook(e) {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === lookingTouchId) {
+                lookingTouchId = null;
+            }
+        }
     }
-);
+    document.addEventListener("touchend", endLook);
+    document.addEventListener("touchcancel", endLook);
+} else {
+    document.addEventListener(
+        "mousemove",
+        function(event) {
+            const Sensitive = document.getElementById("Sensitive");
+            if (document.pointerLockElement !== document.body) {
+                return;
+            }
+
+            if(document.getElementById("operation").checked == false){
+                yaw -= event.movementX * Sensitive.value;
+                pitch -= event.movementY * Sensitive.value;
+            }else{
+                yaw += event.movementX * Sensitive.value;
+                pitch += event.movementY * Sensitive.value;            
+            }
+            pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+        }
+    );
+}
 
 let speed = 0.1;
 const gravity = 0.015;
@@ -817,24 +1039,32 @@ function movePlayer() {
     let moveZ = 0;
     const currentSpeed = keys.shift ? 0.3 : speed;
 
-    if (keys.w) {
-        moveX -= Math.sin(yaw) * currentSpeed;
-        moveZ -= Math.cos(yaw) * currentSpeed;
-    }
+    if (isMobile) {
+        // ==========================================
+        // 【搖桿方向的程式】手機搖桿與攝影機角度運算
+        // ==========================================
+        moveX -= (Math.sin(yaw) * mobileInput.z - Math.cos(yaw) * mobileInput.x) * speed * 1.5;
+        moveZ += (Math.cos(yaw) * mobileInput.z + Math.sin(yaw) * mobileInput.x) * speed * 1.5;
+    } else {
+        if (keys.w) {
+            moveX -= Math.sin(yaw) * currentSpeed;
+            moveZ -= Math.cos(yaw) * currentSpeed;
+        }
 
-    if (keys.s) {
-        moveX += Math.sin(yaw) * currentSpeed;
-        moveZ += Math.cos(yaw) * currentSpeed;
-    }
+        if (keys.s) {
+            moveX += Math.sin(yaw) * currentSpeed;
+            moveZ += Math.cos(yaw) * currentSpeed;
+        }
 
-    if (keys.a) {
-        moveX -= Math.cos(yaw) * currentSpeed;
-        moveZ += Math.sin(yaw) * currentSpeed;
-    }
+        if (keys.a) {
+            moveX -= Math.cos(yaw) * currentSpeed;
+            moveZ += Math.sin(yaw) * currentSpeed;
+        }
 
-    if (keys.d) {
-        moveX += Math.cos(yaw) * currentSpeed;
-        moveZ -= Math.sin(yaw) * currentSpeed;
+        if (keys.d) {
+            moveX += Math.cos(yaw) * currentSpeed;
+            moveZ -= Math.sin(yaw) * currentSpeed;
+        }
     }
 
     const playerHeight = 2;
@@ -889,8 +1119,8 @@ function animate() {
             movePlayer();
         }
 
-        updateCamera();        // 修正：更新攝影機視角
-        updateCoordinates();   // 修正：更新上方座標顯示
+        updateCamera();        
+        updateCoordinates();   
         updateChunks();
         updateMonsters(delta);
         updateEnemyBullets(delta);
@@ -914,7 +1144,6 @@ window.addEventListener(
     }
 );
 }
-//if (key === 'r') {
 </script>
 
 </body>

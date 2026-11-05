@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rvrv3210小工具</title>
+    <style>
+        /* 將背景色獨立套用到 body */
+        body {
+            background-color: #1abed4;
+            font-family: sans-serif;
+            margin: 20px;
+            text-align:center;
+        }
 
+        /* 預設隱藏筆記區塊 */
+        #notes {
+            display: none;
+        }
+
+        /* textarea 樣式語法和給予適當大小 */
+        textarea {
+            background-color: #fff;
+            resize: none;
+            width: 100%;
+            height: 270px;
+        }
+        
+        /* 計算機主體容器 */
+        #Computer2 {
+            max-width: 450px;
+            margin: 20px auto;
+            background-color: #2c3e50;
+            padding: 15px;
+            border-radius: 12px;
+                    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        /* 顯示框：跨滿所有網格欄位 */
+        input#display {
+            grid-column: 1 / -1; /* 讓螢幕直接佔滿整行 */
+            width: 100%;
+            height: 65px;
+            font-size: clamp(20px, 5vw, 32px);
+            text-align: right;
+            padding: 5px 15px;
+            box-sizing: border-box;
+            background-color: #1e1e1e;
+            color: #00ffcc;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        /* 鍵盤網格：改為更直覺的 5 欄配置，或者維持您的 7 欄並用網格定位 */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); /* 調整為 6 欄或 5 欄，排版更緊湊 */
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #downloadSh button{ 
+            font-size: 25px;
+            color: #644545;
+            background: linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0000ff,#aa00aa);
+            border-radius: 20px;   
+            transition: 1s;
+            text-align:center;
+            position: fixed;   /* 關鍵：相對於瀏覽器視窗定位 */
+            bottom: 20px;      /* 距離視窗底部 20px */
+            right: 20px;    /*   距離視窗右側 20px */
+            z-index: 9999;     /* 確保層級最高，不會被其他元素遮住 */
+        }
+        #downloadSh button:hover{
+            color: #000;         
+        }
+        button:active{
+            background-color: #bcda14;
+            transform: scale(0.95);        
+        }
+        /* 按鈕基本樣式與互動回饋 */
+        .keypad button {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            font-size: clamp(16px, 4vw, 22px);
+            cursor: pointer;
+            background-color: #34495e;
+            color: #fff;
+            border: 1px solid #4e6d8c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: background-color 0.1s, transform 0.1s;
+        }
+
+        /* 滑鼠懸停效果 */
+        .keypad button:hover {
+            background-color: #4e6d8c;
+        }
+
+        /* 按下時的點擊回饋 (Active) */
+        .keypad button:active {
+            background-color: #1abc9c;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- 首頁區塊 -->
+    <div id="index">
+        <h1>首頁</h1><hr>
+    </div>
+    <!-- 筆記區塊 -->
+    <div id="notes">
+        <h1>筆記</h1><hr>
+        <textarea id="tnotes"></textarea><br><br>
+        <button onclick="downloadnt()">下載筆記</button>
+        <button onclick="showIndex()">返回首頁</button>
+    </div>
+    <div id="Computer">
+    <h1>計算機</h1><hr>
+    <div id="Computer2">
+        <div class="keypad">
+            <input type="text" placeholder="0" id="display" inputmode="none">
+            
+            <!-- 第一列 -->
+            <button onclick="press('1')">1</button> 
+            <button onclick="press('2')">2</button> 
+            <button onclick="press('3')">3</button> 
+            <button onclick="press('+')">+</button>
+            <button onclick="pressCustomRoot()">ⁿ√x</button>
+            <button onclick="press('e')">e</button>
+            <!-- 第二列 -->
+            <button onclick="press('4')">4</button> 
+            <button onclick="press('5')">5</button> 
+            <button onclick="press('6')">6</button> 
+            <button onclick="press('-')">-</button>
+            <button onclick="press('**')">xʸ</button>
+            <button onclick="toggleSignAtCursor()">±</button>
+    
+            <!-- 第三列 -->
+            <button onclick="press('7')">7</button> 
+            <button onclick="press('8')">8</button> 
+            <button onclick="press('9')">9</button> 
+            <button onclick="press('*')">×</button>
+            <button onclick="press('.')">.</button> 
+            <button onclick="press('0')">0</button> 
+
+            <!-- 第四列 -->
+            <button onclick="backspace()">⌫</button> 
+            <button onclick="press('/')">÷</button>
+            <button onclick="press('(')">(</button>
+            <button onclick="press(')')">)</button>
+            <button onclick="clearAll()">C</button> 
+            <button onclick="percent()">%</button> 
+
+            <!-- 底部功能列跨欄 -->
+            <button onclick="ster()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #27ae60;">=</button> 
+            <button onclick="teaching()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #2980b9;">教學</button>
+            <button onclick="showIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
+            <button disabled style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>
+            <button onclick="showNotes()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">筆記</button>
+            <button onclick="bclock()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">計時器</button>
+            
+        </div>
+    </div></div>
+    <div id="clock">
+        <h1>計時器</h1><hr>
+    </div>
+    <div id="new">
+        <button id="bnotes" onclick="showNotes()">筆記</button>
+        <button onclick="showComputer()" id="bComputer">計算機</button>
+        <button onclick="bclock()" id="bComputer">計時器</button>
+    </div>
+    <div id="downloadSh">
+        <button onclick="downloadSh()">下載無網網頁檔</button>
+    </div>
+    <!--：加入切換頁面的 JavaScript -->
+    <script>
+        const inputField = document.getElementById('display');
+        const noteArea = document.getElementById('tnotes');
+        function showNotes() {
+            document.getElementById('index').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('notes').style.display = 'block';
+            document.getElementById('new').style.display = 'block';
+            document.getElementById('clock').style.display = 'none';
+        }
+
+        function showIndex() {
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('index').style.display = 'block';
+            document.getElementById('new').style.display = 'block';
+            document.getElementById('clock').style.display = 'none';
+        }
+        function showComputer(){
+            document.getElementById('index').style.display = 'none';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'block';  
+            document.getElementById('new').style.display = 'none';          
+            document.getElementById('clock').style.display = 'none';
+        }
+        function downloadSh() {
+            //複製一份完整的網頁 DOM，避免影響當前畫面的顯示
+            const cloneDoc = document.documentElement.cloneNode(true);
+
+            // 移除下載按鈕本身（或者任何不需要的元素）
+            // 不想讓下載按鈕出現在下載後的檔案中：
+            const unwantedDiv = cloneDoc.querySelector('#downloadSh');
+            if (unwantedDiv) {
+                unwantedDiv.remove();
+            }
+
+            // 如果還有其他不需要的元素或 ID，也可以用同樣的方式移除：
+            // const otherElement = cloneDoc.querySelector('#other-id');
+            // if (otherElement) otherElement.remove();
+
+            //取得清理後的完整 HTML 內容
+            const htmlContent = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
+    
+            //執行下載
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'rvrv3210小工具.html'; // 下載後的檔案名稱
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        // 下載筆記純文字檔功能
+        function downloadnt() {
+            // 取得筆記 textarea 內的文字
+            const note = noteArea.value;
+            
+            if (!note.trim()) {
+                alert("筆記無文字喔！");
+                return;
+            }
+    
+            // 建立 Blob 物件（改用 text/plain 格式）
+            const blob = new Blob([note], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        function bclock(){
+            alert("未更新")
+        }
+        //計算機
+        function insertAtCursor(text) {
+            const start = inputField.selectionStart ?? inputField.value.length;
+            const end = inputField.selectionEnd ?? inputField.value.length;
+            const val = inputField.value;
+
+            inputField.value = val.slice(0, start) + text + val.slice(end);
+            const newPos = start + text.length;
+            inputField.setSelectionRange(newPos, newPos);
+            inputField.focus();
+        }
+
+        function press(value) {
+            insertAtCursor(value);
+        }
+
+        function backspace() {
+            const start = inputField.selectionStart;
+            const end = inputField.selectionEnd;
+            if (start === null) return;
+
+            const val = inputField.value;
+            if (start !== end) {
+                inputField.value = val.slice(0, start) + val.slice(end);
+                inputField.setSelectionRange(start, start);
+            } else if (start > 0) {
+                inputField.value = val.slice(0, start - 1) + val.slice(start);
+                inputField.setSelectionRange(start - 1, start - 1);
+            }
+            inputField.focus();
+        }
+
+        function clearAll() {
+            inputField.value = '';
+            inputField.focus();
+        }
+
+        function pressCustomRoot() {
+            insertAtCursor('√(');
+        }
+
+        function toggleSignAtCursor() {
+            let val = inputField.value;
+            let pos = inputField.selectionStart ?? val.length;
+
+            const leftPart = val.slice(0, pos);
+            const rightPart = val.slice(pos);
+
+            const parenNegMatch = leftPart.match(/\(-(\d+\.?\d*)$/);
+            if (parenNegMatch && rightPart.startsWith(')')) {
+                const num = parenNegMatch[1];
+                const newLeft = leftPart.slice(0, leftPart.length - parenNegMatch[0].length) + num;
+                const newRight = rightPart.slice(1);
+                inputField.value = newLeft + newRight;
+                const newPos = newLeft.length;
+                inputField.setSelectionRange(newPos, newPos);
+                inputField.focus();
+                return;
+            }
+
+            const numMatch = leftPart.match(/(\d+\.?\d*)$/);
+            if (numMatch) {
+                const num = numMatch[1];
+                const newLeft = leftPart.slice(0, leftPart.length - num.length) + `(-${num})`;
+                inputField.value = newLeft + rightPart;
+                const newPos = newLeft.length - 1; 
+                inputField.setSelectionRange(newPos, newPos);
+                inputField.focus();
+                return;
+            }
+
+            insertAtCursor('(-');
+        }
+
+        function parseExpression(expr) {
+            let parsed = expr.replace(/(\d+)?√\(([^)]+)\)/g, (match, root, num) => {
+                const r = root ? root : '2';
+                return `((${num})**(1/${r}))`;
+            });
+            return parsed;
+        }
+
+        function ster() {
+            if (!inputField.value) return;
+            try {
+                const parsedExpr = parseExpression(inputField.value);
+                const result = new Function(`return ${parsedExpr}`)();
+                if (result === undefined || !isFinite(result)) {
+                    inputField.value = 'Error';
+                } else {
+                    inputField.value = result;
+                }
+            } catch (error) {
+                inputField.value = 'Error';
+            }
+        }
+
+        function percent() {
+            if (!inputField.value) return;
+            try {
+                const parsedExpr = parseExpression(inputField.value);
+                const result = new Function(`return ${parsedExpr}`)();
+                if (isFinite(result)) {
+                    inputField.value = result / 100;
+                } else {
+                    inputField.value = 'Error';
+                }
+            } catch {
+                inputField.value = 'Error';
+            }
+        }
+
+        function teaching() {
+            alert("進入教學模式囉");
+            alert("因為是js寫的，因此會稍不同。");
+            alert("按了xʸ，會出現**(這是正常現象，ʸ打在**後。)");
+            alert("要再數字後按了±(有效)，+變-,-變+。)");
+            alert("e的用法:科學記號");
+        }
+        showIndex()
+    </script>
+</body>
+</html>

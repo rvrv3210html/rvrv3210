@@ -79,6 +79,21 @@
         #downloadSh button:hover{
             color: #000;         
         }
+        #downloadSh2 button{ 
+            font-size: 25px;
+            color: #644545;
+            background: linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0000ff,#aa00aa);
+            border-radius: 20px;   
+            transition: 1s;
+            text-align:center;
+            position: fixed;   /* 關鍵：相對於瀏覽器視窗定位 */
+            bottom: 20px;      /* 距離視窗底部 20px */
+            left: 0px;    /*   距離視窗左側 10px */
+            z-index: 9999;     /* 確保層級最高，不會被其他元素遮住 */
+        }
+        #downloadSh2 button:hover{
+            color: #000;         
+        }
         button:active{
             background-color: #bcda14;
             transform: scale(0.95);        
@@ -188,8 +203,8 @@
     <div id="downloadSh">
         <button onclick="downloadSh()">下載無網網頁檔</button>
     </div>
-    <div id="downloadSh" style="right: 10px; ">
-        <button onclick="downloadSh()">下載無網測試檔(.exe)</button>
+    <div id="downloadSh2" style="right: 10px;">
+        <button onclick="downloadSh2()">下載無網測試檔(.exe)</button>
     </div>
     <!--：加入切換頁面的 JavaScript -->
     <script>

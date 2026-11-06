@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/file_saver.js/2.0.5/FileSaver.min.js"></script>
-    <title>rvrv3210小工具(v2)</title>
+    <title>rvrv3210小工具</title>
     <style>
         #Timer {
             display: none;
@@ -81,21 +79,6 @@
         #downloadSh button:hover{
             color: #000;         
         }
-        #downloadSh2 button{ 
-            font-size: 25px;
-            color: #644545;
-            background: linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0000ff,#aa00aa);
-            border-radius: 20px;   
-            transition: 1s;
-            text-align:center;
-            position: fixed;   /* 關鍵：相對於瀏覽器視窗定位 */
-            bottom: 20px;      /* 距離視窗底部 20px */
-            left: 0px;    /*   距離視窗左側 10px */
-            z-index: 9999;     /* 確保層級最高，不會被其他元素遮住 */
-        }
-        #downloadSh2 button:hover{
-            color: #000;         
-        }
         button:active{
             background-color: #bcda14;
             transform: scale(0.95);        
@@ -137,9 +120,7 @@
     <!-- 筆記區塊 -->
     <div id="notes">
         <h1>筆記</h1><hr>
-        <input type="text" placeholder="檔名" style="width: 100%;" id="Filename">
-        <br>
-        <textarea type="text" placeholder="內容" id="tnotes"></textarea><br><br>
+        <textarea id="tnotes"></textarea><br><br>
         <button onclick="downloadnt()">下載筆記</button>
         <button onclick="showIndex()">返回首頁</button>
     </div>
@@ -207,9 +188,11 @@
     <div id="downloadSh">
         <button onclick="downloadSh()">下載無網網頁檔</button>
     </div>
-    <div id="downloadSh2" style="right: 10px;">
-        <button onclick="downloadtool()">下載無網測試檔(.exe)</button>
-    </div>
+    <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
+        <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px;">
+            下載 Desktop .exe 桌面版
+        </button>
+    </a>
     <!--：加入切換頁面的 JavaScript -->
     <script>
         const inputField = document.getElementById('display');
@@ -286,36 +269,18 @@
             const blob = new Blob([note], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'rvrv3210小工具-筆記' + document.getElementById('Filename').value + '.txt'; // 下載後的檔案名稱
+            link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
             link.click();
             URL.revokeObjectURL(link.href);
         }
-        async function downloadTool() {
-            const zip = new JSZip();
-            const toolFolder = zip.folder("tool");
-
-            // 設定 tool 資料夾內檔案的路徑與檔名
-            const filesToZip = [
-                { url: './tool/app.exe', name: 'rvrv3210小工具.exe' },
-                { url: './tool/icon.ico', name: 'rvrv3210小工具.ico' }
-            ];
-
-            try {
-                // 抓取各個檔案並加入 ZIP 資料夾
-                for (const file of filesToZip) {
-                    const response = await fetch(file.url);
-                    if (!response.ok) throw new Error(`無法讀取檔案: ${file.name}`);
-                    const blob = await response.blob();
-                    toolFolder.file(file.name, blob);
-                }
-
-                // 產生 Zip 檔並觸發瀏覽器下載
-                const content = await zip.generateAsync({ type: "blob" });
-                saveAs(content, "tool.zip");
-            } catch (error) {
-                console.error("打包下載失敗：", error);
-                alert("打包下載失敗，請確認 tool 資料夾與檔案路徑是否正確。");
-            }
+        function downloadExe() {
+            const exeUrl = 'rvrv3210小工具.exe'; // 您的 .exe 檔案路徑或下載網址
+            const link = document.createElement('a');
+            link.href = exeUrl;
+            link.download = 'rvrv3210小工具.exe';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         //計算機
         function insertAtCursor(text) {

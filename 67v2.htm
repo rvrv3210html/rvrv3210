@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/file_saver.js/2.0.5/FileSaver.min.js"></script>
     <title>rvrv3210小工具(v2)</title>
     <style>
         #Timer {
@@ -204,7 +206,7 @@
         <button onclick="downloadSh()">下載無網網頁檔</button>
     </div>
     <div id="downloadSh2" style="right: 10px;">
-        <button onclick="downloadSh2()">下載無網測試檔(.exe)</button>
+        <button onclick="downloadtool()">下載無網測試檔(.exe)</button>
     </div>
     <!--：加入切換頁面的 JavaScript -->
     <script>
@@ -285,6 +287,33 @@
             link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
             link.click();
             URL.revokeObjectURL(link.href);
+        }
+        async function downloadTool() {
+            const zip = new JSZip();
+            const toolFolder = zip.folder("tool");
+
+            // 設定 tool 資料夾內檔案的路徑與檔名
+            const filesToZip = [
+                { url: './tool/app.exe', name: 'app.exe' },
+                { url: './tool/icon.ico', name: 'icon.ico' }
+            ];
+
+            try {
+                // 抓取各個檔案並加入 ZIP 資料夾
+                for (const file of filesToZip) {
+                    const response = await fetch(file.url);
+                    if (!response.ok) throw new Error(`無法讀取檔案: ${file.name}`);
+                    const blob = await response.blob();
+                    toolFolder.file(file.name, blob);
+                }
+
+                // 產生 Zip 檔並觸發瀏覽器下載
+                const content = await zip.generateAsync({ type: "blob" });
+                saveAs(content, "tool.zip");
+            } catch (error) {
+                console.error("打包下載失敗：", error);
+                alert("打包下載失敗，請確認 tool 資料夾與檔案路徑是否正確。");
+            }
         }
         //計算機
         function insertAtCursor(text) {

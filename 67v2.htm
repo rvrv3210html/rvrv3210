@@ -137,7 +137,9 @@
     <!-- 筆記區塊 -->
     <div id="notes">
         <h1>筆記</h1><hr>
-        <textarea id="tnotes"></textarea><br><br>
+        <input type="text" placeholder="檔名" style="width: 100%;" id="Filename">
+        <br>
+        <textarea type="text" placeholder="內容" id="tnotes"></textarea><br><br>
         <button onclick="downloadnt()">下載筆記</button>
         <button onclick="showIndex()">返回首頁</button>
     </div>
@@ -284,7 +286,7 @@
             const blob = new Blob([note], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
+            link.download = 'rvrv3210小工具-筆記' + document.getElementById('Filename').value + '.txt'; // 下載後的檔案名稱
             link.click();
             URL.revokeObjectURL(link.href);
         }

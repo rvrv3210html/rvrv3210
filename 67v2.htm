@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rvrv3210小工具</title>
+    <title>rvrv3210小工具(v2)</title>
     <style>
+        #Timer {
+            display: none;
+        }
         /* 將背景色獨立套用到 body */
         body {
             background-color: #1abed4;
@@ -112,7 +115,7 @@
 <body>
     <!-- 首頁區塊 -->
     <div id="index">
-        <h1>首頁</h1><hr>
+        <h1>首頁<t style="color: yellow;">(v2)</t></h1><hr>
     </div>
     <!-- 筆記區塊 -->
     <div id="notes">
@@ -164,17 +167,23 @@
             <button onclick="showIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
             <button disabled style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>
             <button onclick="showNotes()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">筆記</button>
-            <button onclick="bclock()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">計時器</button>
-            
+            <button onclick="showTimer()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">計時器</button>            
         </div>
     </div></div>
-    <div id="clock">
+    <!-- 計時器區塊 -->
+    <div id="Timer">
         <h1>計時器</h1><hr>
+        <div id="timerDisplay" style="font-size: clamp(30px, 8vw, 50px); font-family: monospace; margin: 20px 0; color: #fff; background: #222; padding: 20px; border-radius: 10px;">00:00:00</div>
+            <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
+            <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
+            <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button><br><br>
+            <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button>
+        </div>
     </div>
     <div id="new">
         <button id="bnotes" onclick="showNotes()">筆記</button>
         <button onclick="showComputer()" id="bComputer">計算機</button>
-        <button onclick="bclock()" id="bComputer">計時器</button>
+        <button onclick="showTimer()" id="bTimer">計時器(碼表)</button>
     </div>
     <div id="downloadSh">
         <button onclick="downloadSh()">下載無網網頁檔</button>
@@ -183,6 +192,9 @@
     <script>
         const inputField = document.getElementById('display');
         const noteArea = document.getElementById('tnotes');
+        const timerDisplay = document.getElementById('timerDisplay');
+        let timerInterval = null;
+        let totalSeconds = 0;
         function showNotes() {
             document.getElementById('index').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
@@ -194,9 +206,9 @@
         function showIndex() {
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
+            document.getElementById('Timer').style.display = 'none';
             document.getElementById('index').style.display = 'block';
             document.getElementById('new').style.display = 'block';
-            document.getElementById('clock').style.display = 'none';
         }
         function showComputer(){
             document.getElementById('index').style.display = 'none';
@@ -204,6 +216,13 @@
             document.getElementById('Computer').style.display = 'block';  
             document.getElementById('new').style.display = 'none';          
             document.getElementById('clock').style.display = 'none';
+        }
+        function showTimer() {
+            document.getElementById('index').style.display = 'none';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('Timer').style.display = 'block';
+            document.getElementById('new').style.display = 'none';
         }
         function downloadSh() {
             //複製一份完整的網頁 DOM，避免影響當前畫面的顯示
@@ -248,9 +267,6 @@
             link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
             link.click();
             URL.revokeObjectURL(link.href);
-        }
-        function bclock(){
-            alert("未更新")
         }
         //計算機
         function insertAtCursor(text) {
@@ -370,6 +386,36 @@
             alert("按了xʸ，會出現**(這是正常現象，ʸ打在**後。)");
             alert("要再數字後按了±(有效)，+變-,-變+。)");
             alert("e的用法:科學記號");
+        }
+        //計時器
+        // 格式化時間 (HH:MM:SS)
+        function formatTime(seconds) {
+            const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            return `${hrs}:${mins}:${secs}`;
+        }
+
+        // 開始計時
+        function startTimer() {
+            if (timerInterval) return; // 避免重複觸發
+            timerInterval = setInterval(() => {
+                totalSeconds++;
+                timerDisplay.textContent = formatTime(totalSeconds);
+            }, 1000);
+        }
+
+        // 暫停計時
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        // 歸零計時器
+        function resetTimer() {
+            pauseTimer();
+            totalSeconds = 0;
+            timerDisplay.textContent = formatTime(totalSeconds);
         }
         showIndex()
     </script>

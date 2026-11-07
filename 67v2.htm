@@ -110,38 +110,28 @@
             transform: scale(0.95);
         }
         /* 跑馬燈 */
-    /* 跑馬燈外框 */
-    #Marquee {
-        width: 100%;         
-       overflow: hidden;
-        border: 1px solid #000;
-        white-space: nowrap;
-        font-size: 30px;
-        box-shadow: inset 0 0 10px #0009;
-        position: relative;
-    }
-
-    /* 跑馬燈文字本體 */
-    #Marquee h3 {
-        display: inline-block;
-        margin: 5px 0;
-        /* 從畫面最右側 (100%) 開始，向左滾動到完全消失 (-100%) */
-        animation: marqueeScroll 20s linear infinite; 
-    }
-
-    /* 使用 transform 確保等速滑動 */
-    @keyframes marqueeScroll {
-        0% {
-            transform: translateX(100%);
+        #Marquee {
+            width: 100%;         
+            overflow: hidden;
+            border: 1px solid #000;
+            white-space: nowrap;
+            font-size: 30px;
+            box-shadow: inset 0 0 10px #0009;
+            position: relative;
         }
-        100% {
-            transform: translateX(-100%);
+        #Marquee h3 {
+            display: inline-block;
+            margin: 5px 0;
+            animation: marqueeScroll 20s linear infinite;  
         }
-    }
+        @keyframes marqueeScroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
     </style>
 </head>
 <body>
-    <!-- 頂部標題區塊（將標題文字與時鐘分離，避免互相覆蓋） -->
+    <!-- 頂部標題區塊 -->
     <h1 id="headerContainer">
         <span id="pageTitle">首頁<t style="color: yellow;">(v3)</t></span> 
         <div id="Marquee">
@@ -152,8 +142,14 @@
 
     <!-- 筆記區塊 -->
     <div id="notes">
-        <textarea id="tnotes"></textarea><br><br>
-        <button onclick="downloadnt()">下載筆記</button>
+        <input placeholder="主題" id="theme" style="width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;">
+        <textarea id="tnotes" placeholder="內容"></textarea><br><br>
+        
+        <button onclick="downloadnt()">儲存筆記 (JSON)</button>
+        <!-- 讀取按鈕：透過觸發隱藏的 file input 讓使用者選取 JSON 檔 -->
+        <button onclick="document.getElementById('importFile').click()">讀取筆記 (JSON)</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importnt(event)">
+
         <button onclick="showIndex()">返回首頁</button>
         <button onclick="shownew()">其他小工具</button>
     </div>
@@ -209,7 +205,18 @@
         <div id="timerDisplay" style="font-size: clamp(30px, 8vw, 50px); font-family: monospace; margin: 20px 0; color: #fff; background: #222; padding: 20px; border-radius: 10px;">00:00:00</div>
         <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
         <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
-        <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button><br><br>
+        <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button>
+        <select id="type">
+            <option>碼表</option>
+            <option>倒數</option>
+        </select>
+        <br>倒數計時器用<br>
+        <div id="reciprocal">
+            時:<input type="number" min="0" value="0" id="h">
+            分:<input type="number" max="59" min="0" value="0" id="m">
+            秒:<input type="number" max="59" min="0" value="0" id="s">
+        </div>
+<br><br>
         <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button><br><br>
         <button onclick="shownew()" style="background-color: #2730ae; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">其他小工具</button>
     </div>
@@ -235,12 +242,16 @@
     <script>
         const inputField = document.getElementById('display');
         const noteArea = document.getElementById('tnotes');
+        const themeInput = document.getElementById('theme');
         const timerDisplay = document.getElementById('timerDisplay');
+        const type = document.getElementById('type');
+        const s = document.getElementById('s');
+        const m = document.getElementById('m');
+        const h = document.getElementById('h');
         let timerInterval = null;
         let totalSeconds = 0;
 
         function showNotes() {
-            // 僅改變 #pageTitle 的內容，時鐘 #time 會安全保留
             document.getElementById('pageTitle').innerHTML = '筆記';
             document.getElementById('notes').style.display = 'block';
             document.getElementById('Computer').style.display = 'none';
@@ -271,6 +282,7 @@
             document.getElementById('Timer').style.display = 'block';
             document.getElementById('new').style.display = 'none';
         }
+
         function shownew(){
             document.getElementById('pageTitle').innerHTML = '其他小工具';
             document.getElementById('new').style.display = 'block';
@@ -278,6 +290,8 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
         }
+
+        // 下載無網網頁檔
         function downloadSh() {
             const cloneDoc = document.documentElement.cloneNode(true);
             const unwantedDiv = cloneDoc.querySelector('#downloadSh');
@@ -294,19 +308,55 @@
             URL.revokeObjectURL(link.href);
         }
 
+        // 儲存為 JSON 格式
         function downloadnt() {
-            const note = noteArea.value;
-            if (!note.trim()) {
-                alert("筆記無文字喔！");
+            const noteContent = noteArea.value;
+            const themeContent = themeInput.value;
+            
+            if (!noteContent.trim() && !themeContent.trim()) {
+                alert("筆記主題與內容皆無文字喔！");
                 return;
             }
     
-            const blob = new Blob([note], { type: 'text/plain;charset=utf-8' });
+            const noteData = {
+                appName: "rvrv3210小工具",
+                version: "v3",
+                theme: themeContent,
+                content: noteContent,
+                saveTime: new Date().toLocaleString()
+            };
+
+            const jsonString = JSON.stringify(noteData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'rvrv3210小工具-筆記.txt';
+            
+            const fileName = themeContent.trim() ? `rvrv3210小工具-筆記-${themeContent}.json` : 'rvrv3210小工具-筆記.json';
+            link.download = fileName;
             link.click();
             URL.revokeObjectURL(link.href);
+        }
+
+        // 讀取/匯入 JSON 筆記
+        function importnt(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // 將讀取到的資料填入對應的欄位
+                    themeInput.value = data.theme || '';
+                    noteArea.value = data.content || '';
+                    alert("筆記讀取成功！");
+                } catch (error) {
+                    alert("讀取失敗：檔案格式不正確或不是有效的 JSON 檔！");
+                }
+                // 清空檔案選擇器，以便重複選取同個檔案
+                event.target.value = '';
+            };
+            reader.readAsText(file);
         }
 
         // 計算機相關邏輯
@@ -428,12 +478,42 @@
             alert("要再數字後按了±(有效)，+變-,-變+。)");
             alert("e的用法:科學記號");
         }
-
         // 計時器相關邏輯
         function startTimer() {
-            if (timerInterval) return;
+            if (timerInterval) return; // 避免重複觸發
+
+            // 判斷當前是「碼表 (0)」還是「倒數 (1)」
+            if (type.selectedIndex === 1 && totalSeconds === 0) {
+                // 取得輸入框內的時、分、秒數值（若空白則預設為 0）
+                const hours = parseInt(h.value) || 0;
+                const minutes = parseInt(m.value) || 0;
+                const seconds = parseInt(s.value) || 0;
+
+                // 計算總秒數
+                totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+
+                if (totalSeconds <= 0) {
+                    alert("請設定大於 0 的倒數時間！");
+                    return;
+                }
+            }
+
             timerInterval = setInterval(() => {
-                totalSeconds++;
+                if (type.selectedIndex === 0) {
+                    totalSeconds++; // 正向碼表
+                } else {
+                    if (totalSeconds > 0) {
+                        totalSeconds--; // 倒數遞減
+                    } else {
+                        pauseTimer();
+                        const alarmSound = new Audio("螢幕錄製 2026-11-07 150534.mp3");
+                        timerDisplay.textContent = "時間到！";
+                        alarmSound.play().catch(err => {
+                            console.log("音效播放被瀏覽器阻擋或找不到檔案：", err);
+                        });
+                        return;
+                    }
+                }
                 timerDisplay.textContent = formatTime(totalSeconds);
             }, 1000);
         }
@@ -446,6 +526,7 @@
         function resetTimer() {
             pauseTimer();
             totalSeconds = 0;
+            console.log(totalSeconds)
             timerDisplay.textContent = formatTime(totalSeconds);
         }
 
@@ -455,7 +536,6 @@
             const secs = String(seconds % 60).padStart(2, '0');
             return `${hrs}:${mins}:${secs}`;
         }
-
         // 即時時鐘
         function time() {
             const now = new Date();

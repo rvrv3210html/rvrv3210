@@ -13,7 +13,7 @@
             background-color: #1abed4;
             font-family: sans-serif;
             margin: 20px;
-            text-align:center;
+            text-align: center;
         }
 
         /* 預設隱藏筆記區塊 */
@@ -36,12 +36,12 @@
             background-color: #2c3e50;
             padding: 15px;
             border-radius: 12px;
-                    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         }
 
         /* 顯示框：跨滿所有網格欄位 */
         input#display {
-            grid-column: 1 / -1; /* 讓螢幕直接佔滿整行 */
+            grid-column: 1 / -1;
             width: 100%;
             height: 65px;
             font-size: clamp(20px, 5vw, 32px);
@@ -56,34 +56,35 @@
             outline: none;
         }
 
-        /* 鍵盤網格：改為更直覺的 5 欄配置，或者維持您的 7 欄並用網格定位 */
+        /* 鍵盤網格 */
         .keypad {
             display: grid;
-            grid-template-columns: repeat(6, 1fr); /* 調整為 6 欄或 5 欄，排版更緊湊 */
+            grid-template-columns: repeat(6, 1fr);
             gap: 8px;
             width: 100%;
             box-sizing: border-box;
         }
-        #downloadSh button{ 
+
+        #downloadSh button { 
             font-size: 25px;
             color: #644545;
             background: linear-gradient(to right,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0000ff,#aa00aa);
             border-radius: 20px;   
             transition: 1s;
-            text-align:center;
-            position: fixed;   /* 關鍵：相對於瀏覽器視窗定位 */
-            bottom: 20px;      /* 距離視窗底部 20px */
-            right: 20px;    /*   距離視窗右側 20px */
-            z-index: 9999;     /* 確保層級最高，不會被其他元素遮住 */
+            text-align: center;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
         }
-        #downloadSh button:hover{
+        #downloadSh button:hover {
             color: #000;         
         }
-        button:active{
+        button:active {
             background-color: #bcda14;
             transform: scale(0.95);        
         }
-        /* 按鈕基本樣式與互動回饋 */
+
         .keypad button {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -100,189 +101,215 @@
             transition: background-color 0.1s, transform 0.1s;
         }
 
-        /* 滑鼠懸停效果 */
         .keypad button:hover {
             background-color: #4e6d8c;
         }
 
-        /* 按下時的點擊回饋 (Active) */
         .keypad button:active {
             background-color: #1abc9c;
             transform: scale(0.95);
         }
+        /* 跑馬燈 */
+    /* 跑馬燈外框 */
+    #Marquee {
+        width: 100%;         
+       overflow: hidden;
+        border: 1px solid #000;
+        white-space: nowrap;
+        font-size: 30px;
+        box-shadow: inset 0 0 10px #0009;
+        position: relative;
+    }
+
+    /* 跑馬燈文字本體 */
+    #Marquee h3 {
+        display: inline-block;
+        margin: 5px 0;
+        /* 從畫面最右側 (100%) 開始，向左滾動到完全消失 (-100%) */
+        animation: marqueeScroll 20s linear infinite; 
+    }
+
+    /* 使用 transform 確保等速滑動 */
+    @keyframes marqueeScroll {
+        0% {
+            transform: translateX(100%);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
+    }
     </style>
 </head>
 <body>
-    <!-- 首頁區塊 -->
-    <div id="index">
-        <h1>首頁<t style="color: yellow;">(v2)</t></h1><hr>
-    </div>
+    <!-- 頂部標題區塊（將標題文字與時鐘分離，避免互相覆蓋） -->
+    <h1 id="headerContainer">
+        <span id="pageTitle">首頁<t style="color: yellow;">(v3)</t></span> 
+        <div id="Marquee">
+            <h3>最新小工具<t style="color: yellow;">(v3)</t>閃亮登場! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a> 現在時間: <b id="time" style="font-size: 0.8em; margin-left: 10px;"></b></h3>
+        </div>
+    </h1>
+    <hr>
+
     <!-- 筆記區塊 -->
     <div id="notes">
-        <h1>筆記</h1><hr>
         <textarea id="tnotes"></textarea><br><br>
         <button onclick="downloadnt()">下載筆記</button>
         <button onclick="showIndex()">返回首頁</button>
+        <button onclick="shownew()">其他小工具</button>
     </div>
+
+    <!-- 計算機區塊 -->
     <div id="Computer">
-    <h1>計算機</h1><hr>
-    <div id="Computer2">
-        <div class="keypad">
-            <input type="text" placeholder="0" id="display" inputmode="none">
-            
-            <!-- 第一列 -->
-            <button onclick="press('1')">1</button> 
-            <button onclick="press('2')">2</button> 
-            <button onclick="press('3')">3</button> 
-            <button onclick="press('+')">+</button>
-            <button onclick="pressCustomRoot()">ⁿ√x</button>
-            <button onclick="press('e')">e</button>
-            <!-- 第二列 -->
-            <button onclick="press('4')">4</button> 
-            <button onclick="press('5')">5</button> 
-            <button onclick="press('6')">6</button> 
-            <button onclick="press('-')">-</button>
-            <button onclick="press('**')">xʸ</button>
-            <button onclick="toggleSignAtCursor()">±</button>
-    
-            <!-- 第三列 -->
-            <button onclick="press('7')">7</button> 
-            <button onclick="press('8')">8</button> 
-            <button onclick="press('9')">9</button> 
-            <button onclick="press('*')">×</button>
-            <button onclick="press('.')">.</button> 
-            <button onclick="press('0')">0</button> 
+        <div id="Computer2">
+            <div class="keypad">
+                <input type="text" placeholder="0" id="display" inputmode="none">
+                
+                <!-- 第一列 -->
+                <button onclick="press('1')">1</button> 
+                <button onclick="press('2')">2</button> 
+                <button onclick="press('3')">3</button> 
+                <button onclick="press('+')">+</button>
+                <button onclick="pressCustomRoot()">ⁿ√x</button>
+                <button onclick="press('e')">e</button>
+                <!-- 第二列 -->
+                <button onclick="press('4')">4</button> 
+                <button onclick="press('5')">5</button> 
+                <button onclick="press('6')">6</button> 
+                <button onclick="press('-')">-</button>
+                <button onclick="press('**')">xʸ</button>
+                <button onclick="toggleSignAtCursor()">±</button>
+        
+                <!-- 第三列 -->
+                <button onclick="press('7')">7</button> 
+                <button onclick="press('8')">8</button> 
+                <button onclick="press('9')">9</button> 
+                <button onclick="press('*')">×</button>
+                <button onclick="press('.')">.</button> 
+                <button onclick="press('0')">0</button> 
 
-            <!-- 第四列 -->
-            <button onclick="backspace()">⌫</button> 
-            <button onclick="press('/')">÷</button>
-            <button onclick="press('(')">(</button>
-            <button onclick="press(')')">)</button>
-            <button onclick="clearAll()">C</button> 
-            <button onclick="percent()">%</button> 
+                <!-- 第四列 -->
+                <button onclick="backspace()">⌫</button> 
+                <button onclick="press('/')">÷</button>
+                <button onclick="press('(')">(</button>
+                <button onclick="press(')')">)</button>
+                <button onclick="clearAll()">C</button> 
+                <button onclick="percent()">%</button> 
 
-            <!-- 底部功能列跨欄 -->
-            <button onclick="ster()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #27ae60;">=</button> 
-            <button onclick="teaching()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #2980b9;">教學</button>
-            <button onclick="showIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
-            <button disabled style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>
-            <button onclick="showNotes()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">筆記</button>
-            <button onclick="showTimer()" style="grid-column: span 2; aspect-ratio: auto; height: 50px; background-color: #2795ae;">計時器</button>            
+                <!-- 底部功能列跨欄 -->
+                <button onclick="ster()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #27ae60;">=</button> 
+                <button onclick="teaching()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #2980b9;">教學</button>
+                <button onclick="showIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
+                <button onclick="shownew()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>           
+            </div>
         </div>
-    </div></div>
+    </div>
+
     <!-- 計時器區塊 -->
     <div id="Timer">
-        <h1>計時器</h1><hr>
         <div id="timerDisplay" style="font-size: clamp(30px, 8vw, 50px); font-family: monospace; margin: 20px 0; color: #fff; background: #222; padding: 20px; border-radius: 10px;">00:00:00</div>
-            <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
-            <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
-            <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button><br><br>
-            <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button>
-        </div>
+        <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
+        <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
+        <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button><br><br>
+        <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button><br><br>
+        <button onclick="shownew()" style="background-color: #2730ae; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">其他小工具</button>
     </div>
+
+    <!-- 底部導覽列與下載按鈕 -->
     <div id="new">
         <button id="bnotes" onclick="showNotes()">筆記</button>
         <button onclick="showComputer()" id="bComputer">計算機</button>
-        <button onclick="showTimer()" id="bTimer">計時器(碼表)</button>
+        <button onclick="showTimer()" id="bTimer">計時器</button>
+        <br><br>
+        <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
+            <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
+                下載 Desktop .exe 桌面版(此版本為測試版)
+            </button>
+        </a>
     </div>
+
     <div id="downloadSh">
         <button onclick="downloadSh()">下載無網網頁檔</button>
     </div>
-    <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
-        <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px;">
-            下載 Desktop .exe 桌面版(此版本為測試版)
-        </button>
-    </a>
-    <!--：加入切換頁面的 JavaScript -->
+
+    <!-- JavaScript 邏輯 -->
     <script>
         const inputField = document.getElementById('display');
         const noteArea = document.getElementById('tnotes');
         const timerDisplay = document.getElementById('timerDisplay');
         let timerInterval = null;
         let totalSeconds = 0;
+
         function showNotes() {
-            document.getElementById('index').style.display = 'none';
-            document.getElementById('Computer').style.display = 'none';
+            // 僅改變 #pageTitle 的內容，時鐘 #time 會安全保留
+            document.getElementById('pageTitle').innerHTML = '筆記';
             document.getElementById('notes').style.display = 'block';
-            document.getElementById('new').style.display = 'block';
-            document.getElementById('clock').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('Timer').style.display = 'none';
+            document.getElementById('new').style.display = 'none';
         }
 
         function showIndex() {
+            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v3)</t>';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
-            document.getElementById('index').style.display = 'block';
             document.getElementById('new').style.display = 'block';
         }
-        function showComputer(){
-            document.getElementById('index').style.display = 'none';
+
+        function showComputer() {
+            document.getElementById('pageTitle').innerHTML = '計算機';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'block';  
+            document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'none';          
-            document.getElementById('clock').style.display = 'none';
         }
+
         function showTimer() {
-            document.getElementById('index').style.display = 'none';
+            document.getElementById('pageTitle').innerHTML = '計時器';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'block';
             document.getElementById('new').style.display = 'none';
         }
+        function shownew(){
+            document.getElementById('pageTitle').innerHTML = '其他小工具';
+            document.getElementById('new').style.display = 'block';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('Timer').style.display = 'none';
+        }
         function downloadSh() {
-            //複製一份完整的網頁 DOM，避免影響當前畫面的顯示
             const cloneDoc = document.documentElement.cloneNode(true);
-
-            // 移除下載按鈕本身（或者任何不需要的元素）
-            // 不想讓下載按鈕出現在下載後的檔案中：
             const unwantedDiv = cloneDoc.querySelector('#downloadSh');
             if (unwantedDiv) {
                 unwantedDiv.remove();
             }
-
-            // 如果還有其他不需要的元素或 ID，也可以用同樣的方式移除：
-            // const otherElement = cloneDoc.querySelector('#other-id');
-            // if (otherElement) otherElement.remove();
-
-            //取得清理後的完整 HTML 內容
             const htmlContent = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
     
-            //執行下載
             const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'rvrv3210小工具.html'; // 下載後的檔案名稱
+            link.download = 'rvrv3210小工具.html';
             link.click();
             URL.revokeObjectURL(link.href);
         }
-        // 下載筆記純文字檔功能
+
         function downloadnt() {
-            // 取得筆記 textarea 內的文字
             const note = noteArea.value;
-            
             if (!note.trim()) {
                 alert("筆記無文字喔！");
                 return;
             }
     
-            // 建立 Blob 物件（改用 text/plain 格式）
             const blob = new Blob([note], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'rvrv3210小工具-筆記.txt'; // 下載後的檔案名稱
+            link.download = 'rvrv3210小工具-筆記.txt';
             link.click();
             URL.revokeObjectURL(link.href);
         }
-        function downloadExe() {
-            const exeUrl = 'rvrv3210小工具.exe'; // 您的 .exe 檔案路徑或下載網址
-            const link = document.createElement('a');
-            link.href = exeUrl;
-            link.download = 'rvrv3210小工具.exe';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        //計算機
+
+        // 計算機相關邏輯
         function insertAtCursor(text) {
             const start = inputField.selectionStart ?? inputField.value.length;
             const end = inputField.selectionEnd ?? inputField.value.length;
@@ -401,8 +428,27 @@
             alert("要再數字後按了±(有效)，+變-,-變+。)");
             alert("e的用法:科學記號");
         }
-        //計時器
-        // 格式化時間 (HH:MM:SS)
+
+        // 計時器相關邏輯
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                totalSeconds++;
+                timerDisplay.textContent = formatTime(totalSeconds);
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            totalSeconds = 0;
+            timerDisplay.textContent = formatTime(totalSeconds);
+        }
+
         function formatTime(seconds) {
             const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
             const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
@@ -410,28 +456,15 @@
             return `${hrs}:${mins}:${secs}`;
         }
 
-        // 開始計時
-        function startTimer() {
-            if (timerInterval) return; // 避免重複觸發
-            timerInterval = setInterval(() => {
-                totalSeconds++;
-                timerDisplay.textContent = formatTime(totalSeconds);
-            }, 1000);
+        // 即時時鐘
+        function time() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById("time").textContent = timeString;
         }
 
-        // 暫停計時
-        function pauseTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-
-        // 歸零計時器
-        function resetTimer() {
-            pauseTimer();
-            totalSeconds = 0;
-            timerDisplay.textContent = formatTime(totalSeconds);
-        }
-        showIndex()
+        setInterval(time, 1000);
+        showIndex();
     </script>
 </body>
 </html>

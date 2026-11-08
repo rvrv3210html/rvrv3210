@@ -133,9 +133,10 @@
 <body>
     <!-- 頂部標題區塊 -->
     <h1 id="headerContainer">
-        <span id="pageTitle">首頁<t style="color: yellow;">(v3)</t></span> 
+        <span id="pageTitle"></t></span> 
+         現在時間: <b id="time" style="font-size: 0.8em; margin-left: 10px;"></b>
         <div id="Marquee">
-            <h3>最新小工具<t style="color: yellow;">(v3)</t>閃亮登場! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a> 現在時間: <b id="time" style="font-size: 0.8em; margin-left: 10px;"></b></h3>
+            <h3>最新小工具<t style="color: yellow;">(v4)</t>於2026/11/8閃亮登場，新增設定! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a></h3>
         </div>
     </h1>
     <hr>
@@ -202,7 +203,7 @@
 
     <!-- 計時器區塊 -->
     <div id="Timer">
-        <div id="timerDisplay" style="font-size: clamp(30px, 8vw, 50px); font-family: monospace; margin: 20px 0; color: #fff; background: #222; padding: 20px; border-radius: 10px;">00:00:00</div>
+        <div id="timerDisplay" style="font-size: clamp(30px, 8vw, 50px); font-family: monospace; margin: 20px 0; color: #fff; background: #222; padding: 20px; border-radius: 10px;">00:00:00.00</div>
         <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
         <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
         <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button>
@@ -216,9 +217,18 @@
             分:<input type="number" max="59" min="0" value="0" id="m">
             秒:<input type="number" max="59" min="0" value="0" id="s">
         </div>
-<br><br>
+        <br><br>
         <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button><br><br>
         <button onclick="shownew()" style="background-color: #2730ae; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">其他小工具</button>
+    </div>
+
+    <!-- 設定頁面 -->
+    <div id="settings">
+        背景顏色:<input type="color" id="bodycoior" value="#1abed4"><br><br>
+        字的顏色:<input type="color" id="textcolor" value="#000000"><br><br>
+        <button onclick="resetBackgroundColor()">回復</button><br><br>
+        <button onclick="showIndex()">返回首頁</button><br><br>
+        <button onclick="shownew()">其他小工具</button>
     </div>
 
     <!-- 底部導覽列與下載按鈕 -->
@@ -226,6 +236,7 @@
         <button id="bnotes" onclick="showNotes()">筆記</button>
         <button onclick="showComputer()" id="bComputer">計算機</button>
         <button onclick="showTimer()" id="bTimer">計時器</button>
+        <button onclick="settings()" id="bsettings">設定</button>
         <br><br>
         <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
             <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
@@ -248,6 +259,11 @@
         const s = document.getElementById('s');
         const m = document.getElementById('m');
         const h = document.getElementById('h');
+        
+        // 修正 ID 拼寫錯誤 (textcolor)
+        const bodyColorInput = document.getElementById('bodycoior');
+        const textColorInput = document.getElementById('textcolor');
+        
         let timerInterval = null;
         let totalSeconds = 0;
 
@@ -257,14 +273,16 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
         }
 
         function showIndex() {
-            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v3)</t>';
+            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v4)</t>';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'block';
+            document.getElementById('settings').style.display = 'none';
         }
 
         function showComputer() {
@@ -272,6 +290,7 @@
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'block';  
             document.getElementById('Timer').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
             document.getElementById('new').style.display = 'none';          
         }
 
@@ -280,7 +299,17 @@
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'block';
+            document.getElementById('settings').style.display = 'none';
             document.getElementById('new').style.display = 'none';
+        }
+
+        function settings(){
+            document.getElementById('pageTitle').innerHTML = '設定';
+            document.getElementById('new').style.display = 'none';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('settings').style.display = 'block';
+            document.getElementById('Timer').style.display = 'none';
         }
 
         function shownew(){
@@ -288,6 +317,7 @@
             document.getElementById('new').style.display = 'block';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
         }
 
@@ -346,14 +376,12 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    // 將讀取到的資料填入對應的欄位
                     themeInput.value = data.theme || '';
                     noteArea.value = data.content || '';
                     alert("筆記讀取成功！");
                 } catch (error) {
                     alert("讀取失敗：檔案格式不正確或不是有效的 JSON 檔！");
                 }
-                // 清空檔案選擇器，以便重複選取同個檔案
                 event.target.value = '';
             };
             reader.readAsText(file);
@@ -478,18 +506,16 @@
             alert("要再數字後按了±(有效)，+變-,-變+。)");
             alert("e的用法:科學記號");
         }
+
         // 計時器相關邏輯
         function startTimer() {
-            if (timerInterval) return; // 避免重複觸發
+            if (timerInterval) return;
 
-            // 判斷當前是「碼表 (0)」還是「倒數 (1)」
             if (type.selectedIndex === 1 && totalSeconds === 0) {
-                // 取得輸入框內的時、分、秒數值（若空白則預設為 0）
                 const hours = parseInt(h.value) || 0;
                 const minutes = parseInt(m.value) || 0;
                 const seconds = parseInt(s.value) || 0;
 
-                // 計算總秒數
                 totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
 
                 if (totalSeconds <= 0) {
@@ -500,13 +526,13 @@
 
             timerInterval = setInterval(() => {
                 if (type.selectedIndex === 0) {
-                    totalSeconds++; // 正向碼表
+                    totalSeconds++;
                 } else {
                     if (totalSeconds > 0) {
-                        totalSeconds--; // 倒數遞減
+                        totalSeconds--;
                     } else {
                         pauseTimer();
-                        const alarmSound = new Audio("rvrv3210.mp3");
+                        const alarmSound = new Audio("螢幕錄製 2026-11-07 150534.mp3");
                         timerDisplay.textContent = "時間到！";
                         alarmSound.play().catch(err => {
                             console.log("音效播放被瀏覽器阻擋或找不到檔案：", err);
@@ -526,7 +552,6 @@
         function resetTimer() {
             pauseTimer();
             totalSeconds = 0;
-            console.log(totalSeconds)
             timerDisplay.textContent = formatTime(totalSeconds);
         }
 
@@ -536,11 +561,34 @@
             const secs = String(seconds % 60).padStart(2, '0');
             return `${hrs}:${mins}:${secs}`;
         }
+
         // 即時時鐘
         function time() {
             const now = new Date();
             const timeString = now.toLocaleTimeString();
             document.getElementById("time").textContent = timeString;
+        }
+
+        // 設定：即時更改背景顏色
+        bodyColorInput.addEventListener('input', function() {
+            document.body.style.backgroundColor = bodyColorInput.value;
+        });
+
+        // 設定：即時更改文字顏色 (修正 style.Color 為 style.color)
+        textColorInput.addEventListener('input', function() {
+            document.body.style.color = textColorInput.value;
+        });
+
+        // 「回復」按鈕功能：恢復預設背景色與文字顏色
+        function resetBackgroundColor() {
+            const defaultBg = '#1abed4';
+            const defaultText = '#000000';
+
+            bodyColorInput.value = defaultBg;
+            document.body.style.backgroundColor = defaultBg;
+
+            textColorInput.value = defaultText;
+            document.body.style.color = defaultText;
         }
 
         setInterval(time, 1000);

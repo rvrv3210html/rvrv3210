@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>rvrv3210小工具</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="icon" sizes="400x500" href="https://rvrv3210html.github.io/rvrv3210/game/loge.jpg">
     <style>
         #Timer {
             display: none;
@@ -145,7 +147,7 @@
     <div id="notes">
         <input placeholder="主題" id="theme" style="width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;">
         <textarea id="tnotes" placeholder="內容"></textarea><br><br>
-        
+        <div id="Beforetime"></div><br>
         <button onclick="downloadnt()">儲存筆記 (JSON)</button>
         <!-- 讀取按鈕：透過觸發隱藏的 file input 讓使用者選取 JSON 檔 -->
         <button onclick="document.getElementById('importFile').click()">讀取筆記 (JSON)</button>
@@ -231,9 +233,21 @@
         <button onclick="shownew()">其他小工具</button>
     </div>
     <div id="qrcode">
-        <h3>產生本工具 QR Code</h3>
+        <h3>產生 QR Code</h3>
         <img id="qrcodeImg" src="" alt="點擊下方按鈕生成" style="background: white; padding: 10px; border-radius: 8px; width: 130px; height: 130px;"><br><br>
-        <button onclick="generateQRCode()">生成 QR Code</button><br><br>  
+        <input type="text" placeholder="輸入網址" id="URL">
+        <button onclick="generateQRCode()">生成 QR Code</button><br><br> 
+    
+        <!-- 讀取 QR Code 區塊 -->
+        <hr>
+        <h3>讀取/掃描 QR Code 圖片</h3>
+        <!-- 增加一個專屬的解析用 div -->
+        <div id="reader" style="width: 200px; display: none;"></div>
+
+        <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="scanQRCode(event)">
+        <button onclick="document.getElementById('qrFileInput').click()">選擇 QR Code 圖片讀取</button>
+        <p id="qrResult" style="word-break: break-all; margin-top: 10px; font-weight: bold; color: yellow;"></p>
+        <br> 
         <button onclick="showIndex()">返回首頁</button><br><br>
         <button onclick="shownew()">其他小工具</button>      
     </div>
@@ -242,8 +256,8 @@
         <button id="bnotes" onclick="showNotes()">筆記</button>
         <button onclick="showComputer()" id="bComputer">計算機</button>
         <button onclick="showTimer()" id="bTimer">計時器</button>
-        <button onclick="settings()" id="bsettings">設定</button>
         <button onclick="qrcode()" id="bqrcode">生成QR Code</button>
+        <button onclick="settings()" id="bsettings">設定</button>
         <br><br>
         <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
             <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
@@ -266,11 +280,11 @@
         const s = document.getElementById('s');
         const m = document.getElementById('m');
         const h = document.getElementById('h');
-        
+        const urlInput = document.getElementById('URL');
         // 修正 ID 拼寫錯誤 (textcolor)
         const bodyColorInput = document.getElementById('bodycoior');
         const textColorInput = document.getElementById('textcolor');
-        
+        const Beforetime = document.getElementById('Beforetime');
         let timerInterval = null;
         let totalSeconds = 0;
 
@@ -401,6 +415,7 @@
                     const data = JSON.parse(e.target.result);
                     themeInput.value = data.theme || '';
                     noteArea.value = data.content || '';
+                    Beforetime.innerHTML =  "上次存檔於:" + data.saveTime || '';
                     alert("筆記讀取成功！");
                 } catch (error) {
                     alert("讀取失敗：檔案格式不正確或不是有效的 JSON 檔！");
@@ -613,15 +628,39 @@
             textColorInput.value = defaultText;
             document.body.style.color = defaultText;
         }
+
+        //QR Code
         function generateQRCode() {
-            // 取得當前網頁的網址（如果是上傳到 GitHub Pages 或是本機都可以對應）
-            const currentUrl = window.location.href;
-    
-            // 使用免費的 QR Code API (goqr.me)
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
-    
-            // 將圖片的 src 指向該 API 產生的圖片網址
+            // 使用 urlInput.value 取得輸入的網址
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=` + encodeURIComponent(urlInput.value);
             document.getElementById('qrcodeImg').src = qrApiUrl;
+        }
+
+        // 讀取/掃描上傳的 QR Code 圖片
+        function scanQRCode(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 建立實例
+            const html5QrCode = new Html5Qrcode("reader"); 
+    
+            // 使用建立好的 html5QrCode 物件來呼叫 scanFile
+            html5QrCode.scanFile(file, true)
+            .then(decodedText => {
+                document.getElementById('qrResult').innerHTML = 
+                    `掃描成功！內容：<br><a href="${decodedText}" target="_blank" style="color: #fff;">${decodedText}</a>`;
+                alert("QR Code 讀取成功！");
+        
+                // 掃描完成後可以清除實例
+                html5QrCode.clear();
+            })
+            .catch(err => {
+                alert("讀取失敗：無法辨識此圖片中的 QR Code！");
+                console.log(`Error scanning file. Reason: ${err}`);
+                html5QrCode.clear();
+            });
+
+            event.target.value = '';
         }
         setInterval(time, 1000);
         showIndex();

@@ -230,13 +230,20 @@
         <button onclick="showIndex()">返回首頁</button><br><br>
         <button onclick="shownew()">其他小工具</button>
     </div>
-
+    <div id="qrcode">
+        <h3>產生本工具 QR Code</h3>
+        <img id="qrcodeImg" src="" alt="點擊下方按鈕生成" style="background: white; padding: 10px; border-radius: 8px; width: 130px; height: 130px;"><br><br>
+        <button onclick="generateQRCode()">生成 QR Code</button><br><br>  
+        <button onclick="showIndex()">返回首頁</button><br><br>
+        <button onclick="shownew()">其他小工具</button>      
+    </div>
     <!-- 底部導覽列與下載按鈕 -->
     <div id="new">
         <button id="bnotes" onclick="showNotes()">筆記</button>
         <button onclick="showComputer()" id="bComputer">計算機</button>
         <button onclick="showTimer()" id="bTimer">計時器</button>
         <button onclick="settings()" id="bsettings">設定</button>
+        <button onclick="qrcode()" id="bqrcode">生成QR Code</button>
         <br><br>
         <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
             <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
@@ -273,6 +280,7 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('settings').style.display = 'none';
         }
 
@@ -282,6 +290,7 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'block';
+            document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('settings').style.display = 'none';
         }
 
@@ -291,6 +300,7 @@
             document.getElementById('Computer').style.display = 'block';  
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('settings').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('new').style.display = 'none';          
         }
 
@@ -300,6 +310,7 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'block';
             document.getElementById('settings').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('new').style.display = 'none';
         }
 
@@ -310,6 +321,17 @@
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('settings').style.display = 'block';
             document.getElementById('Timer').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
+        }
+
+        function qrcode(){
+            document.getElementById('pageTitle').innerHTML = '生成QR Code';
+            document.getElementById('new').style.display = 'none';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
+            document.getElementById('Timer').style.display = 'none';  
+            document.getElementById('qrcode').style.display = 'block';          
         }
 
         function shownew(){
@@ -318,6 +340,7 @@
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('settings').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('Timer').style.display = 'none';
         }
 
@@ -532,7 +555,7 @@
                         totalSeconds--;
                     } else {
                         pauseTimer();
-                        const alarmSound = new Audio("rvrv3210.mp3");
+                        const alarmSound = new Audio("螢幕錄製 2026-11-07 150534.mp3");
                         timerDisplay.textContent = "時間到！";
                         alarmSound.play().catch(err => {
                             console.log("音效播放被瀏覽器阻擋或找不到檔案：", err);
@@ -590,7 +613,16 @@
             textColorInput.value = defaultText;
             document.body.style.color = defaultText;
         }
-
+        function generateQRCode() {
+            // 取得當前網頁的網址（如果是上傳到 GitHub Pages 或是本機都可以對應）
+            const currentUrl = window.location.href;
+    
+            // 使用免費的 QR Code API (goqr.me)
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+    
+            // 將圖片的 src 指向該 API 產生的圖片網址
+            document.getElementById('qrcodeImg').src = qrApiUrl;
+        }
         setInterval(time, 1000);
         showIndex();
     </script>

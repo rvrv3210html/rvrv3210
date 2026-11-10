@@ -22,14 +22,6 @@
         #notes {
             display: none;
         }
-
-        /* textarea 樣式語法和給予適當大小 */
-        textarea {
-            background-color: #fff;
-            resize: none;
-            width: 100%;
-            height: 270px;
-        }
         
         /* 計算機主體容器 */
         #Computer2 {
@@ -146,7 +138,10 @@
     <!-- 筆記區塊 -->
     <div id="notes">
         <input placeholder="主題" id="theme" style="width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;">
-        <textarea id="tnotes" placeholder="內容"></textarea><br><br>
+        <!-- 將 textarea 改成 contenteditable 的 div -->
+        <div id="tnotes" contenteditable="true" style="background-color: #fff; color: #000; text-align: left; width: 100%; height: 270px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; box-sizing: border-box; border-radius: 4px;">
+            
+        </div><br><br>
         <div id="Beforetime"></div><br>
         <button onclick="downloadnt()">儲存筆記 (JSON)</button>
         <!-- 讀取按鈕：透過觸發隱藏的 file input 讓使用者選取 JSON 檔 -->
@@ -184,15 +179,15 @@
                 <button onclick="press('9')">9</button> 
                 <button onclick="press('*')">×</button>
                 <button onclick="press('.')">.</button> 
-                <button onclick="percent()">%</button> 
+                <button onclick="press('0')">0</button> 
 
                 <!-- 第四列 -->
                 <button onclick="backspace()">⌫</button> 
-                <button onclick="press('0')">0</button> 
                 <button onclick="press('/')">÷</button>
                 <button onclick="press('(')">(</button>
                 <button onclick="press(')')">)</button>
                 <button onclick="clearAll()">C</button> 
+                <button onclick="percent()">%</button> 
 
                 <!-- 底部功能列跨欄 -->
                 <button onclick="ster()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #27ae60;">=</button> 
@@ -375,9 +370,9 @@
             URL.revokeObjectURL(link.href);
         }
 
-        // 儲存為 JSON 格式
+        // 儲存為 JSON 格式 (已將 noteArea.value 改為 noteArea.innerHTML)
         function downloadnt() {
-            const noteContent = noteArea.value;
+            const noteContent = noteArea.innerHTML;
             const themeContent = themeInput.value;
             
             if (!noteContent.trim() && !themeContent.trim()) {
@@ -414,7 +409,7 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     themeInput.value = data.theme || '';
-                    noteArea.value = data.content || '';
+                    noteArea.innerHTML = data.content || '';
                     Beforetime.innerHTML =  "上次存檔於:" + data.saveTime || '';
                     alert("筆記讀取成功！");
                 } catch (error) {
@@ -612,7 +607,7 @@
             document.body.style.backgroundColor = bodyColorInput.value;
         });
 
-        // 設定：即時更改文字顏色 (修正 style.Color 為 style.color)
+        // 設定：即時更改文字顏色
         textColorInput.addEventListener('input', function() {
             document.body.style.color = textColorInput.value;
         });
@@ -631,7 +626,6 @@
 
         //QR Code
         function generateQRCode() {
-            // 使用 urlInput.value 取得輸入的網址
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=` + encodeURIComponent(urlInput.value);
             document.getElementById('qrcodeImg').src = qrApiUrl;
         }
@@ -641,17 +635,13 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // 建立實例
             const html5QrCode = new Html5Qrcode("reader"); 
     
-            // 使用建立好的 html5QrCode 物件來呼叫 scanFile
             html5QrCode.scanFile(file, true)
             .then(decodedText => {
                 document.getElementById('qrResult').innerHTML = 
                     `掃描成功！內容：<br><a href="${decodedText}" target="_blank" style="color: #fff;">${decodedText}</a>`;
                 alert("QR Code 讀取成功！");
-        
-                // 掃描完成後可以清除實例
                 html5QrCode.clear();
             })
             .catch(err => {
@@ -664,6 +654,7 @@
         }
         setInterval(time, 1000);
         showIndex();
+        time()
     </script>
 </body>
 </html>

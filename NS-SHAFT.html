@@ -110,7 +110,7 @@
         <!-- 開始畫面 Overlay -->
         <div id="start-screen" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-20 text-center">
             <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-400 mb-2 tracking-wider">
-                小朋友下樓梯重製版
+                小朋友下樓梯
             </h1>
             <p class="text-xs text-slate-400 mb-8 font-mono">NS-SHAFT RETRO EDITION</p>
 
@@ -118,11 +118,12 @@
                 <p class="text-amber-400 font-bold text-center mb-2">🎮 操作說明</p>
                 <p>• <span class="text-sky-400 font-bold">← / →</span> 或 <span class="text-sky-400 font-bold">A / D</span>：左右移動</p>
                 <p>• 避開 <span class="text-red-400">尖刺階梯</span> 與 <span class="text-slate-400">頂部天花板刺</span></p>
-                <p>• <span class="text-purple-400">黏液膠水板</span> 定身 1~3 秒（踩一次後變普通板；碰到頂刺可解困）</p>                <p>• 點擊滑鼠或按鍵盤 <span class="text-amber-300 font-bold">1 / 2 / 3</span> 使用對應道具！</p>
+                <p>• <span class="text-purple-400">黏液膠水板</span> 定身 1~3 秒（踩一次後變普通板；碰到頂刺可解困）</p>
+                <p class="text-emerald-400 font-bold mt-1">🧪 3 格物品欄道具系統 (30% 生成)：</p>
+                <p>• 點擊滑鼠或按鍵盤 <span class="text-amber-300 font-bold">1 / 2 / 3</span> 使用對應道具！</p>
                 <!-- <p>• <span class="text-green-400">生 (生命藥水)</span>: 30% 機率 (+1~5 HP)</p>
-                <p>• <span class="text-yellow-300">加 (加速藥水)</span>: 55% 機率 (提升移動速度 5 秒)</p>
-                <p>• <span class="text-purple-300">解 (解困藥水)</span>: 15% 機率 (瞬間解除困住)</p> -->
-                <p class="text-emerald-400 font-bold mt-1">NS-SHAFT Web Edition • HTML5 Canvas Game</p>
+                <p>• <span class="text-purple-300">解 (解困藥水)</span>: 15% 機率 (瞬間解除困住)</p>
+                <p>• <span class="text-yellow-300">加 (加速藥水)</span>: 55% 機率 (提升移動速度 5 秒)</p> -->
             </div>
 
             <div class="text-xs text-slate-400 mb-6">
@@ -314,7 +315,7 @@
 
         // 道具種類列舉
         const ITEM_TYPES = {
-            HEAL: 'HEAL',         // 恢復生命藥水 (1-5 HP)
+            HEAL: 'HEAL',         // 恢復生命藥水
             UNTRAP: 'UNTRAP',     // 解除困住藥水
             SPEED: 'SPEED'        // 加速藥水
         };
@@ -346,7 +347,6 @@
         let platformSpeed = 2.0;
         let lastPlatformY = CANVAS_HEIGHT;
         let lastPlatformX = CANVAS_WIDTH / 2 - 40;
-        let lastLandedPlatform = null;
 
         // 3 格物品欄 (Inventory)
         let inventory = [null, null, null];
@@ -354,8 +354,7 @@
         // 輸入狀態
         const keys = {
             left: false,
-            right: false,
-            up: false
+            right: false
         };
 
         // 玩家角色物件
@@ -376,10 +375,10 @@
             hurtTimer: 0, 
             trapTimer: 0, 
             trapMaxTime: 0, 
-            speedBuffTimer: 0, // 加速Buff計時器
+            speedBuffTimer: 0,
             animFrame: 0,
-            touchingCeilingSpike: false, // 紀錄是否正處於接觸頂刺狀態（防止連續扣血）
-            touchingSpikePlatform: null,  // 紀錄目前正踩著的針刺階梯（離開再踩才會重新扣血）
+            touchingCeilingSpike: false,
+            touchingSpikePlatform: null,
 
             reset() {
                 this.x = CANVAS_WIDTH / 2 - 12;
@@ -399,20 +398,17 @@
             },
 
             update() {
-                // 加速藥水效果處理
                 if (this.speedBuffTimer > 0) {
                     this.speedBuffTimer--;
-                    this.speed = this.baseSpeed * 1.5; // 移動速度提升 50%
+                    this.speed = this.baseSpeed * 1.5;
                 } else {
                     this.speed = this.baseSpeed;
                 }
 
-                // 困住計時器更新
                 if (this.trapTimer > 0) {
                     this.trapTimer--;
                 }
 
-                // 水平移動 (僅當【沒有被困住】時響應玩家鍵盤輸入)
                 if (this.trapTimer > 0) {
                     this.vx = 0;
                 } else {
@@ -433,81 +429,66 @@
 
                 this.x += this.vx;
 
-                // 邊界限制
                 if (this.x < 0) this.x = 0;
                 if (this.x + this.width > CANVAS_WIDTH) this.x = CANVAS_WIDTH - this.width;
 
-                // 重力與垂直移動
                 this.vy += this.gravity;
                 if (this.vy > this.maxFallSpeed) this.vy = this.maxFallSpeed;
                 this.y += this.vy;
 
-                // 受傷閃爍計時器
                 if (this.hurtTimer > 0) {
                     this.hurtTimer--;
                 }
 
-                // 【嚴格限制】：只有在被困住 (trapTimer > 0) 時才更新上下擺動影格
                 if (this.trapTimer > 0) {
                     this.animFrame += 0.3;
                 } else {
-                    this.animFrame = 0; // 未被困住時強制擺動歸零
+                    this.animFrame = 0;
                 }
             },
 
             draw(ctx) {
-                // 受傷閃爍效果 (每幾幀隱藏一次)
                 if (this.hurtTimer > 0 && Math.floor(this.hurtTimer / 4) % 2 === 0) {
                     return;
                 }
 
                 ctx.save();
 
-                // 【極致嚴格】：確定只在困住狀態下有 bounceY 擺動位移，平常一律為 0
                 const bounceY = this.trapTimer > 0 ? Math.sin(this.animFrame) * 3 : 0;
                 const drawY = this.y + bounceY;
                 
-                // 加速狀態光軌/殘影特效
                 if (this.speedBuffTimer > 0 && Math.abs(this.vx) > 0) {
                     ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
                     ctx.fillRect(this.x - (this.vx * 2), drawY + 10, this.width, this.height - 10);
                 }
 
-                // 玩家主體顏色
-                ctx.fillStyle = this.speedBuffTimer > 0 ? '#f59e0b' : '#38bdf8'; // 加速時亮黃，平時亮藍
+                ctx.fillStyle = this.speedBuffTimer > 0 ? '#f59e0b' : '#38bdf8';
                 ctx.fillRect(this.x, drawY + 10, this.width, this.height - 10);
 
-                // 頭部/皮膚
-                ctx.fillStyle = '#ffed4a'; // 經典黃色圓頭
+                ctx.fillStyle = '#ffed4a';
                 ctx.beginPath();
                 ctx.arc(this.x + this.width / 2, drawY + 8, 9, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 眼睛
                 ctx.fillStyle = '#0f172a';
                 const eyeOffset = this.facing === 'right' ? 3 : -3;
                 ctx.fillRect(this.x + this.width / 2 + eyeOffset, drawY + 6, 3, 4);
 
-                // 腿部
                 ctx.fillStyle = '#0284c7';
                 ctx.fillRect(this.x + 3, drawY + this.height - 4, 6, 4);
                 ctx.fillRect(this.x + 15, drawY + this.height - 4, 6, 4);
 
-                // 繪製困住特效 (黏液包覆與標示)
                 if (this.trapTimer > 0) {
-                    // 腳下黏液蛛網/膠水
                     ctx.fillStyle = 'rgba(168, 85, 247, 0.7)';
                     ctx.beginPath();
                     ctx.ellipse(this.x + this.width / 2, this.y + this.height - 2, 14, 6, 0, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // 頭頂 TRAPPED 標記
                     ctx.font = '9px "Press Start 2P", monospace';
                     ctx.fillStyle = '#c084fc';
                     ctx.textAlign = 'center';
                     ctx.fillText('TRAPPED!', this.x + this.width / 2, drawY - 10);
 
-                    // 倒數計時小進度條
                     const progress = this.trapTimer / this.trapMaxTime;
                     ctx.fillStyle = '#581c87';
                     ctx.fillRect(this.x - 2, drawY - 20, this.width + 4, 3);
@@ -530,17 +511,17 @@
                 this.markedForDeletion = false;
                 this.floatOffset = 0;
                 
-                // 恢復生命藥水數值計算 (1~3 HP，機率分別為 80%, 16%, 4%)
+                // 恢復生命藥水 (1~3 HP，80%, 16%, 4%)
                 if (this.type === ITEM_TYPES.HEAL) {
                     const r = Math.random();
-                    if (r < 0.80) this.healAmount = 1;      // 80% 機率 +1 HP
-                    else if (r < 0.96) this.healAmount = 2; // 16% 機率 +2 HP
-                    else this.healAmount = 3;               // 4% 機率 +3 HP
+                    if (r < 0.80) this.healAmount = 1;
+                    else if (r < 0.96) this.healAmount = 2;
+                    else this.healAmount = 3;
                 }
             }
 
             update() {
-                this.y -= platformSpeed; // 隨平台一同向上上升
+                this.y -= platformSpeed;
                 this.floatOffset += 0.08;
 
                 if (this.y + this.height < 0) {
@@ -551,42 +532,32 @@
             draw(ctx) {
                 ctx.save();
                 const drawY = this.y + Math.sin(this.floatOffset) * 3;
-
-                // 瓶身外框/外發光
                 ctx.shadowBlur = 6;
 
                 if (this.type === ITEM_TYPES.HEAL) {
-                    // 生命藥水外觀統一為鮮紅色
                     ctx.shadowColor = '#ef4444';
-                    
-                    // 瓶口
                     ctx.fillStyle = '#e2e8f0';
                     ctx.fillRect(this.x + 5, drawY, 6, 4);
-                    // 瓶身
                     ctx.fillStyle = '#ef4444';
                     ctx.beginPath();
                     ctx.arc(this.x + 8, drawY + 12, 7, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // 數字標籤 (+1 ~ +5)
                     ctx.fillStyle = '#ffffff';
                     ctx.font = 'bold 9px monospace';
                     ctx.textAlign = 'center';
                     ctx.fillText(`+${this.healAmount}`, this.x + 8, drawY + 15);
 
                 } else if (this.type === ITEM_TYPES.UNTRAP) {
-                    // 解除困住藥水 (紫色閃耀瓶裝水)
                     ctx.shadowColor = '#c084fc';
                     ctx.fillStyle = '#e2e8f0';
                     ctx.fillRect(this.x + 5, drawY, 6, 4);
                     ctx.fillStyle = '#a855f7';
                     ctx.fillRect(this.x + 3, drawY + 4, 10, 12);
-                    // 星星閃光 symbol
                     ctx.fillStyle = '#ffffff';
                     ctx.fillText('✨', this.x + 1, drawY + 14);
 
                 } else if (this.type === ITEM_TYPES.SPEED) {
-                    // 加速藥水 (黃色風暴藥水)
                     ctx.shadowColor = '#fde047';
                     ctx.fillStyle = '#e2e8f0';
                     ctx.fillRect(this.x + 5, drawY, 6, 4);
@@ -597,7 +568,6 @@
                     ctx.lineTo(this.x + 1, drawY + 16);
                     ctx.closePath();
                     ctx.fill();
-                    // 閃電標誌
                     ctx.fillStyle = '#ffffff';
                     ctx.fillText('⚡', this.x + 2, drawY + 14);
                 }
@@ -609,27 +579,23 @@
         // 階梯與道具陣列
         let platforms = [];
         let items = [];
-        let lastSpawnY = CANVAS_HEIGHT; 
 
-        /**
-         * 隨機取得階梯種類
-         */
         function getRandomPlatformType() {
             const rand = Math.random();
             if (rand < 0.40) {
-                return PLATFORM_TYPES.NORMAL;         // 40% 普通階梯
+                return PLATFORM_TYPES.NORMAL;
             } else if (rand < 0.55) {
-                return PLATFORM_TYPES.SPIKE;          // 15% 針刺階梯
+                return PLATFORM_TYPES.SPIKE;
             } else if (rand < 0.70) {
-                return PLATFORM_TYPES.CONVEYOR_LEFT;  // 15% 左輸送帶
+                return PLATFORM_TYPES.CONVEYOR_LEFT;
             } else if (rand < 0.82) {
-                return PLATFORM_TYPES.CONVEYOR_RIGHT; // 12% 右輸送帶
+                return PLATFORM_TYPES.CONVEYOR_RIGHT;
             } else if (rand < 0.90) {
-                return PLATFORM_TYPES.SPRING;         // 8% 彈簧階梯
+                return PLATFORM_TYPES.SPRING;
             } else if (rand < 0.95) {
-                return PLATFORM_TYPES.CRUMBLE;        // 5% 易碎階梯
+                return PLATFORM_TYPES.CRUMBLE;
             } else {
-                return PLATFORM_TYPES.TRAP;           // 5% 黏液困住階梯
+                return PLATFORM_TYPES.TRAP;
             }
         }
 
@@ -644,7 +610,7 @@
                 this.markedForDeletion = false;
                 this.isCrumbled = false;
                 this.crumbleTimer = 0;
-                this.springState = 0; // 0: 正常, >0: 彈跳動畫中
+                this.springState = 0;
                 this.conveyorAnim = 0;
                 this.hasLanded = false;
             }
@@ -665,20 +631,29 @@
 
                 if (this.isCrumbled) {
                     this.crumbleTimer++;
-                    if (this.crumbleTimer > 12) {
+                    if (this.crumbleTimer > 60) { // 踩中後延遲 1 秒才破壞
                         this.markedForDeletion = true;
                     }
                 }
             }
 
             draw(ctx) {
-                if (this.isCrumbled) return; // 碎裂消退
+                if (this.markedForDeletion) return;
 
                 ctx.save();
 
+                let shakeX = 0;
+                let shakeY = 0;
+                if (this.isCrumbled) {
+                    shakeX = (Math.random() - 0.5) * 4;
+                    shakeY = (Math.random() - 0.5) * 2;
+                }
+
+                const drawX = this.x + shakeX;
+                const drawY = this.y + shakeY;
+
                 switch (this.type) {
                     case PLATFORM_TYPES.NORMAL:
-                        // 普通金屬階梯
                         ctx.fillStyle = '#475569';
                         ctx.fillRect(this.x, this.y, this.width, this.height);
                         ctx.fillStyle = '#94a3b8';
@@ -688,7 +663,6 @@
                         break;
 
                     case PLATFORM_TYPES.SPIKE:
-                        // 針刺階梯
                         ctx.fillStyle = '#64748b';
                         ctx.fillRect(this.x, this.y + 6, this.width, this.height - 6);
                         ctx.fillStyle = '#ef4444';
@@ -705,12 +679,10 @@
                         break;
 
                     case PLATFORM_TYPES.CONVEYOR_LEFT:
-                        // 向左滾輪輸送帶
                         ctx.fillStyle = '#0f766e';
                         ctx.fillRect(this.x, this.y, this.width, this.height);
                         ctx.fillStyle = '#2dd4bf';
                         ctx.fillRect(this.x, this.y, this.width, 2);
-                        // 繪製轉向箭頭/齒輪刻度
                         ctx.fillStyle = '#115e59';
                         for (let i = 0; i < this.width; i += 12) {
                             const offset = (i - this.conveyorAnim + 120) % this.width;
@@ -719,12 +691,10 @@
                         break;
 
                     case PLATFORM_TYPES.CONVEYOR_RIGHT:
-                        // 向右滾輪輸送帶
                         ctx.fillStyle = '#0369a1';
                         ctx.fillRect(this.x, this.y, this.width, this.height);
                         ctx.fillStyle = '#38bdf8';
                         ctx.fillRect(this.x, this.y, this.width, 2);
-                        // 繪製轉向箭頭/齒輪刻度
                         ctx.fillStyle = '#075985';
                         for (let i = 0; i < this.width; i += 12) {
                             const offset = (i + this.conveyorAnim) % this.width;
@@ -733,13 +703,11 @@
                         break;
 
                     case PLATFORM_TYPES.SPRING:
-                        // 彈簧高跳階梯
                         ctx.fillStyle = '#d97706';
                         ctx.fillRect(this.x, this.y + 8, this.width, 6);
                         const compress = this.springState > 0 ? 5 : 0;
                         ctx.fillStyle = '#fbbf24';
                         ctx.fillRect(this.x + 4, this.y + 2 + compress, this.width - 8, 6);
-                        // 彈簧線圈
                         ctx.strokeStyle = '#f59e0b';
                         ctx.lineWidth = 3;
                         ctx.beginPath();
@@ -751,22 +719,24 @@
                         break;
 
                     case PLATFORM_TYPES.CRUMBLE:
-                        // 易碎階梯
-                        ctx.fillStyle = '#854d0e';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        ctx.fillStyle = this.isCrumbled ? '#713f12' : '#854d0e';
+                        ctx.fillRect(drawX, drawY, this.width, this.height);
                         ctx.fillStyle = '#ca8a04';
-                        // 木紋裂縫線條
-                        ctx.fillRect(this.x + 10, this.y + 4, 25, 2);
-                        ctx.fillRect(this.x + 45, this.y + 8, 30, 2);
+                        ctx.fillRect(drawX + 10, drawY + 4, 25, 2);
+                        ctx.fillRect(drawX + 45, drawY + 8, 30, 2);
+
+                        if (this.isCrumbled) {
+                            ctx.fillStyle = '#ef4444';
+                            ctx.fillRect(drawX + 5, drawY + 2, 80, 2);
+                            ctx.fillRect(drawX + 25, drawY + 6, 40, 2);
+                        }
                         break;
 
                     case PLATFORM_TYPES.TRAP:
-                        // 黏液/膠水困住階梯
                         ctx.fillStyle = '#581c87';
                         ctx.fillRect(this.x, this.y, this.width, this.height);
                         ctx.fillStyle = '#a855f7';
                         ctx.fillRect(this.x, this.y, this.width, 3);
-                        // 黏液泡泡
                         ctx.fillStyle = '#c084fc';
                         ctx.beginPath();
                         ctx.arc(this.x + 15, this.y + 7, 3, 0, Math.PI * 2);
@@ -786,11 +756,9 @@
             const spikeWidth = 20;
             const count = Math.ceil(CANVAS_WIDTH / spikeWidth);
 
-            // 金屬底座
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(0, 0, CANVAS_WIDTH, 6);
 
-            // 頂部金屬紅銀刺
             for (let i = 0; i < count; i++) {
                 ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#94a3b8';
                 ctx.beginPath();
@@ -805,23 +773,17 @@
 
         // 階梯生成機制
         function generatePlatforms() {
-            // 保持階梯垂直間距 (約 75px)
             const minSpacing = 75;
             
-            // 取得最新生成的階梯 Y 座標（若陣列為空則以畫布底部為基準）
             let highestPlatformY = platforms.length > 0 
                 ? platforms[platforms.length - 1].y 
                 : CANVAS_HEIGHT;
 
-            // 當畫面下方有空間時，持續補充新階梯
             if (highestPlatformY < CANVAS_HEIGHT + minSpacing) {
                 const y = highestPlatformY + minSpacing;
-                
-                // 決定是否在同一 Y 軸產生雙板 (15% 機率)
                 const isDoublePlatform = Math.random() < 0.15;
 
                 if (isDoublePlatform) {
-                    // 生成左右各一塊較小階梯
                     const p1 = new Platform(15 + Math.random() * 80, y, getRandomPlatformType());
                     const p2 = new Platform(215 + Math.random() * 80, y, getRandomPlatformType());
                     platforms.push(p1, p2);
@@ -829,7 +791,6 @@
                     trySpawnItem(p1);
                     trySpawnItem(p2);
                 } else {
-                    // 單一階梯，控制 X 軸不與上一塊階梯相差過遠
                     let x = lastPlatformX + (Math.random() * 160 - 80);
                     if (x < 10) x = 10;
                     if (x > CANVAS_WIDTH - 100) x = CANVAS_WIDTH - 100;
@@ -843,24 +804,23 @@
             }
         }
 
-        // 道具生成 logic
+        // 道具生成 logic (30% 生成機率)
         function trySpawnItem(platform) {
-            if (platform.type === PLATFORM_TYPES.SPIKE) return; // 針刺板不生成道具
+            if (platform.type === PLATFORM_TYPES.SPIKE) return;
 
-            if (Math.random() < 0.30) { // 30% 機率產生道具
+            if (Math.random() < 0.30) {
                 const itemX = platform.x + platform.width / 2 - 8;
                 const itemY = platform.y - 25;
 
                 const rand = Math.random();
                 let itemType = ITEM_TYPES.HEAL;
 
-                // 生: 30%, 解: 15%, 加: 55%
                 if (rand < 0.30) {
-                    itemType = ITEM_TYPES.HEAL;   // 30% 機率生命藥水 (生)
+                    itemType = ITEM_TYPES.HEAL;
                 } else if (rand < 0.45) {
-                    itemType = ITEM_TYPES.UNTRAP; // 15% 機率解困藥水 (解)
+                    itemType = ITEM_TYPES.UNTRAP;
                 } else {
-                    itemType = ITEM_TYPES.SPEED;  // 55% 機率加速藥水 (加)
+                    itemType = ITEM_TYPES.SPEED;
                 }
 
                 items.push(new Item(itemX, itemY, itemType));
@@ -871,15 +831,13 @@
         function handleCollisions() {
             player.isGrounded = false;
 
-            // 1. 玩家與頂部天花板刺碰撞
+            // 1. 天花板刺碰撞
             if (player.y <= CEILING_SPIKE_HEIGHT) {
-                // 只有從「沒碰到」變成「碰到」的瞬間才算一次傷害與傳送
                 if (!player.touchingCeilingSpike) {
                     player.touchingCeilingSpike = true;
                     player.hp -= 3;
                     player.hurtTimer = 30;
 
-                    // 若玩家正處於困住狀態，碰到頂刺立即可破除困住
                     if (player.trapTimer > 0) {
                         player.trapTimer = 0;
                     }
@@ -892,13 +850,11 @@
                         return;
                     }
 
-                    // 傳送到最上面的第 3 塊階梯 (從上到下排序)
                     const validPlatforms = platforms
-                        .filter(p => !p.isCrumbled && p.y > CEILING_SPIKE_HEIGHT + 10)
-                        .sort((a, b) => a.y - b.y); // 按 Y 軸升序排序 (最上方在第一位)
+                        .filter(p => !p.markedForDeletion && p.y > CEILING_SPIKE_HEIGHT + 10)
+                        .sort((a, b) => a.y - b.y);
 
                     if (validPlatforms.length > 0) {
-                        // 選擇第 3 塊 (索引 2)，若不到 3 塊則取最後一塊
                         const targetPlatform = validPlatforms[Math.min(2, validPlatforms.length - 1)];
                         player.x = targetPlatform.x + targetPlatform.width / 2 - player.width / 2;
                         player.y = targetPlatform.y - player.height;
@@ -910,17 +866,15 @@
                     }
                 }
             } else {
-                // 離開頂部刺，恢復觸碰狀態
                 player.touchingCeilingSpike = false;
             }
 
-            // 2. 玩家與階梯碰撞
+            // 2. 階梯碰撞
             let currentlyOnSpikePlatform = null;
 
             for (let p of platforms) {
-                if (p.isCrumbled) continue;
+                if (p.markedForDeletion) continue;
 
-                // 檢查腳底是否落在階梯表面
                 const playerFeet = player.y + player.height;
                 const prevPlayerFeet = playerFeet - player.vy;
 
@@ -931,26 +885,22 @@
                     playerFeet >= p.y &&
                     player.vy >= 0
                 ) {
-                    // 成功踩在階梯上
                     player.y = p.y - player.height;
                     player.vy = 0;
                     player.isGrounded = true;
 
-                    // 踩到普通階梯：加 1 分 & 恢復 1 HP
                     if (!p.hasLanded) {
                         p.hasLanded = true;
                         if (p.type === PLATFORM_TYPES.NORMAL) {
-                            score += 1; // 踩普通板 +1 分
+                            score += 1;
                             soundFX.playHeal();
                             updateUI();
                         }
                     }
 
-                    // 依據不同階梯類型執行特殊效果
                     switch (p.type) {
                         case PLATFORM_TYPES.SPIKE:
                             currentlyOnSpikePlatform = p;
-                            // 只在「新踏上」這塊針刺階梯時扣血一次
                             if (player.touchingSpikePlatform !== p) {
                                 player.touchingSpikePlatform = p;
                                 player.hp -= 3;
@@ -965,24 +915,20 @@
                             break;
 
                         case PLATFORM_TYPES.CONVEYOR_LEFT:
-                            // 輸送帶帶動玩家向左移動
                             player.x -= 2.5;
                             break;
 
                         case PLATFORM_TYPES.CONVEYOR_RIGHT:
-                            // 輸送帶帶動玩家向右移動
                             player.x += 2.5;
                             break;
 
                         case PLATFORM_TYPES.SPRING:
-                            // 彈簧板高跳
                             p.springState = 8;
                             player.vy = -10;
                             soundFX.playSpring();
                             break;
 
                         case PLATFORM_TYPES.CRUMBLE:
-                            // 易碎板踏上後崩解
                             if (!p.isCrumbled) {
                                 p.isCrumbled = true;
                                 soundFX.playBreak();
@@ -990,13 +936,10 @@
                             break;
 
                         case PLATFORM_TYPES.TRAP:
-                            // 黏液膠水困住階梯 (定身 1~3 秒)
                             if (player.trapTimer <= 0) {
-                                const randomFrames = Math.floor(60 + Math.random() * 120); // 1~3 秒 (60~180 fps)
+                                const randomFrames = Math.floor(60 + Math.random() * 120);
                                 player.trapTimer = randomFrames;
                                 player.trapMaxTime = randomFrames;
-                                
-                                // 踩中觸發困住後，立刻轉變為普通階梯
                                 p.type = PLATFORM_TYPES.NORMAL;
                             }
                             break;
@@ -1004,10 +947,9 @@
                 }
             }
 
-            // 更新是否處於針刺板上
             player.touchingSpikePlatform = currentlyOnSpikePlatform;
 
-            // 3. 玩家與道具碰撞 (撿起存入 3 格物品欄)
+            // 3. 道具碰撞
             for (let item of items) {
                 if (item.markedForDeletion) continue;
 
@@ -1017,7 +959,6 @@
                     player.y < item.y + item.height &&
                     player.y + player.height > item.y
                 ) {
-                    // 尋找物品欄空位
                     const emptySlot = inventory.findIndex(slot => slot === null);
                     if (emptySlot !== -1) {
                         inventory[emptySlot] = { type: item.type, healAmount: item.healAmount };
@@ -1028,13 +969,12 @@
                 }
             }
 
-            // 4. 掉落底部深淵判斷
+            // 4. 深淵死亡判定
             if (player.y > CANVAS_HEIGHT) {
                 endGame('摔落到深淵了！');
             }
         }
 
-        // 使用物品欄中的道具 (點擊滑鼠觸發)
         function useInventoryItem(index) {
             if (!isGameRunning || index < 0 || index >= 3) return;
             const item = inventory[index];
@@ -1044,20 +984,18 @@
                 player.hp = Math.min(MAX_HP, player.hp + item.healAmount);
                 soundFX.playHeal();
             } else if (item.type === ITEM_TYPES.UNTRAP) {
-                player.trapTimer = 0; // 瞬間解除困住
+                player.trapTimer = 0;
                 soundFX.playItem();
             } else if (item.type === ITEM_TYPES.SPEED) {
-                player.speedBuffTimer = 300; // 加速 5 秒 (60fps * 5)
+                player.speedBuffTimer = 300;
                 soundFX.playItem();
             }
 
-            // 使用完後清空該欄位
             inventory[index] = null;
             updateInventoryUI();
             updateUI();
         }
 
-        // 更新 3 格物品欄 UI 顯示
         function updateInventoryUI() {
             for (let i = 0; i < 3; i++) {
                 const slotEl = document.getElementById(`slot-${i}`);
@@ -1082,13 +1020,11 @@
             }
         }
 
-        // UI 畫面更新
         function updateUI() {
             const hpPercent = Math.max(0, (player.hp / MAX_HP) * 100);
             hpBar.style.width = `${hpPercent}%`;
             hpText.textContent = `${Math.max(0, player.hp)}/${MAX_HP}`;
 
-            // HP 低時變紅
             if (player.hp <= 3) {
                 hpBar.className = "h-full bg-red-600 rounded-full transition-all duration-200 animate-pulse";
             } else {
@@ -1098,14 +1034,11 @@
             depthText.textContent = `B${score}`;
         }
 
-        // 遊戲主迴圈
         function gameLoop() {
             if (!isGameRunning) return;
 
-            // 清空畫布
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-            // 背景細緻網格
             ctx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
             ctx.lineWidth = 1;
             for (let y = 0; y < CANVAS_HEIGHT; y += 30) {
@@ -1115,48 +1048,36 @@
                 ctx.stroke();
             }
 
-            // 1. 更新與繪製階梯
             for (let p of platforms) {
                 p.update();
                 p.draw(ctx);
             }
-
-            // 清除走出畫面的階梯
             platforms = platforms.filter(p => !p.markedForDeletion);
 
-            // 2. 生成新階梯
             generatePlatforms();
 
-            // 3. 更新與繪製道具
             for (let item of items) {
                 item.update();
                 item.draw(ctx);
             }
             items = items.filter(i => !i.markedForDeletion);
 
-            // 4. 更新與繪製玩家
             player.update();
             player.draw(ctx);
 
-            // 5. 繪製頂部尖刺天花板
             drawCeilingSpikes(ctx);
-
-            // 6. 碰撞偵測與計算分數
             handleCollisions();
-
             updateUI();
 
             animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        // 開始遊戲
         function startGame() {
             soundFX.init();
             isGameRunning = true;
             score = 0;
             lastPlatformY = CANVAS_HEIGHT - 60;
             lastPlatformX = CANVAS_WIDTH / 2 - 45;
-            lastSpawnY = CANVAS_HEIGHT;
 
             inventory = [null, null, null];
             updateInventoryUI();
@@ -1164,7 +1085,6 @@
             platforms = [];
             items = [];
 
-            // 初始安全平台
             const initPlatform = new Platform(CANVAS_WIDTH / 2 - 45, CANVAS_HEIGHT - 120, PLATFORM_TYPES.NORMAL);
             platforms.push(initPlatform);
 
@@ -1178,7 +1098,6 @@
             gameLoop();
         }
 
-        // 結束遊戲
         function endGame(reason) {
             isGameRunning = false;
             soundFX.playHurt();
@@ -1203,7 +1122,6 @@
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
                 keys.right = true;
             }
-            // 鍵盤數字 1, 2, 3 快捷使用道具
             if (e.key === '1') {
                 useInventoryItem(0);
             }
@@ -1221,18 +1139,6 @@
             }
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
                 keys.right = false;
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                keys.left = false;
-            }
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                keys.right = false;
-            }
-            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-                keys.up = false;
             }
         });
 

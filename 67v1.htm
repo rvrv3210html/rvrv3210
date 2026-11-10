@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>3d射擊遊戲v2</title>
-
+    <title>3d射擊遊戲v3</title>
+    <link rel="icon" sizes="400x500" href="https://rvrv3210html.github.io/rvrv3210/game/loge.jpg">
     <style>
         body, html {
             margin: 0;
@@ -14,18 +14,11 @@
             overflow: hidden;
             touch-action: none;
             background-color: #87ceeb;
+            font-family: monospace;
         }
-        b {
+        b, input {
             position: fixed;
             left: 50%;
-        }
-        input {
-            position: fixed;
-            left: 50%;
-        }
-        h2{
-            left: 50%;
-            /* top: 50%; */
         }
         #page {
             position: fixed;
@@ -33,15 +26,15 @@
             top: 50%;
             transform: translate(-50%, -50%);
             color: #ff0000;
-            animation: rainbow 5s linear infinite;    
+            animation: rainbow 5s linear infinite;
+            text-align: center;
+            z-index: 10;
         }
         #start{
             padding: 20px 40px;
             font-size: 24px;
             cursor: pointer;
-            z-index: 10;
         }
-        /* 避免影響其他特定介面 div */
         body > div:not(#play):not(#page):not(#settings):not(#mobileControls) {
             position: fixed;
             left: 100%;
@@ -64,7 +57,7 @@
             background: rgba(0, 0, 0, 0.45);
             padding: 8px 10px;
             border-radius: 5px;
-            font: 14px monospace;
+            font-size: 14px;
             z-index: 5;
             pointer-events: none;
         }
@@ -79,18 +72,137 @@
             z-index: 6;
             pointer-events: none;
         }
-        #gameHud {
+
+        /*  左下角血量條 */
+        #healthHud {
             position: fixed;
-            left: 12px;
-            bottom: 12px;
-            padding: 9px 12px;
+            left: 15px;
+            bottom: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 14px;
+            border-radius: 8px;
             color: white;
-            background: rgba(0, 0, 0, 0.55);
-            border-radius: 5px;
-            font: 15px monospace;
             z-index: 5;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
+        #healthHud progress {
+            width: 180px;
+            height: 16px;
+            accent-color: #e74c3c;
+        }
+
+        /*  右上角藥水狀態摘要 */
+        #potionHud {
+            position: fixed;
+            right: 15px;
+            top: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            z-index: 5;
+            pointer-events: none;
+            font-size: 13px;
+            max-width: 180px;
+        }
+
+        /*  按 E 顯示的完整 36 格背包面板 */
+        #extraSpacePanel {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.92);
+            border: 3px solid #3498db;
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            z-index: 25;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        #fullBagGrid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 6px;
+            margin-top: 15px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        /*底部中央：等級條與常駐前 9 格背包 */
+        #bottomCenterPanel {
+            position: fixed;
+            left: 50%;
+            bottom: 15px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 5;
+            pointer-events: auto;
+        }
+        #expHud {
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            width: 100%;
+            pointer-events: none;
+        }
+        #expHud progress {
+            width: 100%;
+            height: 8px;
+            accent-color: #f1c40f;
+        }
+        #inventoryHud {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+        .invSlot {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            text-align: center;
+            cursor: grab;
+            position: relative;
+            user-select: none;
+        }
+        .invSlot:active {
+            cursor: grabbing;
+        }
+        .invSlot span {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 9px;
+            color: #aaa;
+            pointer-events: none;
+        }
+
         #pauseOverlay {
             display: none;
             position: fixed;
@@ -103,14 +215,17 @@
             flex-direction: column;
             gap: 16px;
         }
-
         #resumeButton {
-            padding: 12px 28px;
-            font-size: 20px;
+            padding: 10px 24px;
+            font-size: 18px;
             cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: #27ae60;
+            color: white;
         }
 
-        /* 手機控制按鈕與搖桿樣式 */
+        /* 手機控制介面 */
         #mobileControls {
             display: none;
             position: fixed;
@@ -122,7 +237,7 @@
         #joystickZone {
             position: absolute;
             left: 30px;
-            bottom: 30px;
+            bottom: 110px;
             width: 120px;
             height: 120px;
             background: rgba(255, 255, 255, 0.2);
@@ -148,78 +263,101 @@
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             user-select: none;
-            -webkit-user-select: none;
         }
-        #jumpBtn { right: 30px; bottom: 130px; width: 75px; height: 75px; border-radius: 50%; }
-        #shootBtn { right: 120px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; background: rgba(200, 50, 50, 0.6); }
-        #reloadBtn { right: 30px; bottom: 40px; width: 75px; height: 75px; border-radius: 50%; }
+        #jumpBtn { right: 30px; bottom: 140px; width: 70px; height: 70px; border-radius: 50%; }
+        #shootBtn { right: 115px; bottom: 60px; width: 70px; height: 70px; border-radius: 50%; background: rgba(200, 50, 50, 0.6); }
+        #reloadBtn { right: 30px; bottom: 60px; width: 70px; height: 70px; border-radius: 50%; }
+        #bagBtn { left: 15px; top: 70px; width: 70px; height: 45px; border-radius: 8px; background: rgba(230, 126, 34, 0.8); pointer-events: auto; }
+
         @keyframes rainbow{
-            0%{
-                color: #ff0000;
-            }
-            10%{
-                color: #ffaa00;                
-            }
-            20%{
-                color: #eeff00;                
-            }
-            40%{
-                color: #00ff00;                
-
-            }
-            50%{
-                color: #00ff99;
-            }
-            70%{
-                color: #00ffff;
-            }
-            80%{
-                color: #0000ff;
-            }            
-            1000%{
-                color:#ea00ff ;
-            }
-
+            0%{ color: #ff0000; }
+            7%{ color: #ffaa00;  }
+            16%{ color: #ffff00;  }
+            25%{ color: #00ff00; }
+            31%{ color: #00aaff; }
+            42%{ color: #0000ff; }
+            50%{ color: #ff00ff; }
+            57%{ color: #0000ff; }
+            66%{ color: #00aaff;  }
+            75%{ color: #00ff00; }
+            81%{ color: #ffff00; }
+            92%{ color: #ffaa00; }
+            100%{ color: #ff0000; }
         }
     </style>
 </head>
 
 <body>
 <div id="page">
-    <h1>3d射擊遊戲 v2(支持手機板)</h1>
-   <button id="start">
-    開始新世界
-   </button>
+    <h1>3d射擊遊戲v3</h1>
+   <button id="start">開始新世界</button>
 </div>
 <div id="settings">
-   <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;靈敏度</b>
-   <input type="range" min="0.001" max="0.01" step="0.001"  value="0.002" id="Sensitive">
+   <b>靈敏度</b><br>
+   <input type="range" min="0.001" max="0.01" step="0.001" value="0.002" id="Sensitive">
    <br><br>
-    <b id="Sensitivetext">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;世界最高度</b>
+   <b>世界最高度</b><br>
    <input type="number" min="10" value="10" id="tallest">
    <br><br>
-   <b>反向操作</b>
-   <br>
+   <b>反向操作</b><br>
    <input type="checkbox" id="operation">
 </div>
 <div id="play">
-    <div id="crosshair">
-        +
-    </div>
+    <div id="crosshair">+</div>
     <div id="coords">X: 0 | Y: 0 | Z: 0</div>
     <div id="shotMessage"></div>
-    <div id="gameHud">生命值：100 | 錢：0<br>WASD 移動．左鍵射擊</div>
+
+    <!--  左下角血量條 -->
+    <div id="healthHud">
+        <span id="healthText">生命值：100/100</span>
+        <progress id="healthBar" value="100" max="100"></progress>
+    </div>
+
+    <!--  右上角藥水狀態摘要 -->
+    <div id="potionHud">
+        <b> 道具狀態</b>
+        <div id="potionList" style="margin-top: 4px; font-size: 11px; color: #ddd;">背包道具：無</div>
+    </div>
+
+    <!--  按 E 顯示的完整 36 格背包面板 -->
+    <div id="extraSpacePanel">
+        <h2> 完整 36 格背包空間 (可拖曳道具調整位置)</h2>
+        <div id="fullBagGrid"></div>
+        <button onclick="toggleExtraSpace()" style="margin-top: 15px; padding: 8px 16px; background: #e74c3c; border: none; color: white; border-radius: 5px; cursor: pointer;">關閉背包</button>
+    </div>
+
+    <!-- 🔽 底部中央：等級條與常駐前 9 格背包 -->
+    <div id="bottomCenterPanel">
+        <div id="expHud">
+            <span id="expText">Lv.1 (經驗: 0/100)</span>
+            <progress id="expBar" value="0" max="100"></progress>
+        </div>
+        
+        <div id="inventoryHud">
+            <div class="invSlot" id="slot-0"><span>1</span>-</div>
+            <div class="invSlot" id="slot-1"><span>2</span>-</div>
+            <div class="invSlot" id="slot-2"><span>3</span>-</div>
+            <div class="invSlot" id="slot-3"><span>4</span>-</div>
+            <div class="invSlot" id="slot-4"><span>5</span>-</div>
+            <div class="invSlot" id="slot-5"><span>6</span>-</div>
+            <div class="invSlot" id="slot-6"><span>7</span>-</div>
+            <div class="invSlot" id="slot-7"><span>8</span>-</div>
+            <div class="invSlot" id="slot-8"><span>9</span>-</div>
+        </div>
+    </div>
+
     <div id="pauseOverlay">
         <h1>遊戲暫停</h1>
         <p>按 Esc 或點擊按鈕繼續</p>
         <button id="resumeButton">繼續遊戲</button>
     </div>
+    
     <!-- 手機控制介面 -->
     <div id="mobileControls">
         <div id="joystickZone">
@@ -227,9 +365,11 @@
         </div>
         <div id="jumpBtn" class="mobileBtn">跳躍</div>
         <div id="shootBtn" class="mobileBtn">射擊</div>
-        <div id="reloadBtn" class="mobileBtn">裝填</div>
+        <div id="reloadBtn" class="mobileBtn">裝填/重製</div>
+        <div id="bagBtn" class="mobileBtn" onclick="toggleExtraSpace()">背包</div>
     </div>
 </div>
+
 <script type="importmap">
     {
       "imports": {
@@ -237,30 +377,26 @@
         "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
       }
     }
-  </script>
+</script>
 <script type="module">
 document.getElementById("play").style.display = "none";
 
 const startButton = document.getElementById("start");
 const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-startButton.addEventListener(
-    "click",
-    function() {
-        document.getElementById("play").style.display = "block";
-        document.getElementById("settings").style.display = "none";
-        startButton.style.display = "none";
-        Sensitive.style.display = "none";
-        document.getElementById("page").style.display = "none";
+startButton.addEventListener("click", function() {
+    document.getElementById("play").style.display = "block";
+    document.getElementById("settings").style.display = "none";
+    startButton.style.display = "none";
+    document.getElementById("page").style.display = "none";
 
-        if (isMobile) {
-            document.getElementById("mobileControls").style.display = "block";
-        } else {
-            document.body.requestPointerLock();
-        }
-        play();
+    if (isMobile) {
+        document.getElementById("mobileControls").style.display = "block";
+    } else {
+        document.body.requestPointerLock();
     }
-);
+    play();
+});
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 import Stats from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/libs/stats.module.js';
@@ -269,25 +405,25 @@ const stats = new Stats();
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
+const bulletGeo = new THREE.SphereGeometry(0.08, 6, 6);
+const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+const enemyBulletGeo = new THREE.SphereGeometry(0.11, 6, 6);
+const enemyBulletMat = new THREE.MeshBasicMaterial({ color: 0xff5533 });
+
 function play(){
 let isPaused = false;
-console.log(document.getElementById("operation").checked)
+let isExtraOpen = false;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 5, 35);
+scene.fog = new THREE.Fog(0x87ceeb, 5, 45);
 
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-);
-
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 15, 15);
 scene.add(camera);
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
 function createBlock(x, y, z, material) {
@@ -298,98 +434,315 @@ function createBlock(x, y, z, material) {
     return block;
 }
 
-const gun = new THREE.Group();
-gun.position.set(0.32, -0.28, -0.58);
-camera.add(gun);
+let playerLevel = 1;
+let playerExp = 0;
+let nextLevelExp = 100;
+let maxHealth = 100;
+let playerHealth = 100;
 
-function addGunPart(geometry, color, x, y, z, rotationX = 0) {
+let isReloading = false;
+let reloadTimer = 0;
+let recoil = 0;
+let flashTimer = 0;
+let playerSpeed = 0.1;
+let speedBuffTimer = 0;
+
+// 36 格完整背包系統
+const inventory = new Array(36).fill(null);
+
+let draggedIndex = null;
+const fullBagGridEl = document.getElementById('fullBagGrid');
+for (let i = 0; i < 36; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'invSlot';
+    slot.id = `full-slot-${i}`;
+    slot.setAttribute('draggable', 'true');
+    slot.innerHTML = `<span>${i+1}</span>-`;
+
+    slot.addEventListener('dragstart', (e) => {
+        draggedIndex = i;
+        e.dataTransfer.setData('text/plain', i);
+    });
+
+    slot.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedIndex === null) return;
+        const targetIndex = i;
+
+        const temp = inventory[draggedIndex];
+        inventory[draggedIndex] = inventory[targetIndex];
+        inventory[targetIndex] = temp;
+
+        draggedIndex = null;
+        updateInventoryUI();
+    });
+
+    slot.addEventListener('click', () => {
+        useInventoryItem(i);
+    });
+
+    fullBagGridEl.appendChild(slot);
+}
+
+for (let i = 0; i < 9; i++) {
+    document.getElementById(`slot-${i}`).addEventListener('click', () => {
+        useInventoryItem(i);
+    });
+}
+
+window.toggleExtraSpace = function() {
+    isExtraOpen = !isExtraOpen;
+    document.getElementById('extraSpacePanel').style.display = isExtraOpen ? 'block' : 'none';
+    if (isExtraOpen && !isMobile && document.pointerLockElement) {
+        document.exitPointerLock();
+    } else if (!isExtraOpen && !isMobile && !isPaused) {
+        document.body.requestPointerLock();
+    }
+}
+
+window.addItemToInventory = function(item) {
+    for (let i = 0; i < inventory.length; i++) {
+        if (!inventory[i]) {
+            inventory[i] = item;
+            updateInventoryUI();
+            return true;
+        }
+    }
+    showShotMessage('36格背包已滿！無法拾取');
+    return false;
+};
+
+window.useInventoryItem = function(index) {
+    const item = inventory[index];
+    if (!item) return;
+
+    if (item.type === 'heal') {
+        playerHealth = Math.min(maxHealth, playerHealth + item.value);
+        showShotMessage(`使用回血藥水，恢復 ${item.value} HP！`);
+        inventory[index] = null;
+    } else if (item.type === 'speed') {
+        playerSpeed = 0.2;
+        speedBuffTimer = item.duration;
+        showShotMessage(`使用加速藥水！移動速度加倍 (${item.duration}秒)`);
+        inventory[index] = null;
+    } else if (item.type === 'gun') {
+        switchGunByIndex(item.gunIndex);
+        showShotMessage(`已切換裝備武器：${item.name}`);
+    }
+
+    updateInventoryUI();
+    updateGameHud();
+};
+
+function updateInventoryUI() {
+    let itemSummary = "";
+    let itemCount = 0;
+
+    for (let i = 0; i < 36; i++) {
+        const item = inventory[i];
+        const slotEl = document.getElementById(`full-slot-${i}`);
+        if (item) {
+            if (item.type === 'gun') {
+                const isCurrent = item.gunIndex === currentGunIndex;
+                slotEl.innerHTML = `<span>${i+1}</span><b style="color:${isCurrent ? '#2ecc71' : '#f39c12'}; font-size:9px;">${item.name}</b><br><span style="font-size:8px;color:#f1c40f;">${isCurrent ? guns[currentGunIndex].magAmmo + '/' + guns[currentGunIndex].magSize : '備用'}</span>`;
+                slotEl.style.borderColor = isCurrent ? '#2ecc71' : '#e67e22';
+            } else {
+                slotEl.innerHTML = `<span>${i+1}</span><span style="font-size:9px;">${item.name}</span>`;
+                slotEl.style.borderColor = item.type === 'heal' ? '#e74c3c' : '#3498db';
+                itemCount++;
+                itemSummary += `• [${i+1}] ${item.name}<br>`;
+            }
+        } else {
+            slotEl.innerHTML = `<span>${i+1}</span>-`;
+            slotEl.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        }
+    }
+
+    for (let i = 0; i < 9; i++) {
+        const slotEl = document.getElementById(`slot-${i}`);
+        const fullSlotEl = document.getElementById(`full-slot-${i}`);
+        if (fullSlotEl) {
+            slotEl.innerHTML = fullSlotEl.innerHTML;
+            slotEl.style.borderColor = fullSlotEl.style.borderColor;
+        }
+    }
+
+    const potionListEl = document.getElementById('potionList');
+    potionListEl.innerHTML = itemCount > 0 ? itemSummary : "背包道具：無";
+}
+
+function addExp(amount) {
+    playerExp += amount;
+    showShotMessage(`獲得經驗值 +${amount}`);
+    
+    while (playerExp >= nextLevelExp) {
+        playerExp -= nextLevelExp;
+        playerLevel++;
+        maxHealth += 10;
+        playerHealth = maxHealth;
+        
+        nextLevelExp = nextLevelExp * 2 - playerLevel * 2;
+        checkWeaponUnlock();
+        showShotMessage(`🎉 恭喜升到 Lv.${playerLevel}！血量上限+10並回滿！`);
+    }
+    updateGameHud();
+}
+
+const guns = [
+    { name: "M4A1", magSize: 30, magAmmo: 30, reserveAmmo: 240, damage: 25, reloadDuration: 2.0, speed: 45, fireInterval: 0.1, unlockLevel: 1 },
+    { name: "MP5", magSize: 30, magAmmo: 30, reserveAmmo: 240, damage: 20, reloadDuration: 1.5, speed: 45, fireInterval: 0.08, unlockLevel: 2 },
+    { name: "Desert Eagle", magSize: 7, magAmmo: 7, reserveAmmo: 70, damage: 60, reloadDuration: 1.8, speed: 35, fireInterval: 0.35, unlockLevel: 3 },
+    { name: "AK-47", magSize: 30, magAmmo: 30, reserveAmmo: 240, damage: 40, reloadDuration: 2.2, speed: 45, fireInterval: 0.15, unlockLevel: 6 },
+    { name: "M870", magSize: 8, magAmmo: 8, reserveAmmo: 80, damage: 110, reloadDuration: 2.5, speed: 40, fireInterval: 0.6, unlockLevel: 10 },
+    { name: "AWM", magSize: 5, magAmmo: 5, reserveAmmo: 50, damage: 250, reloadDuration: 3.0, speed: 50, fireInterval: 1.0, unlockLevel: 15 },
+    { name: "M249", magSize: 100, magAmmo: 100, reserveAmmo: 400, damage: 35, reloadDuration: 4.0, speed: 45, fireInterval: 0.09, unlockLevel: 21 },
+    { name: "雷射槍", magSize: 50, magAmmo: 50, reserveAmmo: 500, damage: 180, reloadDuration: 1.5, speed: 60, fireInterval: 0.1, unlockLevel: 28 }
+];
+
+let currentGunIndex = 0;
+let lastShotTime = 0;
+
+function checkWeaponUnlock() {
+    for (let i = 0; i < guns.length; i++) {
+        if (playerLevel >= guns[i].unlockLevel) {
+            let hasThisGun = inventory.some(item => item && item.type === 'gun' && item.gunIndex === i);
+            if (!hasThisGun) {
+                let added = addItemToInventory({ name: guns[i].name, type: 'gun', gunIndex: i });
+                if (added) {
+                    showShotMessage(`🔥 解鎖新武器：${guns[i].name}！已放入背包`);
+                }
+            }
+        }
+    }
+}
+
+function switchGunByIndex(index) {
+    if (isReloading) return;
+    currentGunIndex = index;
+    weaponMeshGroups.forEach((g, i) => g.visible = (i === currentGunIndex));
+    updateGameHud();
+}
+
+inventory[0] = { name: guns[0].name, type: 'gun', gunIndex: 0 };
+
+const monsters = [];
+const enemyBullets = [];
+const playerBullets = [];
+
+window.updateGameHud = function() {
+    const gun = guns[currentGunIndex];
+    let buffStr = speedBuffTimer > 0 ? ` [⚡加速: ${Math.ceil(speedBuffTimer)}s]` : '';
+    
+    document.getElementById('healthText').textContent = `生命值：${Math.max(0, Math.ceil(playerHealth))}/${maxHealth}${buffStr}`;
+    const healthBar = document.getElementById('healthBar');
+    healthBar.max = maxHealth;
+    healthBar.value = Math.max(0, playerHealth);
+
+    document.getElementById('expText').textContent = `Lv.${playerLevel} (經驗: ${playerExp}/${nextLevelExp})`;
+    const expBar = document.getElementById('expBar');
+    expBar.max = nextLevelExp;
+    expBar.value = playerExp;
+
+    updateInventoryUI();
+}
+
+const gunGroup = new THREE.Group();
+gunGroup.position.set(0.32, -0.28, -0.58);
+camera.add(gunGroup);
+
+const weaponMeshGroups = [];
+for (let i = 0; i < guns.length; i++) {
+    const grp = new THREE.Group();
+    grp.visible = (i === 0);
+    gunGroup.add(grp);
+    weaponMeshGroups.push(grp);
+}
+
+function addPart(parent, geometry, color, x, y, z, rx = 0) {
     const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color }));
     mesh.position.set(x, y, z);
-    mesh.rotation.x = rotationX;
-    gun.add(mesh);
+    mesh.rotation.x = rx;
+    parent.add(mesh);
     return mesh;
 }
 
-addGunPart(new THREE.BoxGeometry(0.20, 0.18, 0.48), 0x343a40, 0, 0, 0);
-addGunPart(new THREE.BoxGeometry(0.17, 0.14, 0.22), 0x60452c, 0, -0.02, 0.31);
-addGunPart(new THREE.BoxGeometry(0.11, 0.22, 0.13), 0x493222, 0, -0.17, 0.05, 0.18);
-addGunPart(new THREE.CylinderGeometry(0.035, 0.045, 0.48, 8), 0x20252a, 0, 0.015, -0.43, Math.PI / 2);
-addGunPart(new THREE.BoxGeometry(0.05, 0.05, 0.07), 0x111111, 0, 0.12, -0.18);
+addPart(weaponMeshGroups[0], new THREE.BoxGeometry(0.20, 0.18, 0.52), 0x2b2b2b, 0, 0, 0);
+addPart(weaponMeshGroups[0], new THREE.BoxGeometry(0.16, 0.14, 0.25), 0x5a3d28, 0, -0.02, 0.33);
+addPart(weaponMeshGroups[0], new THREE.CylinderGeometry(0.03, 0.035, 0.52, 8), 0x111111, 0, 0.02, -0.45, Math.PI / 2);
+
+addPart(weaponMeshGroups[1], new THREE.BoxGeometry(0.16, 0.15, 0.40), 0x222222, 0, 0, 0);
+addPart(weaponMeshGroups[1], new THREE.CylinderGeometry(0.025, 0.03, 0.38, 8), 0x0f0f0f, 0, 0.02, -0.35, Math.PI / 2);
+
+addPart(weaponMeshGroups[2], new THREE.BoxGeometry(0.14, 0.14, 0.32), 0x1a1a1a, 0, 0, 0);
+addPart(weaponMeshGroups[2], new THREE.BoxGeometry(0.10, 0.20, 0.10), 0x333333, 0, -0.14, 0.08, 0.2);
+
+addPart(weaponMeshGroups[3], new THREE.BoxGeometry(0.22, 0.20, 0.55), 0x8b5a2b, 0, 0, 0);
+addPart(weaponMeshGroups[3], new THREE.CylinderGeometry(0.035, 0.04, 0.55, 8), 0x333333, 0, 0.03, -0.45, Math.PI / 2);
+
+addPart(weaponMeshGroups[4], new THREE.BoxGeometry(0.22, 0.18, 0.65), 0x4a3b32, 0, 0, 0);
+addPart(weaponMeshGroups[4], new THREE.CylinderGeometry(0.04, 0.045, 0.60, 8), 0x1a1a1a, 0, 0.02, -0.50, Math.PI / 2);
+
+addPart(weaponMeshGroups[5], new THREE.BoxGeometry(0.18, 0.18, 0.75), 0x2f4f4f, 0, 0, 0);
+addPart(weaponMeshGroups[5], new THREE.CylinderGeometry(0.03, 0.035, 0.85, 8), 0x111111, 0, 0.02, -0.55, Math.PI / 2);
+
+addPart(weaponMeshGroups[6], new THREE.BoxGeometry(0.25, 0.22, 0.80), 0x556b2f, 0, 0, 0);
+addPart(weaponMeshGroups[6], new THREE.CylinderGeometry(0.04, 0.045, 0.75, 8), 0x222222, 0, 0.03, -0.55, Math.PI / 2);
+
+addPart(weaponMeshGroups[7], new THREE.BoxGeometry(0.22, 0.22, 0.65), 0x00ffff, 0, 0, 0);
+addPart(weaponMeshGroups[7], new THREE.CylinderGeometry(0.05, 0.06, 0.70, 8), 0xff00ff, 0, 0.02, -0.50, Math.PI / 2);
 
 const muzzleFlash = new THREE.Mesh(
     new THREE.SphereGeometry(0.085, 8, 6),
     new THREE.MeshBasicMaterial({ color: 0xffcc55 })
 );
-muzzleFlash.position.set(0, 0.02, -0.69);
+muzzleFlash.position.set(0, 0.02, -0.72);
 muzzleFlash.visible = false;
-gun.add(muzzleFlash);
-let recoil = 0;
-let flashTimer = 0;
-
-const monsters = [];
-const enemyBullets = [];
-
-let playerHealth = 100;
-let monsterKills = 0;
-
-const magazineSize = 20;
-let magazineAmmo = 20;
-let reserveAmmo = 200;
-
-let isReloading = false;
-let reloadTimer = 0;
-const reloadDuration = 1.2;
-
-function updateGameHud() {
-    const totalAmmo = magazineAmmo + reserveAmmo;
-    const boxesLeft = Math.ceil(totalAmmo / magazineSize);
-    document.getElementById('gameHud').innerHTML =
-        `生命值：${Math.max(0, Math.ceil(playerHealth))} | 錢：${monsterKills}<br>` +
-        `彈匣：${magazineAmmo}/${magazineSize} | 備彈：${reserveAmmo}<br>` +
-        `剩餘約 ${boxesLeft}/10 盒 | ` +
-        (isReloading ? '裝填中...' :
-         playerHealth > 1 ? (isMobile ? '虛擬搖桿移動' : '左鍵射擊．R 裝填．Esc 暫停') : '你被打敗了！點擊裝填鈕重生');
-}
+gunGroup.add(muzzleFlash);
 
 function startReload() {
+    const gun = guns[currentGunIndex];
     if (isReloading || playerHealth <= 0) return;
-    if (magazineAmmo >= magazineSize) {
-        showShotMessage('彈匣已滿');
-        return;
-    }
-    if (reserveAmmo <= 0) {
-        showShotMessage('沒有備用子彈了！');
-        return;
-    }
+    if (gun.magAmmo >= gun.magSize) { showShotMessage('彈匣已滿'); return; }
+    if (gun.reserveAmmo <= 0) { showShotMessage('備彈不足！'); return; }
 
     isReloading = true;
-    reloadTimer = reloadDuration;
+    reloadTimer = gun.reloadDuration;
     updateGameHud();
     showShotMessage('裝填中...');
 }
 
 function finishReload() {
-    const needed = magazineSize - magazineAmmo;
-    const loaded = Math.min(needed, reserveAmmo);
-    magazineAmmo += loaded;
-    reserveAmmo -= loaded;
+    const gun = guns[currentGunIndex];
+    const needed = gun.magSize - gun.magAmmo;
+    const loaded = Math.min(needed, gun.reserveAmmo);
+    gun.magAmmo += loaded;
+    gun.reserveAmmo -= loaded;
     isReloading = false;
     updateGameHud();
     showShotMessage('裝填完成！');
 }
 
 function updateWeapon(delta) {
+    if (speedBuffTimer > 0) {
+        speedBuffTimer -= delta;
+        if (speedBuffTimer <= 0) {
+            playerSpeed = 0.1;
+            showShotMessage('加速效果已結束');
+            updateGameHud();
+        }
+    }
     if (recoil > 0) {
         recoil -= delta * 10;
         if (recoil < 0) recoil = 0;
-        gun.position.z = -0.58 + recoil * 0.05;
+        gunGroup.position.z = -0.58 + recoil * 0.05;
     }
-
     if (flashTimer > 0) {
         flashTimer -= delta;
-        if (flashTimer <= 0) {
-            muzzleFlash.visible = false;
-        }
+        if (flashTimer <= 0) muzzleFlash.visible = false;
     }
 }
 
@@ -408,13 +761,125 @@ function showShotMessage(message) {
     }, 700);
 }
 
-function createMonster(x, z, ownerChunkKey, isGunner = false) {
+function shootTarget() {
+    const now = performance.now() / 1000;
+    const gun = guns[currentGunIndex];
+    if (now - lastShotTime < gun.fireInterval) return;
+    if ((!isMobile && document.pointerLockElement !== document.body) || playerHealth <= 0 || isPaused || isReloading || isExtraOpen) return;
+    
+    if (gun.magAmmo <= 0) {
+        showShotMessage("沒子彈！請按 R 裝填");
+        return;
+    }
+
+    lastShotTime = now;
+    gun.magAmmo--;
+    updateGameHud();
+
+    recoil = 1;
+    flashTimer = 0.075;
+    muzzleFlash.visible = true;
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    const dir = raycaster.ray.direction.clone().normalize();
+
+    const bMesh = new THREE.Mesh(bulletGeo, bulletMat);
+    const muzzlePos = new THREE.Vector3();
+    muzzleFlash.getWorldPosition(muzzlePos);
+    bMesh.position.copy(muzzlePos);
+    scene.add(bMesh);
+
+    playerBullets.push({
+        mesh: bMesh,
+        direction: dir,
+        speed: gun.speed,
+        damage: gun.damage,
+        life: 2.0
+    });
+}
+
+function updatePlayerBullets(delta) {
+    for (let i = playerBullets.length - 1; i >= 0; i--) {
+        const bullet = playerBullets[i];
+        const moveDistance = bullet.speed * delta;
+        const currentPos = bullet.mesh.position.clone();
+        const nextPos = currentPos.clone().addScaledVector(bullet.direction, moveDistance);
+
+        const ray = new THREE.Raycaster(currentPos, bullet.direction, 0, moveDistance + 0.1);
+        const monsterMeshes = [];
+        monsters.forEach(m => m.group.traverse(child => { if (child.isMesh) monsterMeshes.push(child); }));
+        
+        const hits = ray.intersectObjects(monsterMeshes.concat(obstacles), true);
+
+        if (hits.length > 0) {
+            const hit = hits[0];
+            let hitObj = hit.object;
+            let monster = null;
+
+            while (hitObj) {
+                if (hitObj.userData && hitObj.userData.monster) {
+                    monster = hitObj.userData.monster;
+                    break;
+                }
+                hitObj = hitObj.parent;
+            }
+
+            if (monster) {
+                monster.health -= bullet.damage;
+                if (monster.health <= 0) {
+                    if (monster.isSlime && monster.slimeTier > 1) {
+                        splitSlime(monster);
+                    }
+                    dropLoot(monster.group.position);
+                    addExp(monster.isSlime ? 35 : 50);
+                    removeMonster(monster);
+                    updateGameHud();
+                } else {
+                    showShotMessage(`命中！殘餘血量：${monster.health}`);
+                }
+            } else {
+                showShotMessage('子彈擊中地形方塊，無效！');
+            }
+
+            scene.remove(bullet.mesh);
+            playerBullets.splice(i, 1);
+            continue;
+        }
+
+        bullet.mesh.position.copy(nextPos);
+        bullet.life -= delta;
+
+        if (bullet.life <= 0) {
+            scene.remove(bullet.mesh);
+            playerBullets.splice(i, 1);
+        }
+    }
+}
+
+document.addEventListener('mousedown', event => {
+    if (event.button === 0) shootTarget();
+});
+
+function dropLoot(pos) {
+    const roll = Math.random();
+    if (roll < 0.20) {
+        const hpVal = Math.random() < 0.6 ? 10 : (Math.random() < 0.8 ? 20 : 30);
+        addItemToInventory({ name: `回血(+${hpVal})`, type: 'heal', value: hpVal });
+    } else if (roll < 0.70) {
+        const duration = Math.random() < 0.5 ? 30 : (Math.random() < 0.8 ? 45 : 60);
+        addItemToInventory({ name: `加速(${duration}s)`, type: 'speed', duration: duration });
+    }
+}
+
+function createMonster(x, z, ownerChunkKey, isGunner = false, isSlime = false, slimeTier = 2, isIce = false) {
     const group = new THREE.Group();
-    const bodyMat = new THREE.MeshBasicMaterial({ color: isGunner ? 0x704040 : 0x438e42 });
-    const headMat = new THREE.MeshBasicMaterial({ color: isGunner ? 0xa83a3a : 0x2b7133 });
+    let matColor = isIce ? 0x88ccff : (isGunner ? 0x704040 : (isSlime ? 0x00ff66 : 0x438e42));
+    const bodyMat = new THREE.MeshBasicMaterial({ color: matColor });
+    const headMat = new THREE.MeshBasicMaterial({ color: isIce ? 0x4488aa : (isGunner ? 0xa83a3a : (isSlime ? 0x00cc44 : 0x2b7133)) });
     const blackMat = new THREE.MeshBasicMaterial({ color: 0x151515 });
-    const mouthMat = new THREE.MeshBasicMaterial({ color: 0xa82020 });
-    const gunMat = new THREE.MeshBasicMaterial({ color: 0x252a30 });
+
+    let scaleFactor = isSlime ? (slimeTier === 2 ? 0.8 : 0.5) : 1.0;
 
     function part(geometry, material, px, py, pz) {
         const mesh = new THREE.Mesh(geometry, material);
@@ -424,29 +889,28 @@ function createMonster(x, z, ownerChunkKey, isGunner = false) {
     }
 
     if (isGunner) {
-        part(new THREE.BoxGeometry(0.42, 0.16, 0.54), gunMat, 0.48, 1.35, -0.28);
-        part(new THREE.BoxGeometry(0.09, 0.09, 0.42), gunMat, 0.48, 1.39, -0.70);
-        part(new THREE.BoxGeometry(0.12, 0.23, 0.13), gunMat, 0.48, 1.19, -0.31);
+        part(new THREE.BoxGeometry(0.42, 0.16, 0.54), new THREE.MeshBasicMaterial({ color: 0x252a30 }), 0.48, 1.35, -0.28);
     }
 
-    part(new THREE.BoxGeometry(0.9, 1.1, 0.55), bodyMat, 0, 1.12, 0);
-    part(new THREE.BoxGeometry(0.78, 0.72, 0.72), headMat, 0, 2.02, 0);
-    part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, -0.20, 2.10, -0.38);
-    part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, 0.20, 2.10, -0.38);
-    part(new THREE.BoxGeometry(0.34, 0.09, 0.06), mouthMat, 0, 1.83, -0.39);
-    part(new THREE.BoxGeometry(0.24, 0.82, 0.28), bodyMat, -0.60, 1.12, 0);
-    part(new THREE.BoxGeometry(0.24, 0.82, 0.28), bodyMat, 0.60, 1.12, 0);
-    part(new THREE.BoxGeometry(0.30, 0.62, 0.32), headMat, -0.22, 0.31, 0);
-    part(new THREE.BoxGeometry(0.30, 0.62, 0.32), headMat, 0.22, 0.31, 0);
+    if (isSlime) {
+        part(new THREE.BoxGeometry(0.9 * scaleFactor, 0.7 * scaleFactor, 0.9 * scaleFactor), bodyMat, 0, 0.5 * scaleFactor, 0);
+        part(new THREE.BoxGeometry(0.5 * scaleFactor, 0.3 * scaleFactor, 0.5 * scaleFactor), headMat, 0, 0.9 * scaleFactor, 0);
+    } else {
+        part(new THREE.BoxGeometry(0.9, 1.1, 0.55), bodyMat, 0, 1.12, 0);
+        part(new THREE.BoxGeometry(0.78, 0.72, 0.72), headMat, 0, 2.02, 0);
+        part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, -0.20, 2.10, -0.38);
+        part(new THREE.BoxGeometry(0.20, 0.20, 0.06), blackMat, 0.20, 2.10, -0.38);
+    }
 
     group.position.set(x, getTerrainHeight(x, z), z);
     const monster = {
         group,
         isGunner,
-        health: isGunner ? 5 : 3,
-        maxHealth: isGunner ? 5 : 3,
-        speed: isGunner ? 1.05 : 1.35,
-        attackCooldown: isGunner ? 1.3 : 0,
+        isSlime,
+        isIce,
+        slimeTier,
+        health: isIce ? 50 : (isSlime ? slimeTier * 15 : (isGunner ? 40 : 30)),
+        attackCooldown: 0,
         ownerChunkKey
     };
     group.traverse(obj => { if (obj.isMesh) obj.userData.monster = monster; });
@@ -455,170 +919,87 @@ function createMonster(x, z, ownerChunkKey, isGunner = false) {
     return monster;
 }
 
+function splitSlime(monster) {
+    const pos = monster.group.position;
+    createMonster(pos.x + 0.8, pos.z, monster.ownerChunkKey, false, true, monster.slimeTier - 1, monster.isIce);
+    createMonster(pos.x - 0.8, pos.z, monster.ownerChunkKey, false, true, monster.slimeTier - 1, monster.isIce);
+    showShotMessage('冰雪史萊姆分解分裂了！');
+}
+
 function removeMonster(monster) {
+    monster.group.traverse(child => {
+        if (child.isMesh) {
+            child.geometry.dispose();
+            if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+            else child.material.dispose();
+        }
+    });
     scene.remove(monster.group);
     const i = monsters.indexOf(monster);
     if (i !== -1) monsters.splice(i, 1);
-    const ownerChunk = chunks.get(monster.ownerChunkKey);
-    if (ownerChunk) {
-        const j = ownerChunk.enemies.indexOf(monster);
-        if (j !== -1) ownerChunk.enemies.splice(j, 1);
-    }
 }
 
-function shootTarget() {
-    if (
-        (!isMobile && document.pointerLockElement !== document.body) ||
-        playerHealth <= 0 ||
-        isPaused ||
-        isReloading
-    ) return;
-
-    if (magazineAmmo <= 0) {
-        showShotMessage("沒子彈！請裝填");
-        return;
+function clearAllMonsters() {
+    for (const monster of [...monsters]) {
+        scene.remove(monster.group);
     }
-
-    magazineAmmo--;
-    updateGameHud();
-
-    recoil = 1;
-    flashTimer = 0.075;
-    muzzleFlash.visible = true;
-    camera.updateMatrixWorld(true);
-    scene.updateMatrixWorld(true);
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.far = 70;
-    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-    const hits = raycaster.intersectObjects(obstacles.concat(monsters.map(m => m.group)), true);
-    if (!hits.length) {
-        showShotMessage('未命中');
-        return;
-    }
-
-    let object = hits[0].object;
-    let monster = null;
-    while (object) {
-        if (object.userData && object.userData.monster) {
-            monster = object.userData.monster;
-            break;
-        }
-        object = object.parent;
-    }
-
-    if (monster) {
-        monster.health -= 1;
-        if (monster.health <= 0) {
-            removeMonster(monster);
-            monsterKills += 10;
-            updateGameHud();
-            showShotMessage('怪物被擊倒！');
-        } else {
-            showShotMessage(`命中怪物！還需要 ${monster.health} 發`);
-        }
-        return;
-    }
-
-    showShotMessage('擊中方塊（方塊不會被破壞）');
+    monsters.length = 0;
+    enemyBullets.forEach(b => scene.remove(b.mesh));
+    enemyBullets.length = 0;
+    playerBullets.forEach(b => scene.remove(b.mesh));
+    playerBullets.length = 0;
 }
-
-document.addEventListener('mousedown', event => {
-    if (event.button === 0) shootTarget();
-});
 
 function updateMonsters(delta) {
     for (const monster of [...monsters]) {
         const group = monster.group;
-
         const dx = camera.position.x - group.position.x;
         const dz = camera.position.z - group.position.z;
         const distance = Math.hypot(dx, dz);
-        const monsterSpeed = 0.08;
+        const monsterSpeed = monster.isSlime ? 0.06 : (monster.isIce ? 0.09 : 0.08);
 
         if (!monster.isGunner && distance > 2.2 && distance < 38) {
             const step = monsterSpeed * delta * 60;
-            const nextX = group.position.x + dx / distance * step;
-            const nextZ = group.position.z + dz / distance * step;
-
-            const currentGround = getTerrainHeight(group.position.x, group.position.z);
-            const nextGround = getTerrainHeight(nextX, nextZ);
-
-            if (nextGround <= currentGround + blockSize) {
+            const nextX = group.position.x + (dx / distance) * step;
+            const nextZ = group.position.z + (dz / distance) * step;
+            if (getTerrainHeight(nextX, nextZ) <= getTerrainHeight(group.position.x, group.position.z) + blockSize) {
                 group.position.x = nextX;
                 group.position.z = nextZ;
                 group.position.y = getTerrainHeight(group.position.x, group.position.z);
             }
-
             group.rotation.y = Math.atan2(dx, dz) + Math.PI;
         }
 
-        if (monster.isGunner && distance < 38) {
+        if (monster.isGunner && distance < 40) {
             group.rotation.y = Math.atan2(dx, dz) + Math.PI;
-
-            if (distance > 12) {
-                const step = monsterSpeed * delta * 60;
-                const nextX = group.position.x + dx / distance * step;
-                const nextZ = group.position.z + dz / distance * step;
-
-                const currentGround = getTerrainHeight(group.position.x, group.position.z);
-                const nextGround = getTerrainHeight(nextX, nextZ);
-
-                if (nextGround <= currentGround + blockSize) {
-                    group.position.x = nextX;
-                    group.position.z = nextZ;
-                    group.position.y = getTerrainHeight(group.position.x, group.position.z);
-                }
-            }
-
-            if (distance < 30) {
-                monster.attackCooldown -= delta;
-                if (monster.attackCooldown <= 0 && playerHealth > 0) {
-                    fireEnemyBullet(monster);
-                    monster.attackCooldown = 1.6;
-                }
+            monster.attackCooldown -= delta;
+            if (monster.attackCooldown <= 0 && playerHealth > 0) {
+                fireEnemyBullet(monster);
+                monster.attackCooldown = 1.5;
             }
         }
 
         if (!monster.isGunner && distance <= 2.2) {
             monster.attackCooldown -= delta;
             if (monster.attackCooldown <= 0 && playerHealth > 0) {
-                playerHealth = Math.max(0, playerHealth - 8);
+                playerHealth = Math.max(0, playerHealth - (monster.isIce ? 20 : (monster.isSlime ? 10 : 15)));
                 monster.attackCooldown = 1.2;
                 updateGameHud();
-                showShotMessage(playerHealth > 0 ? "怪物攻擊了你！" : "你被打敗了！按 R 重生");
+                showShotMessage(playerHealth > 1 ? "怪物攻擊了你！" : "你被打敗了！按 R 重製世界");
             }
         }
     }
 }
 
 function fireEnemyBullet(monster) {
-    const start = new THREE.Vector3(
-        monster.group.position.x,
-        monster.group.position.y + 1.45,
-        monster.group.position.z
-    );
-    const target = new THREE.Vector3(
-        camera.position.x,
-        camera.position.y - 0.4,
-        camera.position.z
-    );
+    const start = new THREE.Vector3(monster.group.position.x, monster.group.position.y + 1.45, monster.group.position.z);
+    const target = new THREE.Vector3(camera.position.x, camera.position.y - 0.4, camera.position.z);
     const direction = target.sub(start).normalize();
 
-    const bullet = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 8, 6),
-        new THREE.MeshBasicMaterial({ color: 0xff5533 })
-    );
-
+    const bullet = new THREE.Mesh(enemyBulletGeo, enemyBulletMat);
     bullet.position.copy(start);
     scene.add(bullet);
-
-    enemyBullets.push({
-        mesh: bullet,
-        velocity: direction.multiplyScalar(17),
-        life: 3,
-        damage: 7
-    });
+    enemyBullets.push({ mesh: bullet, velocity: direction.multiplyScalar(17), life: 3, damage: 12 });
 }
 
 function updateEnemyBullets(delta) {
@@ -631,7 +1012,7 @@ function updateEnemyBullets(delta) {
             if (playerHealth > 0) {
                 playerHealth = Math.max(0, playerHealth - bullet.damage);
                 updateGameHud();
-                showShotMessage(playerHealth > 0 ? "被敵人子彈擊中！" : "你被打敗了！按 R 重生");
+                showShotMessage(playerHealth > 1 ? "被敵人子彈擊中！" : "你被打敗了！按 R 重製世界");
             }
             scene.remove(bullet.mesh);
             enemyBullets.splice(i, 1);
@@ -651,26 +1032,20 @@ function randomGradient(ix, iz) {
     const angle = r * Math.PI * 2;
     return { x: Math.cos(angle), z: Math.sin(angle) };
 }
-
 function dotGridGradient(ix, iz, x, z) {
     const gradient = randomGradient(ix, iz);
     return (x - ix) * gradient.x + (z - iz) * gradient.z;
 }
 
 function perlinNoise(x, z) {
-    const x0 = Math.floor(x);
-    const x1 = x0 + 1;
-    const z0 = Math.floor(z);
-    const z1 = z0 + 1;
-    const sx = fade(x - x0);
-    const sz = fade(z - z0);
+    const x0 = Math.floor(x), x1 = x0 + 1;
+    const z0 = Math.floor(z), z1 = z0 + 1;
+    const sx = fade(x - x0), sz = fade(z - z0);
 
-    const n0 = dotGridGradient(x0, z0, x, z);
-    const n1 = dotGridGradient(x1, z0, x, z);
+    const n0 = dotGridGradient(x0, z0, x, z), n1 = dotGridGradient(x1, z0, x, z);
     const ix0 = lerp(n0, n1, sx);
 
-    const n2 = dotGridGradient(x0, z1, x, z);
-    const n3 = dotGridGradient(x1, z1, x, z);
+    const n2 = dotGridGradient(x0, z1, x, z), n3 = dotGridGradient(x1, z1, x, z);
     const ix1 = lerp(n2, n3, sx);
 
     return lerp(ix0, ix1, sz);
@@ -683,6 +1058,11 @@ const boxGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
 const grassMaterial = new THREE.MeshBasicMaterial({ color: 0x55aa55 });
 const dirtMaterial = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
 const stoneMaterial = new THREE.MeshBasicMaterial({ color: 0x777777 });
+const sandMaterial = new THREE.MeshBasicMaterial({ color: 0xe0c068 });
+const deepSandMaterial = new THREE.MeshBasicMaterial({ color: 0xb89635 });
+// ❄️ 冰原材質定義
+const snowMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const iceMaterial = new THREE.MeshBasicMaterial({ color: 0xaaccff });
 
 const chunkSize = 16;
 const chunkWorldSize = chunkSize * blockSize;
@@ -690,6 +1070,7 @@ const renderDistance = 1;
 const chunks = new Map();
 const terrainHeights = new Map();
 const noiseScale = 0.08;
+const biomeScale = 0.03;
 const maxHeight = Math.max(1, Number(document.getElementById("tallest").value) || 10);
 
 function terrainKey(x, z) { return `${x},${z}`; }
@@ -712,8 +1093,13 @@ function generateChunk(chunkX, chunkZ) {
         for (let iz = 0; iz < chunkSize; iz++) {
             const x = (chunkX * chunkSize + ix) * blockSize;
             const z = (chunkZ * chunkSize + iz) * blockSize;
+            
             const noise = perlinNoise(x * noiseScale, z * noiseScale);
             const height = Math.max(0, Math.floor(((noise + 1) / 2) * maxHeight));
+
+            const biomeVal = perlinNoise(x * biomeScale + 500, z * biomeScale + 500);
+            const isDesert = biomeVal > 0.15;
+            const isIceBiome = biomeVal < -0.25; // ❄️ 判定是否為冰原生態系
 
             const columnKey = terrainKey(x, z);
             terrainHeights.set(columnKey, height * blockSize + blockSize / 2);
@@ -721,9 +1107,15 @@ function generateChunk(chunkX, chunkZ) {
 
             for (let y = 0; y <= height; y++) {
                 let material;
-                if (y === height) material = grassMaterial;
-                else if (y > height - 3) material = dirtMaterial;
-                else material = stoneMaterial;
+                if (isIceBiome) {
+                    material = (y === height) ? snowMaterial : iceMaterial;
+                } else if (isDesert) {
+                    material = (y === height) ? sandMaterial : deepSandMaterial;
+                } else {
+                    if (y === height) material = grassMaterial;
+                    else if (y > height - 3) material = dirtMaterial;
+                    else material = stoneMaterial;
+                }
 
                 chunk.blocks.push(createBlock(x, y * blockSize, z, material));
             }
@@ -736,10 +1128,18 @@ function generateChunk(chunkX, chunkZ) {
         for (let attempt = 0; attempt < 16; attempt++) {
             const x = (chunkX * chunkSize + Math.floor(Math.random() * chunkSize)) * blockSize;
             const z = (chunkZ * chunkSize + Math.floor(Math.random() * chunkSize)) * blockSize;
-            const Rebirth = Math.hypot(x - camera.position.x, z - camera.position.z)
-            if (Rebirth < 50 || Rebirth > 75) continue;
-            const isGunner = Math.random() < 0.4;
-            chunk.enemies.push(createMonster(x, z, key, isGunner));
+            const dist = Math.hypot(x - camera.position.x, z - camera.position.z);
+            if (dist < 30 || dist > 75) continue;
+            
+            const biomeCheck = perlinNoise(x * biomeScale + 500, z * biomeScale + 500);
+            const isIceBiome = biomeCheck < -0.25;
+
+            const randType = Math.random();
+            const isSlime = randType < 0.35;
+            const isGunner = !isSlime && Math.random() < 0.4;
+            const isIceMonster = isIceBiome; // ❄️ 冰原生成冰雪怪物
+
+            chunk.enemies.push(createMonster(x, z, key, isGunner, isSlime, 2, isIceMonster));
             break;
         }
     }
@@ -755,14 +1155,11 @@ function removeChunk(chunkX, chunkZ) {
         const index = obstacles.indexOf(block);
         if (index !== -1) obstacles.splice(index, 1);
     }
-
     for (const columnKey of chunk.columns) {
         terrainHeights.delete(columnKey);
     }
     for (const enemy of [...chunk.enemies]) {
-        scene.remove(enemy.group);
-        const i = monsters.indexOf(enemy);
-        if (i !== -1) monsters.splice(i, 1);
+        removeMonster(enemy);
     }
 
     chunks.delete(key);
@@ -787,10 +1184,7 @@ function updateChunks() {
 
     for (const key of Array.from(chunks.keys())) {
         const [cx, cz] = key.split(",").map(Number);
-        if (
-            Math.abs(cx - playerChunkX) > renderDistance ||
-            Math.abs(cz - playerChunkZ) > renderDistance
-        ) {
+        if (Math.abs(cx - playerChunkX) > renderDistance || Math.abs(cz - playerChunkZ) > renderDistance) {
             removeChunk(cx, cz);
         }
     }
@@ -801,14 +1195,10 @@ updateChunks();
 const keys = { w: false, a: false, s: false, d: false, shift: false };
 let mobileInput = { x: 0, z: 0 };
 
-// ==========================================
-// 【搖桿方向的程式】手機虛擬搖桿觸控與移動控制邏輯
-// ==========================================
 if (isMobile) {
     const zone = document.getElementById("joystickZone");
     const knob = document.getElementById("joystickKnob");
-    let touchId = null;
-    let zoneRect = null;
+    let touchId = null, zoneRect = null;
 
     zone.addEventListener("touchstart", (e) => {
         if (touchId !== null) return;
@@ -820,9 +1210,7 @@ if (isMobile) {
 
     zone.addEventListener("touchmove", (e) => {
         for (let touch of e.changedTouches) {
-            if (touch.identifier === touchId) {
-                handleJoystick(touch);
-            }
+            if (touch.identifier === touchId) handleJoystick(touch);
         }
     });
 
@@ -830,13 +1218,11 @@ if (isMobile) {
         for (let touch of e.changedTouches) {
             if (touch.identifier === touchId) {
                 touchId = null;
-                mobileInput.x = 0;
-                mobileInput.z = 0;
+                mobileInput.x = 0; mobileInput.z = 0;
                 knob.style.transform = `translate(0px, 0px)`;
             }
         }
     }
-
     zone.addEventListener("touchend", endJoystick);
     zone.addEventListener("touchcancel", endJoystick);
 
@@ -852,26 +1238,19 @@ if (isMobile) {
             dx = (dx / distance) * maxRadius;
             dz = (dz / distance) * maxRadius;
         }
-
         knob.style.transform = `translate(${dx}px, ${dz}px)`;
-        // 搖桿正規化輸入
         mobileInput.x = dx / maxRadius;
         mobileInput.z = dz / maxRadius;
     }
 
     document.getElementById("jumpBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
-        if (isGrounded && playerHealth > 0) {
-            velocityY = jumpPower;
-            isGrounded = false;
-        }
+        if (isGrounded && playerHealth > 0) { velocityY = jumpPower; isGrounded = false; }
     });
-
     document.getElementById("shootBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
         shootTarget();
     });
-
     document.getElementById("reloadBtn").addEventListener("touchstart", (e) => {
         e.preventDefault();
         if (playerHealth <= 1) {
@@ -883,24 +1262,28 @@ if (isMobile) {
 }
 
 function respawnPlayer() {
+    clearAllMonsters();
+    playerLevel = 1;
+    playerExp = 0;
+    nextLevelExp = 100;
+    maxHealth = 100;
     playerHealth = 100;
-    monsterKills = 0;
-    reserveAmmo = 180;
-    magazineAmmo = 20;
+    inventory.fill(null);
+    inventory[0] = { name: guns[0].name, type: 'gun', gunIndex: 0 };
+    updateInventoryUI();
+    switchGunByIndex(0);
+    guns.forEach(g => { g.magAmmo = g.magSize; });
     camera.position.set(0, getTerrainHeight(0, 0) + 2, 0);
-    velocityY = 0;
-    isGrounded = false;
+    velocityY = 0; isGrounded = false;
     updateGameHud();
-    showShotMessage('重新出發！');
+    showShotMessage('已重製世界！');
 }
 
 function resumeGame() {
     if (!isPaused) return;
     isPaused = false;
     document.getElementById('pauseOverlay').style.display = 'none';
-    document.getElementById("settings").style.display = "block";
-    document.getElementById("settings").style.display = "none";
-    if (!isMobile) document.body.requestPointerLock();
+    if (!isMobile && !isExtraOpen) document.body.requestPointerLock();
 }
 
 document.getElementById('resumeButton').addEventListener('click', resumeGame);
@@ -908,8 +1291,24 @@ document.getElementById('resumeButton').addEventListener('click', resumeGame);
 document.addEventListener('keydown', function(event) {
     const key = event.key.toLowerCase();
 
+    if (key === 'e') {
+        event.preventDefault();
+        toggleExtraSpace();
+        return;
+    }
+
+    if (event.key >= '1' && event.key <= '9') {
+        const slotIdx = parseInt(event.key) - 1;
+        useInventoryItem(slotIdx);
+        return;
+    }
+
     if (event.key === 'Escape') {
         event.preventDefault();
+        if (isExtraOpen) {
+            toggleExtraSpace();
+            return;
+        }
         if (isPaused) {
             resumeGame();
         } else {
@@ -921,14 +1320,14 @@ document.addEventListener('keydown', function(event) {
         return;
     }
 
-    if (isPaused) return;
+    if (isPaused || isExtraOpen) return;
 
     if (key === 'w') keys.w = true;
     if (key === 'a') keys.a = true;
     if (key === 's') keys.s = true;
     if (key === 'd') keys.d = true;
     if (event.key === 'Shift') keys.shift = true;
-
+    
     if (key === 'r') {
         if (playerHealth <= 1) {
             respawnPlayer();
@@ -939,10 +1338,7 @@ document.addEventListener('keydown', function(event) {
 
     if (event.code === 'Space' && playerHealth > 0) {
         event.preventDefault();
-        if (isGrounded) {
-            velocityY = jumpPower;
-            isGrounded = false;
-        }
+        if (isGrounded) { velocityY = jumpPower; isGrounded = false; }
     }
 });
 
@@ -959,17 +1355,14 @@ let yaw = 0;
 let pitch = 0;
 
 if (isMobile) {
-    let lastTouchX = 0;
-    let lastTouchY = 0;
-    let lookingTouchId = null;
+    let lastTouchX = 0, lastTouchY = 0, lookingTouchId = null;
 
     document.addEventListener("touchstart", (e) => {
         for (let touch of e.changedTouches) {
             if (touch.clientX > window.innerWidth / 2 && lookingTouchId === null) {
                 if (touch.clientY > window.innerHeight - 220 && touch.clientX > window.innerWidth - 220) continue;
                 lookingTouchId = touch.identifier;
-                lastTouchX = touch.clientX;
-                lastTouchY = touch.clientY;
+                lastTouchX = touch.clientX; lastTouchY = touch.clientY;
             }
         }
     });
@@ -979,19 +1372,12 @@ if (isMobile) {
             if (touch.identifier === lookingTouchId) {
                 const dx = touch.clientX - lastTouchX;
                 const dy = touch.clientY - lastTouchY;
-                lastTouchX = touch.clientX;
-                lastTouchY = touch.clientY;
+                lastTouchX = touch.clientX; lastTouchY = touch.clientY;
 
-                const Sensitive = document.getElementById("Sensitive");
-                const sensVal = Sensitive.value * 1.5;
-
-                if (document.getElementById("operation").checked == false) {
-                    yaw -= dx * sensVal;
-                    pitch -= dy * sensVal;
-                } else {
-                    yaw += dx * sensVal;
-                    pitch += dy * sensVal;            
-                }
+                const sensVal = document.getElementById("Sensitive").value * 1.5;
+                const op = document.getElementById("operation").checked;
+                yaw += (op ? 1 : -1) * dx * sensVal;
+                pitch += (op ? 1 : -1) * dy * sensVal;
                 pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
             }
         }
@@ -999,72 +1385,39 @@ if (isMobile) {
 
     function endLook(e) {
         for (let touch of e.changedTouches) {
-            if (touch.identifier === lookingTouchId) {
-                lookingTouchId = null;
-            }
+            if (touch.identifier === lookingTouchId) lookingTouchId = null;
         }
     }
     document.addEventListener("touchend", endLook);
     document.addEventListener("touchcancel", endLook);
 } else {
-    document.addEventListener(
-        "mousemove",
-        function(event) {
-            const Sensitive = document.getElementById("Sensitive");
-            if (document.pointerLockElement !== document.body) {
-                return;
-            }
-
-            if(document.getElementById("operation").checked == false){
-                yaw -= event.movementX * Sensitive.value;
-                pitch -= event.movementY * Sensitive.value;
-            }else{
-                yaw += event.movementX * Sensitive.value;
-                pitch += event.movementY * Sensitive.value;            
-            }
-            pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
-        }
-    );
+    document.addEventListener("mousemove", function(event) {
+        if (document.pointerLockElement !== document.body || isExtraOpen) return;
+        const sensVal = document.getElementById("Sensitive").value;
+        const op = document.getElementById("operation").checked;
+        yaw += (op ? 1 : -1) * event.movementX * sensVal;
+        pitch += (op ? 1 : -1) * event.movementY * sensVal;
+        pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+    });
 }
 
-let speed = 0.1;
 const gravity = 0.015;
 const jumpPower = 0.28;
-
 let velocityY = 0;
 let isGrounded = false;
 
 function movePlayer() {
-    let moveX = 0;
-    let moveZ = 0;
-    const currentSpeed = keys.shift ? 0.3 : speed;
+    let moveX = 0, moveZ = 0;
+    const currentSpeed = keys.shift ? playerSpeed * 1.5 : playerSpeed;
 
     if (isMobile) {
-        // ==========================================
-        // 【搖桿方向的程式】手機搖桿與攝影機角度運算
-        // ==========================================
-        moveX -= (Math.sin(yaw) * mobileInput.z - Math.cos(yaw) * mobileInput.x) * speed * 1.5;
-        moveZ += (Math.cos(yaw) * mobileInput.z + Math.sin(yaw) * mobileInput.x) * speed * 1.5;
+        moveX -= (Math.sin(yaw) * mobileInput.z - Math.cos(yaw) * mobileInput.x) * playerSpeed * 1.5;
+        moveZ += (Math.cos(yaw) * mobileInput.z + Math.sin(yaw) * mobileInput.x) * playerSpeed * 1.5;
     } else {
-        if (keys.w) {
-            moveX -= Math.sin(yaw) * currentSpeed;
-            moveZ -= Math.cos(yaw) * currentSpeed;
-        }
-
-        if (keys.s) {
-            moveX += Math.sin(yaw) * currentSpeed;
-            moveZ += Math.cos(yaw) * currentSpeed;
-        }
-
-        if (keys.a) {
-            moveX -= Math.cos(yaw) * currentSpeed;
-            moveZ += Math.sin(yaw) * currentSpeed;
-        }
-
-        if (keys.d) {
-            moveX += Math.cos(yaw) * currentSpeed;
-            moveZ -= Math.sin(yaw) * currentSpeed;
-        }
+        if (keys.w) { moveX -= Math.sin(yaw) * currentSpeed; moveZ -= Math.cos(yaw) * currentSpeed; }
+        if (keys.s) { moveX += Math.sin(yaw) * currentSpeed; moveZ += Math.cos(yaw) * currentSpeed; }
+        if (keys.a) { moveX -= Math.cos(yaw) * currentSpeed; moveZ += Math.sin(yaw) * currentSpeed; }
+        if (keys.d) { moveX += Math.cos(yaw) * currentSpeed; moveZ -= Math.sin(yaw) * currentSpeed; }
     }
 
     const playerHeight = 2;
@@ -1072,19 +1425,15 @@ function movePlayer() {
     const maxStep = blockSize;
 
     const tryX = camera.position.x + moveX;
-    const heightX = getTerrainHeight(tryX, camera.position.z);
-    if (heightX <= feetY + maxStep) camera.position.x = tryX;
+    if (getTerrainHeight(tryX, camera.position.z) <= feetY + maxStep) camera.position.x = tryX;
 
     const tryZ = camera.position.z + moveZ;
-    const heightZ = getTerrainHeight(camera.position.x, tryZ);
-    if (heightZ <= feetY + maxStep) camera.position.z = tryZ;
+    if (getTerrainHeight(camera.position.x, tryZ) <= feetY + maxStep) camera.position.z = tryZ;
 
     velocityY -= gravity;
     camera.position.y += velocityY;
 
-    const groundHeight = getTerrainHeight(camera.position.x, camera.position.z);
-    const groundY = groundHeight + playerHeight;
-
+    const groundY = getTerrainHeight(camera.position.x, camera.position.z) + playerHeight;
     if (camera.position.y <= groundY) {
         camera.position.y = groundY;
         velocityY = 0;
@@ -1101,11 +1450,8 @@ function updateCamera() {
 }
 
 function updateCoordinates() {
-    const coords = document.getElementById("coords");
-    coords.textContent =
-        `X: ${camera.position.x.toFixed(1)} | ` +
-        `Y: ${camera.position.y.toFixed(1)} | ` +
-        `Z: ${camera.position.z.toFixed(1)}`;
+    document.getElementById("coords").textContent =
+        `X: ${camera.position.x.toFixed(1)} | Y: ${camera.position.y.toFixed(1)} | Z: ${camera.position.z.toFixed(1)}`;
 }
 
 const gameClock = new THREE.Clock();
@@ -1114,16 +1460,14 @@ function animate() {
     requestAnimationFrame(animate);
     const delta = Math.min(gameClock.getDelta(), 0.05);
 
-    if (!isPaused) {
-        if (playerHealth > 0) {
-            movePlayer();
-        }
-
+    if (!isPaused && !isExtraOpen) {
+        if (playerHealth > 0) movePlayer();
         updateCamera();        
         updateCoordinates();   
         updateChunks();
         updateMonsters(delta);
         updateEnemyBullets(delta);
+        updatePlayerBullets(delta);
         updateWeapon(delta);
         updateReload(delta);
     }
@@ -1135,17 +1479,12 @@ function animate() {
 animate();
 updateGameHud();
 
-window.addEventListener(
-    "resize",
-    function() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-);
+window.addEventListener("resize", function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 }
 </script>
-
 </body>
-
 </html>

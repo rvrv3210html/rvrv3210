@@ -138,10 +138,15 @@
     <!-- 筆記區塊 -->
     <div id="notes">
         <input placeholder="主題" id="theme" style="width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;">
+        
+        <!--  筆記表單模式快捷工具列 -->
+        <div style="margin-bottom: 6px; text-align: left;">
+            <button type="button" onclick="insertNoteElement('checkbox')" style="padding: 4px 10px; font-size: 13px; cursor: pointer;">+ 複選框 (Checkbox)</button>
+            <button type="button" onclick="insertNoteElement('radio')" style="padding: 4px 10px; font-size: 13px; cursor: pointer;">+ 單選框 (Radio)</button>
+        </div>
+
         <!-- 將 textarea 改成 contenteditable 的 div -->
-        <div id="tnotes" contenteditable="true" style="background-color: #fff; color: #000; text-align: left; width: 100%; height: 270px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; box-sizing: border-box; border-radius: 4px;">
-            
-        </div><br><br>
+        <div id="tnotes" contenteditable="true" style="background-color: #fff; color: #000; text-align: left; width: 100%; height: 270px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; box-sizing: border-box; border-radius: 4px;"></div><br><br>
         <div id="Beforetime"></div><br>
         <button onclick="downloadnt()">儲存筆記 (JSON)</button>
         <!-- 讀取按鈕：透過觸發隱藏的 file input 讓使用者選取 JSON 檔 -->
@@ -276,7 +281,6 @@
         const m = document.getElementById('m');
         const h = document.getElementById('h');
         const urlInput = document.getElementById('URL');
-        // 修正 ID 拼寫錯誤 (textcolor)
         const bodyColorInput = document.getElementById('bodycoior');
         const textColorInput = document.getElementById('textcolor');
         const Beforetime = document.getElementById('Beforetime');
@@ -353,6 +357,45 @@
             document.getElementById('Timer').style.display = 'none';
         }
 
+        // 📝 快捷插入表單元件函式
+        function insertNoteElement(type) {
+            noteArea.focus();
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+
+            // 建立表單元素與文字輸入區
+            const wrapper = document.createElement('span');
+            wrapper.contentEditable = "false"; // 讓外框群組化，避免編輯錯亂
+            wrapper.style.display = "inline-block";
+            wrapper.style.margin = "4px 0";
+
+            const input = document.createElement('input');
+            input.type = type;
+            input.style.marginRight = "6px";
+            if(type === 'radio') input.name = "noteGroup";
+
+            const spanText = document.createElement('span');
+            spanText.contentEditable = "true";
+            // spanText.innerHTML = "請輸入選項內容...&nbsp;";
+            spanText.style.borderBottom = "1px dashed #aaa";
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(spanText);
+
+            range.deleteContents();
+            range.insertNode(wrapper);
+
+            // 在後面補一個空格方便繼續打字
+            const space = document.createTextNode(" ");
+            range.setStartAfter(wrapper);
+            range.insertNode(space);
+            range.setStartAfter(space);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
         // 下載無網網頁檔
         function downloadSh() {
             const cloneDoc = document.documentElement.cloneNode(true);
@@ -370,7 +413,7 @@
             URL.revokeObjectURL(link.href);
         }
 
-        // 儲存為 JSON 格式 (已將 noteArea.value 改為 noteArea.innerHTML)
+        // 儲存為 JSON 格式
         function downloadnt() {
             const noteContent = noteArea.innerHTML;
             const themeContent = themeInput.value;
@@ -536,7 +579,7 @@
             alert("進入教學模式囉");
             alert("因為是js寫的，因此會稍不同。");
             alert("按了xʸ，會出現**(這是正常現象，ʸ打在**後。)");
-            alert("要再數字後按了±(有效)，+變-,-變+。)");
+            alert("要再數字後按了±(有效,+變-,-變+。)");
             alert("e的用法:科學記號");
         }
 
@@ -654,7 +697,6 @@
         }
         setInterval(time, 1000);
         showIndex();
-        time()
     </script>
 </body>
 </html>

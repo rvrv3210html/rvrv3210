@@ -131,16 +131,85 @@
         <b>歡迎來到rvrv3210網站<img src="game/loge.jpg"></b><b id="time"></b>
     </header>
     <nav>
-        <a><button style="color: #fff;">首頁</button></a><a href="settings.html"><button>設定</button></a><a href="renew.html"><button>更新日誌</button></a>
+        <button onclick="openindex()">首頁</button><button onclick="opensettings()">設定</button><button onclick="openrenew()">更新日誌</button>
     <br>
     </nav>
     <main>
-        <h2>首頁</h2>
-        <hr>
-        <div>
-            <h3>最新消息</h3>
-            測試改為計算機
+        <div id="index">
+            <h2>首頁</h2>
             <hr>
+            <div>
+                <h3>最新消息</h3>
+                測試改為計算機
+                <hr>
+            </div>
+        </div>
+        <div id="renew">
+            <h2 id="homepage"></h2>
+            <div>
+                <h2>1.更新日誌出了</h2>
+                <h2>2.在首頁出了現在時間</h2>
+                <h2>8/6/2026</h2>
+            </div>
+            <div>
+                <h2>1.功能(生成迷宮)已刪除，將用設定代替(無法使用)</h2>
+                <h2>2.生成迷宮已刪除，用大亨遊戲代替</h2>
+                <h2>3.大亨遊戲的抽獎圖加載成功</h2>
+                <h2>4.大亨遊戲一些bug改掉</h2>
+                <h2>8/7/2026</h2>
+            </div>
+            <div>
+                <h2>大亨遊戲已刪除</h2>
+                <h2>測試改為計算機(bug多)</h2>
+                <h2>9/10/2026</h2>
+            </div>
+            <div>
+                <h2>計算機更新</h2>
+                <h2>9/11/2026</h2>
+            </div>
+            <div>
+            <h2>2048出了</h2>
+                <h2>9/14/2026</h2>
+            </div>
+            <div>
+                <h2>1.小工具出了</h2>
+                <h2>2.計算機已刪除(放到小工具)</h2>
+                <h2>11/5/2026</h2>
+            </div>
+            <div>
+                <h2>小工具更新</h2>
+                <h2>11/6/2026</h2>
+            </div>
+            <div>
+                <h2>小工具更新</h2>
+                <h2>11/7/2026</h2>
+            </div>
+            <div>
+                <h2>小工具更新</h2>
+                <h2>11/8/2026</h2>
+            </div>
+            <div>
+                <h2>加小朋友下樓梯(重製版)</h2>
+                <h2>11/10/2026</h2>
+            </div>
+            <div>
+                <h2>1.小工具更新</h2>
+                <h2>2.射擊遊戲更新</h2>
+                <h2>11/11/2026</h2>
+            </div>
+            <div>
+                <h2>1.小工具更新</h2>
+                <h2>2.小朋友下樓梯(重製版)更新</h2>
+                <h2>11/12/2026</h2>
+            </div>
+
+            <h3 style="color: #eeff00;border:5px solid #000;">未來更新</h3>
+            <div>
+                <h2>設定</h2>
+            </div> 
+        </div>
+        <div id="settings">
+            <h2>設定</h2>
         </div>
         <h2>我的其他連結</h2>
         <a href="67.htm"><button>2048</button></a>
@@ -149,7 +218,8 @@
         <a href="NS-SHAFT.html"><button>小朋影下樓梯(重製版)</button></a>
     </main>
     <footer>
-        <a href="https://www.youtube.com/channel/UCGQrk3LofChvqrj4Y7XpYYw" target="_blank"><button>前往我的yt</button></a>
+        <a href="https://www.youtube.com/channel/UCGQrk3LofChvqrj4Y7XpYYw" target="_blank"><button>前往我的舊yt</button></a>
+        <a href="https://www.youtube.com/@George-j9g1j" target="_blank"><button>前往我現在的yt</button></a>
     </footer>
     <script>
         alert("歡迎來到 rvrv3210 網站（記得訂閱)")
@@ -162,6 +232,22 @@
             document.getElementById("time").textContent = timeString;
             
         }
+        function openindex(){
+            document.getElementById('index').style.display = 'block';
+            document.getElementById('renew').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
+        }
+        function openrenew(){
+            document.getElementById('index').style.display = 'none';
+            document.getElementById('renew').style.display = 'block';
+            document.getElementById('settings').style.display = 'none';
+        }
+        function opensettings(){
+            document.getElementById('index').style.display = 'none';
+            document.getElementById('renew').style.display = 'none';
+            document.getElementById('settings').style.display = 'block';
+        }
+        openindex()
        setInterval(time,1000)
     </script>
 </body>

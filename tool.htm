@@ -127,10 +127,10 @@
 <body>
     <!-- 頂部標題區塊 -->
     <h1 id="headerContainer">
-        <span id="pageTitle"></t></span> 
+        <span id="pageTitle"></span> 
          現在時間: <b id="time" style="font-size: 0.8em; margin-left: 10px;"></b>
         <div id="Marquee">
-            <h3>最新小工具<t style="color: yellow;">(v4)</t>於2026/11/8閃亮登場，新增設定! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a></h3>
+            <h3>最新小工具<t style="color: yellow;">(v5)</t>於2026/11/8閃亮登場，新增設定! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a></h3>
         </div>
     </h1>
     <hr>
@@ -139,10 +139,10 @@
     <div id="notes">
         <input placeholder="主題" id="theme" style="width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px;">
         
-        <!--  筆記表單模式快捷工具列 -->
-        <div style="margin-bottom: 6px; text-align: left;">
-            <button type="button" onclick="insertNoteElement('checkbox')" style="padding: 4px 10px; font-size: 13px; cursor: pointer;">+ 複選框 (Checkbox)</button>
-            <button type="button" onclick="insertNoteElement('radio')" style="padding: 4px 10px; font-size: 13px; cursor: pointer;">+ 單選框 (Radio)</button>
+        <!-- 筆記表單模式快捷工具列與自動儲存狀態 -->
+        <div style="margin-bottom: 6px; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" onclick="insertNoteElement('checkbox')" style="padding: 4px 10px; font-size: 13px; cursor: pointer;">+ 複選框</button>
+            <span id="autoSaveStatus" style="font-size: 13px; color: #004d40; font-weight: bold;"></span>
         </div>
 
         <!-- 將 textarea 改成 contenteditable 的 div -->
@@ -151,10 +151,11 @@
         <button onclick="downloadnt()">儲存筆記 (JSON)</button>
         <!-- 讀取按鈕：透過觸發隱藏的 file input 讓使用者選取 JSON 檔 -->
         <button onclick="document.getElementById('importFile').click()">讀取筆記 (JSON)</button>
+        <button onclick="clearWebNote()">清空網頁筆記</button>
         <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importnt(event)">
 
-        <button onclick="showIndex()">返回首頁</button>
-        <button onclick="shownew()">其他小工具</button>
+        <button onclick="openshowIndex()">返回首頁</button>
+        <button onclick="openshownew()">其他小工具</button>
     </div>
 
     <!-- 計算機區塊 -->
@@ -197,8 +198,8 @@
                 <!-- 底部功能列跨欄 -->
                 <button onclick="ster()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #27ae60;">=</button> 
                 <button onclick="teaching()" style="grid-column: span 3; aspect-ratio: auto; height: 50px; background-color: #2980b9;">教學</button>
-                <button onclick="showIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
-                <button onclick="shownew()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>           
+                <button onclick="openshowIndex()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #ae2727;">返回首頁</button>
+                <button onclick="openshownew()" style="grid-column: span 6; aspect-ratio: auto; height: 50px; background-color: #2730ae;">其他小工具</button>           
             </div>
         </div>
     </div>
@@ -209,7 +210,7 @@
         <button onclick="startTimer()" style="background-color: #27ae60; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">開始</button>
         <button onclick="pauseTimer()" style="background-color: #f39c12; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">暫停</button>
         <button onclick="resetTimer()" style="background-color: #c0392b; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">歸零</button>
-        <select id="type">
+        <select id="timetype">
             <option>碼表</option>
             <option>倒數</option>
         </select>
@@ -220,8 +221,8 @@
             秒:<input type="number" max="59" min="0" value="0" id="s">
         </div>
         <br><br>
-        <button onclick="showIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button><br><br>
-        <button onclick="shownew()" style="background-color: #2730ae; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">其他小工具</button>
+        <button onclick="openshowIndex()" style="background-color: #ae2727; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">返回首頁</button><br><br>
+        <button onclick="openshownew()" style="background-color: #2730ae; color: white; padding: 10px 20px; font-size: 18px; border-radius: 8px; border: none; cursor: pointer;">其他小工具</button>
     </div>
 
     <!-- 設定頁面 -->
@@ -229,35 +230,52 @@
         背景顏色:<input type="color" id="bodycoior" value="#1abed4"><br><br>
         字的顏色:<input type="color" id="textcolor" value="#000000"><br><br>
         <button onclick="resetBackgroundColor()">回復</button><br><br>
-        <button onclick="showIndex()">返回首頁</button><br><br>
-        <button onclick="shownew()">其他小工具</button>
+        <button onclick="openshowIndex()">返回首頁</button><br><br>
+        <button onclick="openshownew()">其他小工具</button>
     </div>
+    
+    <!-- QR Code 頁面 -->
     <div id="qrcode">
         <h3>產生 QR Code</h3>
         <img id="qrcodeImg" src="" alt="點擊下方按鈕生成" style="background: white; padding: 10px; border-radius: 8px; width: 130px; height: 130px;"><br><br>
         <input type="text" placeholder="輸入網址" id="URL">
         <button onclick="generateQRCode()">生成 QR Code</button><br><br> 
     
-        <!-- 讀取 QR Code 區塊 -->
         <hr>
         <h3>讀取/掃描 QR Code 圖片</h3>
-        <!-- 增加一個專屬的解析用 div -->
         <div id="reader" style="width: 200px; display: none;"></div>
 
         <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="scanQRCode(event)">
         <button onclick="document.getElementById('qrFileInput').click()">選擇 QR Code 圖片讀取</button>
         <p id="qrResult" style="word-break: break-all; margin-top: 10px; font-weight: bold; color: yellow;"></p>
         <br> 
-        <button onclick="showIndex()">返回首頁</button><br><br>
-        <button onclick="shownew()">其他小工具</button>      
+        <button onclick="openshowIndex()">返回首頁</button><br><br>
+        <button onclick="openshownew()">其他小工具</button>      
     </div>
+
+    <!-- 紀錄頁面 -->
+    <div id="record">
+        <input type="text" id="uplond" placeholder="請輸入要紀錄的內容"><br><br>
+        <button onclick="uploadRecord()">上傳資料</button><br><br>
+        <h3 id="dontlond" style="color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; min-height: 30px;">（尚無讀取內容）</h3>
+        <button onclick="dontlondRecord()">讀取資料</button><br><br>
+        <hr><h3>紀錄設定</h3>
+        <select id="recordtype">
+            <!-- <option>普通模式</option> -->
+            <option>不儲存一樣資訊</option>
+        </select><hr>
+        <button onclick="openshowIndex()">返回首頁</button><br><br>
+        <button onclick="openshownew()">其他小工具</button>          
+    </div>
+
     <!-- 底部導覽列與下載按鈕 -->
     <div id="new">
-        <button id="bnotes" onclick="showNotes()">筆記</button>
-        <button onclick="showComputer()" id="bComputer">計算機</button>
-        <button onclick="showTimer()" id="bTimer">計時器</button>
-        <button onclick="qrcode()" id="bqrcode">生成QR Code</button>
-        <button onclick="settings()" id="bsettings">設定</button>
+        <button id="bnotes" onclick="openshowNotes()">筆記</button>
+        <button onclick="openshowComputer()" id="bComputer">計算機</button>
+        <button onclick="openshowTimer()" id="bTimer">計時器</button>
+        <button onclick="openqrcode()" id="bqrcode">生成QR Code</button>
+        <button onclick="openrecord()" id="brecord">紀錄</button>
+        <button onclick="opensettings()" id="bsettings">設定</button>
         <br><br>
         <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
             <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
@@ -276,7 +294,7 @@
         const noteArea = document.getElementById('tnotes');
         const themeInput = document.getElementById('theme');
         const timerDisplay = document.getElementById('timerDisplay');
-        const type = document.getElementById('type');
+        const timetype = document.getElementById('timetype');
         const s = document.getElementById('s');
         const m = document.getElementById('m');
         const h = document.getElementById('h');
@@ -284,41 +302,48 @@
         const bodyColorInput = document.getElementById('bodycoior');
         const textColorInput = document.getElementById('textcolor');
         const Beforetime = document.getElementById('Beforetime');
+        const uplond = document.getElementById('uplond');
+        const autoSaveStatus = document.getElementById('autoSaveStatus');
         let timerInterval = null;
         let totalSeconds = 0;
+        let record = [];
 
-        function showNotes() {
+        function openshowNotes() {
             document.getElementById('pageTitle').innerHTML = '筆記';
             document.getElementById('notes').style.display = 'block';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
             document.getElementById('new').style.display = 'none';
             document.getElementById('qrcode').style.display = 'none'; 
+            document.getElementById('record').style.display = 'none';
             document.getElementById('settings').style.display = 'none';
         }
 
-        function showIndex() {
-            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v4)</t>';
+        function openshowIndex() {
+            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v5)</t>';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('new').style.display = 'block';
             document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('settings').style.display = 'none';
         }
 
-        function showComputer() {
+        function openshowComputer() {
             document.getElementById('pageTitle').innerHTML = '計算機';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'block';  
             document.getElementById('Timer').style.display = 'none';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('settings').style.display = 'none';
             document.getElementById('qrcode').style.display = 'none'; 
             document.getElementById('new').style.display = 'none';          
         }
 
-        function showTimer() {
+        function openshowTimer() {
             document.getElementById('pageTitle').innerHTML = '計時器';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'block';
@@ -327,9 +352,10 @@
             document.getElementById('new').style.display = 'none';
         }
 
-        function settings(){
+        function opensettings(){
             document.getElementById('pageTitle').innerHTML = '設定';
             document.getElementById('new').style.display = 'none';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('settings').style.display = 'block';
@@ -337,8 +363,9 @@
             document.getElementById('qrcode').style.display = 'none'; 
         }
 
-        function qrcode(){
+        function openqrcode(){
             document.getElementById('pageTitle').innerHTML = '生成QR Code';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('new').style.display = 'none';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
@@ -347,9 +374,21 @@
             document.getElementById('qrcode').style.display = 'block';          
         }
 
-        function shownew(){
+        function openrecord(){
+            document.getElementById('pageTitle').innerHTML = '紀錄';
+            document.getElementById('record').style.display = 'block';
+            document.getElementById('new').style.display = 'none';
+            document.getElementById('notes').style.display = 'none';
+            document.getElementById('Computer').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
+            document.getElementById('qrcode').style.display = 'none'; 
+            document.getElementById('Timer').style.display = 'none';            
+        }
+
+        function openshownew(){
             document.getElementById('pageTitle').innerHTML = '其他小工具';
             document.getElementById('new').style.display = 'block';
+            document.getElementById('record').style.display = 'none';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('settings').style.display = 'none';
@@ -357,16 +396,64 @@
             document.getElementById('Timer').style.display = 'none';
         }
 
-        // 📝 快捷插入表單元件函式
+        //  網站本地儲存 (localStorage) 自動存檔與讀取邏輯
+        function saveNoteToWeb() {
+            // 同步複選框與單選框的勾選狀態，確保重新整理後勾選狀態保留
+            noteArea.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => {
+                if (el.checked) {
+                    el.setAttribute('checked', 'checked');
+                } else {
+                    el.removeAttribute('checked');
+                }
+            });
+
+            const webNoteData = {
+                theme: themeInput.value,
+                content: noteArea.innerHTML,
+                updatedAt: new Date().toLocaleTimeString()
+            };
+            localStorage.setItem('rvrv3210_web_note', JSON.stringify(webNoteData));
+            autoSaveStatus.textContent = `✓ 已自動儲存於網站 (${webNoteData.updatedAt})`;
+        }
+
+        function loadNoteFromWeb() {
+            const saved = localStorage.getItem('rvrv3210_web_note');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    themeInput.value = data.theme || '';
+                    noteArea.innerHTML = data.content || '';
+                    if (data.updatedAt) {
+                        autoSaveStatus.textContent = `已載入上次網頁筆記 (${data.updatedAt})`;
+                    }
+                } catch (e) {
+                    console.error("讀取網站筆記失敗", e);
+                }
+            }
+        }
+
+        function clearWebNote() {
+            if (confirm("確定要清空目前網頁上的筆記內容嗎？")) {
+                themeInput.value = '';
+                noteArea.innerHTML = '';
+                localStorage.removeItem('rvrv3210_web_note');
+                autoSaveStatus.textContent = '已清空網頁筆記';
+            }
+        }
+
+        themeInput.addEventListener('input', saveNoteToWeb);
+        noteArea.addEventListener('input', saveNoteToWeb);
+        noteArea.addEventListener('change', saveNoteToWeb);
+
+        //  快捷插入表單元件函式
         function insertNoteElement(type) {
             noteArea.focus();
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
             const range = selection.getRangeAt(0);
 
-            // 建立表單元素與文字輸入區
             const wrapper = document.createElement('span');
-            wrapper.contentEditable = "false"; // 讓外框群組化，避免編輯錯亂
+            wrapper.contentEditable = "false";
             wrapper.style.display = "inline-block";
             wrapper.style.margin = "4px 0";
 
@@ -377,7 +464,6 @@
 
             const spanText = document.createElement('span');
             spanText.contentEditable = "true";
-            // spanText.innerHTML = "請輸入選項內容...&nbsp;";
             spanText.style.borderBottom = "1px dashed #aaa";
 
             wrapper.appendChild(input);
@@ -386,7 +472,6 @@
             range.deleteContents();
             range.insertNode(wrapper);
 
-            // 在後面補一個空格方便繼續打字
             const space = document.createTextNode(" ");
             range.setStartAfter(wrapper);
             range.insertNode(space);
@@ -394,6 +479,8 @@
             range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
+
+            saveNoteToWeb();
         }
 
         // 下載無網網頁檔
@@ -415,6 +502,7 @@
 
         // 儲存為 JSON 格式
         function downloadnt() {
+            saveNoteToWeb();
             const noteContent = noteArea.innerHTML;
             const themeContent = themeInput.value;
             
@@ -454,6 +542,7 @@
                     themeInput.value = data.theme || '';
                     noteArea.innerHTML = data.content || '';
                     Beforetime.innerHTML =  "上次存檔於:" + data.saveTime || '';
+                    saveNoteToWeb();
                     alert("筆記讀取成功！");
                 } catch (error) {
                     alert("讀取失敗：檔案格式不正確或不是有效的 JSON 檔！");
@@ -587,7 +676,7 @@
         function startTimer() {
             if (timerInterval) return;
 
-            if (type.selectedIndex === 1 && totalSeconds === 0) {
+            if (timetype.selectedIndex === 1 && totalSeconds === 0) {
                 const hours = parseInt(h.value) || 0;
                 const minutes = parseInt(m.value) || 0;
                 const seconds = parseInt(s.value) || 0;
@@ -601,7 +690,7 @@
             }
 
             timerInterval = setInterval(() => {
-                if (type.selectedIndex === 0) {
+                if (timetype.selectedIndex === 0) {
                     totalSeconds++;
                 } else {
                     if (totalSeconds > 0) {
@@ -667,13 +756,12 @@
             document.body.style.color = defaultText;
         }
 
-        //QR Code
+        // QR Code
         function generateQRCode() {
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=` + encodeURIComponent(urlInput.value);
             document.getElementById('qrcodeImg').src = qrApiUrl;
         }
 
-        // 讀取/掃描上傳的 QR Code 圖片
         function scanQRCode(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -695,8 +783,61 @@
 
             event.target.value = '';
         }
+
+        // 紀錄功能
+        function uploadRecord(){
+            // const val = uplond.value.trim();
+            // if (!val) {
+            //     document.getElementById('dontlond').innerHTML = "請輸入內容！";
+            //     return;
+            // }
+            // if ( timetype.selectedIndex === 0 ) {
+            //     document.getElementById('dontlond').innerHTML = "上傳成功！";
+            //     record.push(uplond.value);
+            // } else {
+            //     if ( record.includes(uplond.value) === false) {
+            //         record.push(uplond.value);
+            //         document.getElementById('dontlond').innerHTML = "上傳成功！";
+            //     } else {
+            //         document.getElementById('dontlond').innerHTML = "你輸入的內容有重複！";
+            //     }
+            // }
+            // uplond.value = "";
+             // 去除前後空白
+            const val = uplond.value.trim();
+
+            if (!val) {
+                document.getElementById('dontlond').innerHTML = "請輸入內容！";
+                return;
+            }
+
+            // 統一檢查是否重複
+            if (record.includes(val)) {
+                document.getElementById('dontlond').innerHTML = "你輸入的內容有重複！";
+                return;
+            }
+
+            // 儲存資料
+            record.push(val);
+
+            document.getElementById('dontlond').innerHTML = "上傳成功！";
+
+            // 清空輸入框
+            uplond.value = "";
+        }
+
+        function dontlondRecord(){
+            if (record.length === 0) {
+                document.getElementById('dontlond').innerHTML = "目前沒有任何紀錄喔！";
+            } else {
+                // 將陣列內容用條列式顯示出來
+                document.getElementById('dontlond').innerHTML = record.map((item, index) => `${index + 1}. ${item}`).join('<br>');
+            }
+        }
+
+        loadNoteFromWeb();
         setInterval(time, 1000);
-        showIndex();
+        openshowIndex();
     </script>
 </body>
 </html>

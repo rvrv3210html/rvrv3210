@@ -12,7 +12,7 @@
             font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif;
             background-color: #0f172a;
             color: #ffffff;
-            touch-action: manipulation;
+            touch-action: none;
             user-select: none;
             -webkit-user-select: none;
         }
@@ -47,8 +47,8 @@
         }
 
         /* 手機按鍵按壓效果 */
-        .touch-btn:active {
-            background-color: rgba(255, 255, 255, 0.25);
+        .touch-btn:active, .touch-btn.active {
+            background-color: rgba(56, 189, 248, 0.25);
         }
 
         .inventory-slot {
@@ -78,11 +78,11 @@
     <div id="game-container" class="relative bg-slate-900 flex flex-col items-center">
         
         <!-- 頂部資訊列 (UI Header) -->
-        <div class="absolute top-0 left-0 w-full p-2 sm:p-3 bg-slate-950/80 backdrop-blur-md flex justify-between items-center z-10 border-b border-slate-800 text-xs sm:text-sm">
+        <div class="absolute top-0 left-0 w-full p-2 sm:p-3 bg-slate-950/80 backdrop-blur-md flex justify-between items-center z-20 border-b border-slate-800 text-xs sm:text-sm">
             <!-- 生命值條 -->
             <div class="flex items-center space-x-2">
                 <span class="text-red-400 font-bold text-xs">HP</span>
-                <div class="w-24 sm:w-36 h-3.5 bg-slate-800 rounded-full border border-slate-700 overflow-hidden p-0.5">
+                <div class="w-20 sm:w-32 h-3.5 bg-slate-800 rounded-full border border-slate-700 overflow-hidden p-0.5">
                     <div id="hp-bar" class="h-full bg-gradient-to-r from-red-600 via-yellow-500 to-green-500 rounded-full transition-all duration-200" style="width: 100%;"></div>
                 </div>
                 <span id="hp-text" class="text-[10px] sm:text-xs text-slate-300 font-mono">10/10</span>
@@ -96,7 +96,7 @@
             </div>
             
             <!-- 目前深度 / 分數 -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
                 <div class="text-sky-400 font-bold text-xs sm:text-sm">
                     <span class="text-slate-400 text-[10px]">FLOOR:</span> 
                     <span id="depth-text" class="text-amber-400">B0</span>
@@ -108,35 +108,37 @@
         <canvas id="gameCanvas" width="400" height="600" class="max-w-full h-auto"></canvas>
 
         <!-- 開始畫面 Overlay -->
-        <div id="start-screen" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-20 text-center">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-400 mb-2 tracking-wider">
-                小朋友下樓梯
+        <div id="start-screen" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-5 z-30 text-center">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-400 mb-2 tracking-wider">
+                小朋友下樓梯重製版
             </h1>
-            <p class="text-xs text-slate-400 mb-8 font-mono">NS-SHAFT RETRO EDITION</p>
+            <p class="text-[10px] text-slate-400 mb-4 font-mono">NS-SHAFT RETRO EDITION</p>
 
-            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 mb-8 max-w-xs text-left text-xs space-y-2 text-slate-300">
-                <p class="text-amber-400 font-bold text-center mb-2">🎮 操作說明</p>
-                <p>• <span class="text-sky-400 font-bold">← / →</span> 或 <span class="text-sky-400 font-bold">A / D</span>：左右移動</p>
+            <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 mb-4 max-w-xs text-left text-xs space-y-1.5 text-slate-300">
+                <p class="text-amber-400 font-bold text-center mb-1.5">🎮 操作說明</p>
+                <p>• <span class="text-sky-400 font-bold">← / →</span> 或 <span class="text-sky-400 font-bold">點擊螢幕左右側</span>：移動</p>
                 <p>• 避開 <span class="text-red-400">尖刺階梯</span> 與 <span class="text-slate-400">頂部天花板刺</span></p>
-                <p>• <span class="text-purple-400">黏液膠水板</span> 定身 1~3 秒（踩一次後變普通板；碰到頂刺可解困）</p>
-                <p class="text-emerald-400 font-bold mt-1">🧪 3 格物品欄道具系統 (30% 生成)：</p>
-                <p>• 點擊滑鼠或按鍵盤 <span class="text-amber-300 font-bold">1 / 2 / 3</span> 使用對應道具！</p>
-                <!-- <p>• <span class="text-green-400">生 (生命藥水)</span>: 30% 機率 (+1~5 HP)</p>
-                <p>• <span class="text-purple-300">解 (解困藥水)</span>: 15% 機率 (瞬間解除困住)</p>
-                <p>• <span class="text-yellow-300">加 (加速藥水)</span>: 55% 機率 (提升移動速度 5 秒)</p> -->
+                <p>• <span class="text-purple-400">黏液膠水板</span> 定身 1~3 秒（踩一次變普通板）</p>
+                <p>• 點擊物品欄或按 <span class="text-amber-300 font-bold">1 / 2 / 3</span> 使用道具！</p>
             </div>
 
-            <div class="text-xs text-slate-400 mb-6">
+            <!-- 樓梯選擇開關 -->
+            <label class="flex items-center justify-center space-x-2 bg-slate-900/90 px-4 py-2.5 rounded-lg border border-orange-500/40 mb-4 cursor-pointer hover:border-orange-400 transition-colors">
+                <input type="checkbox" id="enable-stairs-checkbox" checked class="w-4 h-4 accent-orange-500 rounded cursor-pointer">
+                <span class="text-xs text-orange-300 font-bold">包含斜坡樓梯階梯</span>
+            </label>
+
+            <div class="text-xs text-slate-400 mb-4">
                 最高紀錄：<span id="high-score-start" class="text-amber-400 font-bold">B0</span>
             </div>
 
-            <button id="start-btn" class="btn-retro bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-blue-400 text-sm tracking-wider">
+            <button id="start-btn" class="btn-retro bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-blue-400 text-sm tracking-wider cursor-pointer">
                 開始遊戲
             </button>
         </div>
 
         <!-- 遊戲結束畫面 Overlay -->
-        <div id="game-over-screen" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 z-20 text-center hidden">
+        <div id="game-over-screen" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 z-30 text-center hidden">
             <h2 class="text-3xl font-extrabold text-red-500 mb-2 animate-bounce">GAME OVER</h2>
             <p id="game-over-reason" class="text-xs text-slate-400 mb-6">掉落到底部深淵了！</p>
 
@@ -151,31 +153,25 @@
                 </div>
             </div>
 
-            <button id="restart-btn" class="btn-retro bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-emerald-400 text-sm tracking-wider">
+            <button id="restart-btn" class="btn-retro bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-emerald-400 text-sm tracking-wider cursor-pointer">
                 再玩一次
             </button>
         </div>
 
-        <!-- 手機端觸控按鈕 (自動在移動設備顯示) -->
-        <div id="touch-controls" class="absolute bottom-0 left-0 w-full h-32 flex justify-between pointer-events-none md:hidden z-10">
-            <div id="btn-left" class="touch-btn w-1/2 h-full bg-white/5 border-r border-white/10 flex items-center justify-center pointer-events-auto active:bg-white/20 transition-colors">
-                <span class="text-3xl opacity-40">◀</span>
+        <!-- 手機與觸控控制區 (覆蓋下方半部區域，不遮擋頂部物品欄) -->
+        <div id="touch-controls" class="absolute bottom-0 left-0 w-full h-3/4 flex justify-between z-10">
+            <div id="btn-left" class="touch-btn w-1/2 h-full border-r border-white/5 flex items-end justify-start p-4">
+                <span class="text-2xl opacity-25 pointer-events-none">◀</span>
             </div>
-            <div id="btn-right" class="touch-btn w-1/2 h-full bg-white/5 flex items-center justify-center pointer-events-auto active:bg-white/20 transition-colors">
-                <span class="text-3xl opacity-40">▶</span>
+            <div id="btn-right" class="touch-btn w-1/2 h-full flex items-end justify-end p-4">
+                <span class="text-2xl opacity-25 pointer-events-none">▶</span>
             </div>
         </div>
     </div>
 
-    <!-- 頁腳資訊 -->
-    <!-- <footer class="mt-4 text-xs text-slate-500 text-center">
-        NS-SHAFT Web Edition • HTML5 Canvas Game
-    </footer> -->
-
     <script>
         /**
          * Web Audio API 音效合成器
-         * 無須外部音訊檔案，直接以程式碼合成復古 8-bit 音效
          */
         class SoundFX {
             constructor() {
@@ -185,6 +181,9 @@
             init() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
                 }
             }
 
@@ -310,14 +309,15 @@
             CONVEYOR_RIGHT: 'CONVEYOR_RIGHT',
             SPRING: 'SPRING',
             CRUMBLE: 'CRUMBLE',
-            TRAP: 'TRAP'
+            TRAP: 'TRAP',
+            STAIRS: 'STAIRS'
         };
 
         // 道具種類列舉
         const ITEM_TYPES = {
-            HEAL: 'HEAL',         // 恢復生命藥水
-            UNTRAP: 'UNTRAP',     // 解除困住藥水
-            SPEED: 'SPEED'        // 加速藥水
+            HEAL: 'HEAL',
+            UNTRAP: 'UNTRAP',
+            SPEED: 'SPEED'
         };
 
         // 取得 HTML 元素
@@ -334,8 +334,9 @@
         const highScoreStartText = document.getElementById('high-score-start');
         const highScoreEndText = document.getElementById('high-score-end');
         const gameOverReason = document.getElementById('game-over-reason');
+        const enableStairsCheckbox = document.getElementById('enable-stairs-checkbox');
 
-        // 手機觸控區域
+        // 觸控控制區域
         const btnLeft = document.getElementById('btn-left');
         const btnRight = document.getElementById('btn-right');
 
@@ -347,6 +348,7 @@
         let platformSpeed = 2.0;
         let lastPlatformY = CANVAS_HEIGHT;
         let lastPlatformX = CANVAS_WIDTH / 2 - 40;
+        let allowStairs = true;
 
         // 3 格物品欄 (Inventory)
         let inventory = [null, null, null];
@@ -511,7 +513,6 @@
                 this.markedForDeletion = false;
                 this.floatOffset = 0;
                 
-                // 恢復生命藥水 (1~3 HP，80%, 16%, 4%)
                 if (this.type === ITEM_TYPES.HEAL) {
                     const r = Math.random();
                     if (r < 0.80) this.healAmount = 1;
@@ -576,26 +577,31 @@
             }
         }
 
-        // 階梯與道具陣列
         let platforms = [];
         let items = [];
 
+        /**
+         * 隨機取得階梯種類 (依勾選狀態決定是否包含樓梯)
+         */
         function getRandomPlatformType() {
             const rand = Math.random();
-            if (rand < 0.40) {
-                return PLATFORM_TYPES.NORMAL;
-            } else if (rand < 0.55) {
-                return PLATFORM_TYPES.SPIKE;
-            } else if (rand < 0.70) {
-                return PLATFORM_TYPES.CONVEYOR_LEFT;
-            } else if (rand < 0.82) {
-                return PLATFORM_TYPES.CONVEYOR_RIGHT;
-            } else if (rand < 0.90) {
-                return PLATFORM_TYPES.SPRING;
-            } else if (rand < 0.95) {
-                return PLATFORM_TYPES.CRUMBLE;
+            if (allowStairs) {
+                if (rand < 0.34) return PLATFORM_TYPES.NORMAL;         // 34%
+                else if (rand < 0.48) return PLATFORM_TYPES.SPIKE;     // 14%
+                else if (rand < 0.61) return PLATFORM_TYPES.CONVEYOR_LEFT;  // 13%
+                else if (rand < 0.73) return PLATFORM_TYPES.CONVEYOR_RIGHT; // 12%
+                else if (rand < 0.83) return PLATFORM_TYPES.STAIRS;    // 10% 樓梯
+                else if (rand < 0.90) return PLATFORM_TYPES.SPRING;    // 7%
+                else if (rand < 0.95) return PLATFORM_TYPES.CRUMBLE;   // 5%
+                else return PLATFORM_TYPES.TRAP;                      // 5%
             } else {
-                return PLATFORM_TYPES.TRAP;
+                if (rand < 0.40) return PLATFORM_TYPES.NORMAL;         // 40%
+                else if (rand < 0.55) return PLATFORM_TYPES.SPIKE;     // 15%
+                else if (rand < 0.70) return PLATFORM_TYPES.CONVEYOR_LEFT;  // 15%
+                else if (rand < 0.82) return PLATFORM_TYPES.CONVEYOR_RIGHT; // 12%
+                else if (rand < 0.90) return PLATFORM_TYPES.SPRING;    // 8%
+                else if (rand < 0.95) return PLATFORM_TYPES.CRUMBLE;   // 5%
+                else return PLATFORM_TYPES.TRAP;                      // 5%
             }
         }
 
@@ -613,6 +619,7 @@
                 this.springState = 0;
                 this.conveyorAnim = 0;
                 this.hasLanded = false;
+                this.stairDir = Math.random() < 0.5 ? 'right' : 'left';
             }
 
             update() {
@@ -631,7 +638,7 @@
 
                 if (this.isCrumbled) {
                     this.crumbleTimer++;
-                    if (this.crumbleTimer > 60) { // 踩中後延遲 1 秒才破壞
+                    if (this.crumbleTimer > 120) {
                         this.markedForDeletion = true;
                     }
                 }
@@ -642,15 +649,10 @@
 
                 ctx.save();
 
-                let shakeX = 0;
-                let shakeY = 0;
-                if (this.isCrumbled) {
-                    shakeX = (Math.random() - 0.5) * 4;
-                    shakeY = (Math.random() - 0.5) * 2;
+                if (this.type === PLATFORM_TYPES.CRUMBLE && this.isCrumbled) {
+                    const shakeX = (Math.random() - 0.5) * 4;
+                    ctx.translate(shakeX, 0);
                 }
-
-                const drawX = this.x + shakeX;
-                const drawY = this.y + shakeY;
 
                 switch (this.type) {
                     case PLATFORM_TYPES.NORMAL:
@@ -702,6 +704,25 @@
                         }
                         break;
 
+                    case PLATFORM_TYPES.STAIRS:
+                        const steps = 6;
+                        const stepW = this.width / steps;
+                        const stepMaxDrop = 16;
+                        for (let i = 0; i < steps; i++) {
+                            const ratio = this.stairDir === 'right' ? (steps - 1 - i) : i;
+                            const stepOffsetY = (ratio / (steps - 1)) * stepMaxDrop;
+                            const sx = this.x + i * stepW;
+                            const sy = this.y - stepMaxDrop / 2 + stepOffsetY;
+
+                            ctx.fillStyle = '#ea580c';
+                            ctx.fillRect(sx, sy, stepW + 1, this.height);
+                            ctx.fillStyle = '#fdba74';
+                            ctx.fillRect(sx, sy, stepW + 1, 3);
+                            ctx.fillStyle = '#7c2d12';
+                            ctx.fillRect(sx, sy + 3, 2, this.height - 3);
+                        }
+                        break;
+
                     case PLATFORM_TYPES.SPRING:
                         ctx.fillStyle = '#d97706';
                         ctx.fillRect(this.x, this.y + 8, this.width, 6);
@@ -720,15 +741,18 @@
 
                     case PLATFORM_TYPES.CRUMBLE:
                         ctx.fillStyle = this.isCrumbled ? '#713f12' : '#854d0e';
-                        ctx.fillRect(drawX, drawY, this.width, this.height);
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
                         ctx.fillStyle = '#ca8a04';
-                        ctx.fillRect(drawX + 10, drawY + 4, 25, 2);
-                        ctx.fillRect(drawX + 45, drawY + 8, 30, 2);
-
+                        ctx.fillRect(this.x + 10, this.y + 4, 25, 2);
+                        ctx.fillRect(this.x + 45, this.y + 8, 30, 2);
                         if (this.isCrumbled) {
-                            ctx.fillStyle = '#ef4444';
-                            ctx.fillRect(drawX + 5, drawY + 2, 80, 2);
-                            ctx.fillRect(drawX + 25, drawY + 6, 40, 2);
+                            ctx.strokeStyle = '#fef08a';
+                            ctx.lineWidth = 1.5;
+                            ctx.beginPath();
+                            ctx.moveTo(this.x + 30, this.y);
+                            ctx.lineTo(this.x + 42, this.y + 7);
+                            ctx.lineTo(this.x + 35, this.y + this.height);
+                            ctx.stroke();
                         }
                         break;
 
@@ -748,9 +772,22 @@
 
                 ctx.restore();
             }
+
+            getSurfaceY(playerCenterX) {
+                if (this.type !== PLATFORM_TYPES.STAIRS) {
+                    return this.y;
+                }
+                const clampedX = Math.max(this.x, Math.min(this.x + this.width, playerCenterX));
+                const progress = (clampedX - this.x) / this.width;
+                const stepMaxDrop = 16;
+                if (this.stairDir === 'right') {
+                    return this.y + stepMaxDrop / 2 - progress * stepMaxDrop;
+                } else {
+                    return this.y - stepMaxDrop / 2 + progress * stepMaxDrop;
+                }
+            }
         }
 
-        // 天花板刺繪製
         function drawCeilingSpikes(ctx) {
             ctx.save();
             const spikeWidth = 20;
@@ -771,10 +808,8 @@
             ctx.restore();
         }
 
-        // 階梯生成機制
         function generatePlatforms() {
             const minSpacing = 75;
-            
             let highestPlatformY = platforms.length > 0 
                 ? platforms[platforms.length - 1].y 
                 : CANVAS_HEIGHT;
@@ -804,7 +839,6 @@
             }
         }
 
-        // 道具生成 logic (30% 生成機率)
         function trySpawnItem(platform) {
             if (platform.type === PLATFORM_TYPES.SPIKE) return;
 
@@ -827,11 +861,9 @@
             }
         }
 
-        // 碰撞與踩踏 logic
         function handleCollisions() {
             player.isGrounded = false;
 
-            // 1. 天花板刺碰撞
             if (player.y <= CEILING_SPIKE_HEIGHT) {
                 if (!player.touchingCeilingSpike) {
                     player.touchingCeilingSpike = true;
@@ -857,7 +889,7 @@
                     if (validPlatforms.length > 0) {
                         const targetPlatform = validPlatforms[Math.min(2, validPlatforms.length - 1)];
                         player.x = targetPlatform.x + targetPlatform.width / 2 - player.width / 2;
-                        player.y = targetPlatform.y - player.height;
+                        player.y = targetPlatform.getSurfaceY(player.x + player.width / 2) - player.height;
                         player.vy = 0;
                         soundFX.playTeleport();
                     } else {
@@ -869,23 +901,25 @@
                 player.touchingCeilingSpike = false;
             }
 
-            // 2. 階梯碰撞
             let currentlyOnSpikePlatform = null;
 
             for (let p of platforms) {
                 if (p.markedForDeletion) continue;
 
+                const playerCenterX = player.x + player.width / 2;
+                const surfaceY = p.getSurfaceY(playerCenterX);
                 const playerFeet = player.y + player.height;
                 const prevPlayerFeet = playerFeet - player.vy;
+                const tolerance = p.type === PLATFORM_TYPES.STAIRS ? 12 : 4;
 
                 if (
                     player.x + player.width > p.x &&
                     player.x < p.x + p.width &&
-                    prevPlayerFeet <= p.y + 4 &&
-                    playerFeet >= p.y &&
+                    prevPlayerFeet <= surfaceY + tolerance &&
+                    playerFeet >= surfaceY - 2 &&
                     player.vy >= 0
                 ) {
-                    player.y = p.y - player.height;
+                    player.y = surfaceY - player.height;
                     player.vy = 0;
                     player.isGrounded = true;
 
@@ -893,7 +927,7 @@
                         p.hasLanded = true;
                         if (p.type === PLATFORM_TYPES.NORMAL) {
                             score += 1;
-                            soundFX.playHeal();
+                            soundFX.playJump();
                             updateUI();
                         }
                     }
@@ -949,7 +983,6 @@
 
             player.touchingSpikePlatform = currentlyOnSpikePlatform;
 
-            // 3. 道具碰撞
             for (let item of items) {
                 if (item.markedForDeletion) continue;
 
@@ -969,7 +1002,6 @@
                 }
             }
 
-            // 4. 深淵死亡判定
             if (player.y > CANVAS_HEIGHT) {
                 endGame('摔落到深淵了！');
             }
@@ -1052,6 +1084,7 @@
                 p.update();
                 p.draw(ctx);
             }
+
             platforms = platforms.filter(p => !p.markedForDeletion);
 
             generatePlatforms();
@@ -1066,7 +1099,9 @@
             player.draw(ctx);
 
             drawCeilingSpikes(ctx);
+
             handleCollisions();
+
             updateUI();
 
             animationFrameId = requestAnimationFrame(gameLoop);
@@ -1078,6 +1113,10 @@
             score = 0;
             lastPlatformY = CANVAS_HEIGHT - 60;
             lastPlatformX = CANVAS_WIDTH / 2 - 45;
+            allowStairs = enableStairsCheckbox.checked;
+
+            keys.left = false;
+            keys.right = false;
 
             inventory = [null, null, null];
             updateInventoryUI();
@@ -1100,6 +1139,8 @@
 
         function endGame(reason) {
             isGameRunning = false;
+            keys.left = false;
+            keys.right = false;
             soundFX.playHurt();
 
             if (score > highScore) {
@@ -1142,11 +1183,29 @@
             }
         });
 
-        // 觸控控制（手機端）
-        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
-        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; });
-        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
-        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; });
+        // 完整手機觸控與滑鼠點擊控制綁定
+        function bindDirectionControl(element, dir) {
+            const press = (e) => {
+                if (e.cancelable) e.preventDefault();
+                keys[dir] = true;
+                element.classList.add('active');
+            };
+            const release = (e) => {
+                if (e.cancelable) e.preventDefault();
+                keys[dir] = false;
+                element.classList.remove('active');
+            };
+
+            element.addEventListener('touchstart', press, { passive: false });
+            element.addEventListener('touchend', release, { passive: false });
+            element.addEventListener('touchcancel', release, { passive: false });
+            element.addEventListener('mousedown', press);
+            element.addEventListener('mouseup', release);
+            element.addEventListener('mouseleave', release);
+        }
+
+        bindDirectionControl(btnLeft, 'left');
+        bindDirectionControl(btnRight, 'right');
 
         // 按鈕點擊監聽
         startBtn.addEventListener('click', startGame);

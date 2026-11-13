@@ -130,7 +130,7 @@
         <span id="pageTitle"></span> 
          現在時間: <b id="time" style="font-size: 0.8em; margin-left: 10px;"></b>
         <div id="Marquee">
-            <h3>最新小工具<t style="color: yellow;">(v5)</t>於2026/11/8閃亮登場，新增設定! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a></h3>
+            <h3>最新小工具<t style="color: yellow;">(v6)</t>於2026/11/13閃亮登場! 歡迎來到rvrv3210小工具 訂閱rvrv3210，網址:<a href="https://www.youtube.com/@George-j9g1j">https://www.youtube.com/@George-j9g1j</a></h3>
         </div>
     </h1>
     <hr>
@@ -257,11 +257,11 @@
     <div id="record">
         <input type="text" id="uplond" placeholder="請輸入要紀錄的內容"><br><br>
         <button onclick="uploadRecord()">上傳資料</button><br><br>
-        <h3 id="dontlond" style="color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; min-height: 30px;">（尚無讀取內容）</h3>
+        <h3 id="dontlond" style="color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; min-height: 30px;"></h3>
         <button onclick="dontlondRecord()">讀取資料</button><br><br>
-        <hr><h3>紀錄設定</h3>
-        <select id="recordtype">
-            <!-- <option>普通模式</option> -->
+        <button onclick="Deleteall()" >刪除全部</button>
+        模式:<select id="recordtype">
+            <option>普通</option>
             <option>不儲存一樣資訊</option>
         </select><hr>
         <button onclick="openshowIndex()">返回首頁</button><br><br>
@@ -304,6 +304,7 @@
         const Beforetime = document.getElementById('Beforetime');
         const uplond = document.getElementById('uplond');
         const autoSaveStatus = document.getElementById('autoSaveStatus');
+        const recordtype = document.getElementById('recordtype');
         let timerInterval = null;
         let totalSeconds = 0;
         let record = [];
@@ -320,7 +321,7 @@
         }
 
         function openshowIndex() {
-            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v5)</t>';
+            document.getElementById('pageTitle').innerHTML = '首頁<t style="color: yellow;">(v6)</t>';
             document.getElementById('notes').style.display = 'none';
             document.getElementById('Computer').style.display = 'none';
             document.getElementById('Timer').style.display = 'none';
@@ -786,24 +787,6 @@
 
         // 紀錄功能
         function uploadRecord(){
-            // const val = uplond.value.trim();
-            // if (!val) {
-            //     document.getElementById('dontlond').innerHTML = "請輸入內容！";
-            //     return;
-            // }
-            // if ( timetype.selectedIndex === 0 ) {
-            //     document.getElementById('dontlond').innerHTML = "上傳成功！";
-            //     record.push(uplond.value);
-            // } else {
-            //     if ( record.includes(uplond.value) === false) {
-            //         record.push(uplond.value);
-            //         document.getElementById('dontlond').innerHTML = "上傳成功！";
-            //     } else {
-            //         document.getElementById('dontlond').innerHTML = "你輸入的內容有重複！";
-            //     }
-            // }
-            // uplond.value = "";
-             // 去除前後空白
             const val = uplond.value.trim();
 
             if (!val) {
@@ -811,18 +794,14 @@
                 return;
             }
 
-            // 統一檢查是否重複
-            if (record.includes(val)) {
+            // 永遠不允許儲存重複資訊
+            if (record.includes(val) && recordtype.selectedIndex === 1 ) {
                 document.getElementById('dontlond').innerHTML = "你輸入的內容有重複！";
                 return;
             }
 
-            // 儲存資料
             record.push(val);
-
             document.getElementById('dontlond').innerHTML = "上傳成功！";
-
-            // 清空輸入框
             uplond.value = "";
         }
 
@@ -834,7 +813,10 @@
                 document.getElementById('dontlond').innerHTML = record.map((item, index) => `${index + 1}. ${item}`).join('<br>');
             }
         }
-
+        function Deleteall(){
+            record = []
+            document.getElementById('dontlond').innerHTML = "已全部刪除！";
+        }
         loadNoteFromWeb();
         setInterval(time, 1000);
         openshowIndex();

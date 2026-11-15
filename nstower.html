@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小朋友上樓梯 - 重製版</title>
+<link rel="icon" sizes="400x500" href="https://rvrv3210html.github.io/rvrv3210/game/loge.jpg">
+<style>
+  :root {
+    --win-bg: #c0c0c0;
+    --win-light: #ffffff;
+    --win-dark: #808080;
+    --win-darker: #000000;
+    --win-blue: #000080;
+  }
+
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #2b2b2b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: "MS Sans Serif", "Microsoft JhengHei", sans-serif;
+    overflow: hidden;
+  }
+
+  .win-window {
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 var(--win-dark), 4px 4px 15px rgba(0,0,0,0.6);
+    padding: 3px;
+    width: 100%;
+    max-width: 550px;
+  }
+
+  .title-bar {
+    background: linear-gradient(90deg, var(--win-blue), #1084d0);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .title-bar-controls {
+    display: flex;
+    gap: 2px;
+  }
+
+  .win-btn-small {
+    width: 18px;
+    height: 16px;
+    background: var(--win-bg);
+    border-top: 1px solid var(--win-light);
+    border-left: 1px solid var(--win-light);
+    border-right: 1px solid var(--win-darker);
+    border-bottom: 1px solid var(--win-darker);
+    color: black;
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .win-btn-small:active {
+    border-top: 1px solid var(--win-darker);
+    border-left: 1px solid var(--win-darker);
+    border-right: 1px solid var(--win-light);
+    border-bottom: 1px solid var(--win-light);
+  }
+
+  .menu-bar {
+    display: flex;
+    gap: 12px;
+    padding: 2px 6px 4px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--win-dark);
+    margin-bottom: 6px;
+  }
+
+  .menu-item {
+    cursor: pointer;
+    padding: 1px 4px;
+  }
+
+  .menu-item:hover {
+    background: var(--win-blue);
+    color: white;
+  }
+
+  .game-body {
+    display: flex;
+    gap: 8px;
+    padding: 4px;
+    justify-content: center;
+  }
+
+  .sunken-box {
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    background: #000;
+  }
+
+  canvas {
+    display: block;
+    background: #1a1512;
+  }
+
+  .side-panel {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .panel-box {
+    border: 1px solid var(--win-dark);
+    box-shadow: inset 1px 1px 0 var(--win-light);
+    padding: 5px;
+    text-align: center;
+  }
+
+  .panel-label {
+    font-size: 12px;
+    color: #222;
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+
+  .lcd-display {
+    background: #000;
+    color: #ff2a2a;
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 3px;
+    letter-spacing: 2px;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+  }
+
+  .lcd-green {
+    color: #00ff44;
+    font-size: 17px;
+  }
+
+  .power-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: space-between;
+  }
+
+  .power-bar-outer {
+    width: 34px;
+    height: 165px;
+    background: #111;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    position: relative;
+    overflow: hidden;
+    margin: 3px 0;
+  }
+
+  .power-bar-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #00e600 0%, #ffff00 60%, #ff0000 100%);
+  }
+
+  .power-ticks {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to top,
+      transparent,
+      transparent 15px,
+      rgba(0,0,0,0.6) 15px,
+      rgba(0,0,0,0.6) 17px
+    );
+  }
+
+  .win-btn {
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    padding: 5px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .win-btn:active {
+    border-top: 2px solid var(--win-darker);
+    border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    padding: 6px 7px 4px 9px;
+  }
+
+  .win-select {
+    width: 100%;
+    padding: 3px;
+    background: white;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .modal-box {
+    width: 330px;
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    padding: 3px;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.7);
+  }
+
+  .modal-content {
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    background: white;
+    border: 1px solid var(--win-dark);
+  }
+
+  .rank-table th, .rank-table td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .rank-table th {
+    background: #e0e0e0;
+  }
+
+  .status-bar {
+    margin-top: 4px;
+    border-top: 1px solid var(--win-dark);
+    padding: 3px 6px;
+    font-size: 12px;
+    color: #222;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 530px) {
+    .game-body {
+      flex-direction: column;
+      align-items: center;
+    }
+    .side-panel {
+      width: 340px;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .panel-box {
+      flex: 1;
+      min-width: 100px;
+    }
+    .power-bar-outer {
+      width: 100%;
+      height: 24px;
+    }
+    .power-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #00e600 0%, #ffff00 60%, #ff0000 100%);
+    }
+    .power-ticks {
+      background-image: repeating-linear-gradient(
+        to right,
+        transparent,
+        transparent 18px,
+        rgba(0,0,0,0.6) 18px,
+        rgba(0,0,0,0.6) 20px
+      );
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="win-window">
+  <div class="title-bar">
+    <span> 小朋友上樓梯 (NS-TOWER)</span>
+    <div class="title-bar-controls">
+      <div class="win-btn-small" id="btnMute" title="音效開關">🔊</div>
+      <div class="win-btn-small" id="btnHelp" title="板子圖鑑與說明">?</div>
+    </div>
+  </div>
+
+  <div class="menu-bar">
+    <div class="menu-item" id="menuNew">開新局(N)</div>
+    <div class="menu-item" id="menuRank">排行榜(H)</div>
+    <div class="menu-item" id="menuGimmick">特殊板: 開啟</div>
+    <div class="menu-item" id="menuAbout">板子圖鑑(A)</div>
+  </div>
+
+  <div class="game-body">
+    <div class="sunken-box">
+      <canvas id="gameCanvas" width="340" height="460"></canvas>
+    </div>
+
+    <div class="side-panel">
+      <div class="panel-box">
+        <div class="panel-label">FLOOR (樓層)</div>
+        <div class="lcd-display" id="floorDisplay">000</div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-label">JUMPS (跳躍數)</div>
+        <div class="lcd-display lcd-green" id="jumpDisplay">000</div>
+      </div>
+
+      <div class="panel-box power-container">
+        <div class="panel-label">POWER (蓄力)</div>
+        <div class="power-bar-outer">
+          <div class="power-bar-fill" id="powerFill"></div>
+          <div class="power-ticks"></div>
+        </div>
+        <div style="font-size:11px; color:#444;" id="powerPercent">0%</div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-label">LEVEL (難度)</div>
+        <select class="win-select" id="difficultySelect">
+          <option value="easy">EASY (簡單)</option>
+          <option value="normal" selected>NORMAL (普通)</option>
+          <option value="hard">HARD (困難)</option>
+        </select>
+      </div>
+
+      <button class="win-btn" id="btnStart">▶ 開始 / 重來</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusText">按住 [空白鍵] 或 [滑鼠左鍵] 蓄力，放開跳躍！</span>
+    <span>NS-TOWER Dense Edition</span>
+  </div>
+</div>
+
+<!-- 排行榜彈窗 -->
+<div class="modal-overlay" id="rankModal">
+  <div class="modal-box">
+    <div class="title-bar">
+      <span>🏆 高分排行榜 (TOP 5)</span>
+      <div class="win-btn-small" onclick="closeModals()">✕</div>
+    </div>
+    <div class="modal-content">
+      <table class="rank-table">
+        <thead>
+          <tr>
+            <th>名次</th>
+            <th>難度</th>
+            <th>樓層</th>
+            <th>跳躍數</th>
+          </tr>
+        </thead>
+        <tbody id="rankTableBody"></tbody>
+      </table>
+      <button class="win-btn" onclick="closeModals()">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 板子圖鑑與說明彈窗 -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-box">
+    <div class="title-bar">
+      <span>📖 操作與 6 種板子圖鑑</span>
+      <div class="win-btn-small" onclick="closeModals()">✕</div>
+    </div>
+    <div class="modal-content">
+      <p><b>【操作方式】</b>按住 <code>空白鍵</code> 或 <code>滑鼠左鍵</code> 蓄力，放開起跳（蓄力超過 100% 會歸零）。</p>
+      <br>
+      <p><b>【6 種樓梯板子種類】</b></p>
+      <p>⬜ <b>一般石階</b>：穩固安全的基本階梯。</p>
+      <p>🟦 <b>移動石階</b>：左右來回滑動。</p>
+      <p>🟨 <b>輸送帶板</b>：帶動角色向左或向右加速移動。</p>
+      <p>🟥 <b>彈簧跳板</b>：踩到瞬間自動高彈射（直衝 3~4 層）。</p>
+      <p>🟫 <b>脆弱木板</b>：踩到後裂開，約 0.55 秒後碎裂掉落！</p>
+      <p>❄️ <b>結冰滑板</b>：表面光滑，水平移動速度加快 1.45 倍。</p>
+      <br>
+      <button class="win-btn" onclick="closeModals()">開始挑戰</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * ==========================================
+ * 參數設定區 (CONFIG) - 密集平台 + 多樣板子
+ * ==========================================
+ */
+const CONFIG = {
+  CANVAS_WIDTH: 340,
+  CANVAS_HEIGHT: 460,
+  WALL_WIDTH: 18,
+  GRAVITY: 0.42,
+  FLOOR_SPACING: 48,         // 縮小垂直間距 -> 平台更密集、空格更少
+  MIN_JUMP_VY: -4.8,
+  MAX_JUMP_VY: -14.8,
+  SPRING_JUMP_VY: -15.5,     // 彈簧板自動彈射力道
+  FRAGILE_BREAK_FRAMES: 34,  // 脆弱木板踩踏後碎裂幀數 (約 0.55 秒)
+  PLAYER_WIDTH: 24,
+  PLAYER_HEIGHT: 30,
+  DIFFICULTY: {
+    easy:   { label: 'EASY',   walkSpeed: 2.0, chargeRate: 1.5, platMinW: 118, platMaxW: 165, extraPlatChance: 0.35, gimmickStart: 3 },
+    normal: { label: 'NORMAL', walkSpeed: 2.6, chargeRate: 1.9, platMinW: 96,  platMaxW: 145, extraPlatChance: 0.25, gimmickStart: 2 },
+    hard:   { label: 'HARD',   walkSpeed: 3.3, chargeRate: 2.4, platMinW: 78,  platMaxW: 118, extraPlatChance: 0.15, gimmickStart: 1 }
+  }
+};
+
+/**
+ * ==========================================
+ * 8-bit 復古音效合成器 (Web Audio API)
+ * ==========================================
+ */
+class RetroAudio {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playTone(freqStart, freqEnd, duration, type = 'square', volume = 0.12) {
+    if (this.muted) return;
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freqStart, this.ctx.currentTime);
+    if (freqEnd !== freqStart) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), this.ctx.currentTime + duration);
+    }
+    gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  }
+  playJump(powerRatio) {
+    const base = 220 + powerRatio * 260;
+    this.playTone(base, base * 1.9, 0.16, 'square', 0.12);
+  }
+  playSpring() {
+    this.playTone(260, 880, 0.24, 'triangle', 0.18);
+  }
+  playCrack() {
+    this.playTone(190, 95, 0.08, 'sawtooth', 0.12);
+  }
+  playBreak() {
+    this.playTone(140, 45, 0.14, 'square', 0.14);
+  }
+  playLand() {
+    this.playTone(150, 90, 0.06, 'triangle', 0.15);
+  }
+  playWallBounce() {
+    this.playTone(280, 220, 0.04, 'sine', 0.08);
+  }
+  playOvercharge() {
+    this.playTone(420, 140, 0.12, 'sawtooth', 0.1);
+  }
+  playMilestone() {
+    if (this.muted) return;
+    [523, 659, 784, 1046].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, f, 0.09, 'square', 0.1), i * 65);
+    });
+  }
+  playGameOver() {
+    if (this.muted) return;
+    [330, 294, 262, 196].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, f * 0.85, 0.18, 'sawtooth', 0.12), i * 140);
+    });
+  }
+}
+
+const audio = new RetroAudio();
+
+/**
+ * ==========================================
+ * 遊戲主狀態與實體邏輯
+ * ==========================================
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let state = 'IDLE';
+let difficultyKey = 'normal';
+let gimmicksEnabled = true;
+
+let player = {};
+let platforms = [];
+let cameraY = 0;
+let highestFloor = 0;
+let jumpCount = 0;
+let isCharging = false;
+let chargePower = 0;
+let animFrame = 0;
+let lastMilestone = 0;
+let lastPlatCenter = 170;
+
+function resetGame() {
+  difficultyKey = document.getElementById('difficultySelect').value;
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+
+  platforms = [];
+  highestFloor = 0;
+  jumpCount = 0;
+  isCharging = false;
+  chargePower = 0;
+  lastMilestone = 0;
+  lastPlatCenter = CONFIG.CANVAS_WIDTH / 2;
+
+  // 第 0 層：起點全寬地面
+  const startY = CONFIG.CANVAS_HEIGHT - 32;
+  platforms.push({
+    floor: 0,
+    x: CONFIG.WALL_WIDTH,
+    y: startY,
+    w: CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH * 2,
+    h: 16,
+    type: 'normal',
+    vx: 0,
+    beltSpeed: 0,
+    cracked: false,
+    breakTimer: 0,
+    broken: false,
+    springAnim: 0
+  });
+
+  // 預先生成上方 35 層密集階梯
+  for (let f = 1; f <= 35; f++) {
+    generateFloorPlatforms(f);
+  }
+
+  player = {
+    x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_WIDTH / 2,
+    y: startY - CONFIG.PLAYER_HEIGHT,
+    w: CONFIG.PLAYER_WIDTH,
+    h: CONFIG.PLAYER_HEIGHT,
+    vx: diff.walkSpeed,
+    vy: 0,
+    dir: 1,
+    grounded: true,
+    currentPlatform: platforms[0],
+    walkCycle: 0
+  };
+
+  cameraY = 0;
+  state = 'PLAYING';
+  updateHUD();
+  document.getElementById('statusText').textContent = '按住蓄力，放開跳躍！注意不同板子特性！';
+}
+
+// 隨機挑選板子種類
+function pickPlatformType(floor) {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+  if (!gimmicksEnabled || floor < diff.gimmickStart) return 'normal';
+
+  const r = Math.random();
+  if (r < 0.34) return 'normal';      // 34% 一般石階
+  if (r < 0.50) return 'moving';      // 16% 左右移動石階
+  if (r < 0.65) return Math.random() < 0.5 ? 'belt_left' : 'belt_right'; // 15% 輸送帶
+  if (r < 0.78) return 'spring';      // 13% 彈簧板
+  if (r < 0.90) return 'fragile';     // 12% 脆弱木板
+  return 'ice';                       // 10% 結冰滑板
+}
+
+function createPlatformObj(floor, x, y, w, forcedType = null) {
+  const type = forcedType || pickPlatformType(floor);
+  let vx = 0;
+  let beltSpeed = 0;
+
+  if (type === 'moving') {
+    vx = (Math.random() < 0.5 ? 1 : -1) * (1.0 + Math.min(1.6, floor * 0.012));
+  } else if (type === 'belt_left' || type === 'belt_right') {
+    beltSpeed = (type === 'belt_right' ? 1 : -1) * 1.45;
+  }
+
+  return {
+    floor,
+    x,
+    y,
+    w,
+    h: 14,
+    type,
+    vx,
+    beltSpeed,
+    cracked: false,
+    breakTimer: 0,
+    broken: false,
+    springAnim: 0
+  };
+}
+
+// 生成指定樓層的平台（空格少、寬度足、部分樓層有雙平台）
+function generateFloorPlatforms(floor) {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+  const y = (CONFIG.CANVAS_HEIGHT - 32) - floor * CONFIG.FLOOR_SPACING;
+  const leftBound = CONFIG.WALL_WIDTH;
+  const rightBound = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+  const playAreaW = rightBound - leftBound;
+
+  const shrink = Math.min(16, Math.floor(floor / 20) * 2);
+  const w = Math.max(66, Math.floor(diff.platMinW + Math.random() * (diff.platMaxW - diff.platMinW) - shrink));
+
+  // 讓上下層位置交錯但不會產生過大斷層，減少空白區
+  let targetCenter;
+  if (lastPlatCenter < CONFIG.CANVAS_WIDTH / 2) {
+    targetCenter = CONFIG.CANVAS_WIDTH * (0.48 + Math.random() * 0.34);
+  } else {
+    targetCenter = CONFIG.CANVAS_WIDTH * (0.18 + Math.random() * 0.34);
+  }
+  let x = Math.round(targetCenter - w / 2);
+  x = Math.max(leftBound, Math.min(rightBound - w, x));
+  lastPlatCenter = x + w / 2;
+
+  const mainPlat = createPlatformObj(floor, x, y, w);
+  platforms.push(mainPlat);
+
+  // 依機率在同一層的另一側加放第二塊輔助小板，讓畫面平台更豐富、空格更少
+  if (Math.random() < diff.extraPlatChance) {
+    const subW = Math.max(54, Math.floor(w * 0.65));
+    const gap = 26;
+    if (x - leftBound >= subW + gap) {
+      const subX = leftBound + Math.floor(Math.random() * (x - leftBound - subW - gap + 1));
+      platforms.push(createPlatformObj(floor, subX, y, subW));
+    } else if (rightBound - (x + w) >= subW + gap) {
+      const subX = x + w + gap + Math.floor(Math.random() * (rightBound - (x + w + gap) - subW + 1));
+      platforms.push(createPlatformObj(floor, subX, y, subW));
+    }
+  }
+}
+
+function startCharge() {
+  if (state === 'IDLE' || state === 'GAMEOVER') return;
+  if (!isCharging) {
+    isCharging = true;
+  }
+}
+
+function releaseCharge() {
+  if (state !== 'PLAYING' || !isCharging) return;
+  isCharging = false;
+
+  if (player.grounded) {
+    const ratio = chargePower / 100;
+    player.vy = CONFIG.MIN_JUMP_VY + ratio * (CONFIG.MAX_JUMP_VY - CONFIG.MIN_JUMP_VY);
+    player.grounded = false;
+    player.currentPlatform = null;
+    jumpCount++;
+    audio.playJump(ratio);
+  }
+
+  chargePower = 0;
+  updatePowerUI();
+}
+
+function update() {
+  animFrame++;
+  if (state !== 'PLAYING') return;
+
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+
+  // 1. 蓄力條計算
+  if (isCharging) {
+    chargePower += diff.chargeRate;
+    if (chargePower > 100) {
+      chargePower = 0;
+      audio.playOvercharge();
+    }
+    updatePowerUI();
+  }
+
+  // 2. 更新所有平台狀態（移動、脆弱倒數、彈簧動畫）
+  const leftWall = CONFIG.WALL_WIDTH;
+  const rightWall = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+
+  for (const p of platforms) {
+    if (p.broken) continue;
+
+    if (p.type === 'moving') {
+      p.x += p.vx;
+      if (p.x <= leftWall) {
+        p.x = leftWall;
+        p.vx = Math.abs(p.vx);
+      } else if (p.x + p.w >= rightWall) {
+        p.x = rightWall - p.w;
+        p.vx = -Math.abs(p.vx);
+      }
+    }
+
+    if (p.type === 'fragile' && p.cracked) {
+      p.breakTimer++;
+      if (p.breakTimer >= CONFIG.FRAGILE_BREAK_FRAMES) {
+        p.broken = true;
+        audio.playBreak();
+        if (player.currentPlatform === p) {
+          player.grounded = false;
+          player.currentPlatform = null;
+        }
+      }
+    }
+
+    if (p.springAnim > 0) {
+      p.springAnim--;
+    }
+  }
+
+  // 3. 角色水平移動（含結冰滑板加速與輸送帶牽引）
+  let speedMult = 1.0;
+  if (player.grounded && player.currentPlatform && player.currentPlatform.type === 'ice') {
+    speedMult = 1.45;
+  }
+
+  let moveX = player.dir * diff.walkSpeed * speedMult;
+  if (player.grounded && player.currentPlatform && !player.currentPlatform.broken) {
+    moveX += player.currentPlatform.vx;
+    moveX += player.currentPlatform.beltSpeed;
+  }
+
+  player.x += moveX;
+
+  if (player.x <= leftWall) {
+    player.x = leftWall;
+    player.dir = 1;
+    audio.playWallBounce();
+  } else if (player.x + player.w >= rightWall) {
+    player.x = rightWall - player.w;
+    player.dir = -1;
+    audio.playWallBounce();
+  }
+
+  // 4. 角色垂直物理與平台碰撞
+  const prevBottom = player.y + player.h;
+
+  if (!player.grounded) {
+    player.vy += CONFIG.GRAVITY;
+    player.y += player.vy;
+
+    if (player.vy >= 0) {
+      const currBottom = player.y + player.h;
+      const footCenter = player.x + player.w / 2;
+
+      for (const p of platforms) {
+        if (p.broken) continue;
+        if (
+          footCenter >= p.x - 4 &&
+          footCenter <= p.x + p.w + 4 &&
+          prevBottom <= p.y + 6 &&
+          currBottom >= p.y
+        ) {
+          // 更新最高樓層紀錄
+          if (p.floor > highestFloor) {
+            highestFloor = p.floor;
+            if (highestFloor >= lastMilestone + 50) {
+              lastMilestone = Math.floor(highestFloor / 50) * 50;
+              audio.playMilestone();
+            }
+          }
+
+          // 若踩到彈簧板：直接向上高彈射
+          if (p.type === 'spring') {
+            player.y = p.y - player.h;
+            player.vy = CONFIG.SPRING_JUMP_VY;
+            player.grounded = false;
+            player.currentPlatform = null;
+            p.springAnim = 14;
+            audio.playSpring();
+            break;
+          }
+
+          // 一般著陸
+          player.y = p.y - player.h;
+          player.vy = 0;
+          player.grounded = true;
+          player.currentPlatform = p;
+
+          if (p.type === 'fragile' && !p.cracked) {
+            p.cracked = true;
+            audio.playCrack();
+          } else {
+            audio.playLand();
+          }
+          break;
+        }
+      }
+    }
+  } else {
+    const p = player.currentPlatform;
+    const footCenter = player.x + player.w / 2;
+    if (!p || p.broken || footCenter < p.x - 4 || footCenter > p.x + p.w + 4) {
+      player.grounded = false;
+      player.currentPlatform = null;
+    } else {
+      player.y = p.y - player.h;
+    }
+  }
+
+  if (player.grounded) {
+    player.walkCycle += 0.25 * speedMult;
+  }
+
+  // 5. 鏡頭平滑向上追蹤
+  const targetCamY = Math.min(cameraY, player.y - CONFIG.CANVAS_HEIGHT * 0.42);
+  if (targetCamY < cameraY) {
+    cameraY += (targetCamY - cameraY) * 0.14;
+  }
+
+  // 動態生成更高樓層
+  const topGeneratedFloor = platforms[platforms.length - 1].floor;
+  const visibleTopFloor = Math.ceil((-cameraY + CONFIG.CANVAS_HEIGHT) / CONFIG.FLOOR_SPACING) + 15;
+  for (let f = topGeneratedFloor + 1; f <= visibleTopFloor; f++) {
+    generateFloorPlatforms(f);
+  }
+  platforms = platforms.filter(p => p.y - cameraY < CONFIG.CANVAS_HEIGHT + 120);
+
+  // 6. 掉落底部判定
+  if (player.y - cameraY > CONFIG.CANVAS_HEIGHT + 10) {
+    triggerGameOver();
+  }
+
+  updateHUD();
+}
+
+function triggerGameOver() {
+  state = 'GAMEOVER';
+  isCharging = false;
+  chargePower = 0;
+  updatePowerUI();
+  audio.playGameOver();
+  saveHighScore(difficultyKey, highestFloor, jumpCount);
+  document.getElementById('statusText').textContent = `遊戲結束！最高到達 ${highestFloor} 樓。點擊「開始 / 重來」挑戰！`;
+}
+
+/**
+ * ==========================================
+ * 畫面繪製 (6 種特色平台視覺表現)
+ * ==========================================
+ */
+function draw() {
+  ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+
+  // 1. 高塔背景石磚紋理
+  const bgOffset = Math.floor((-cameraY * 0.4) % 40);
+  ctx.fillStyle = '#1b1715';
+  ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+
+  ctx.strokeStyle = '#28221e';
+  ctx.lineWidth = 1;
+  for (let y = bgOffset - 40; y < CONFIG.CANVAS_HEIGHT + 40; y += 40) {
+    ctx.beginPath();
+    ctx.moveTo(CONFIG.WALL_WIDTH, y);
+    ctx.lineTo(CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH, y);
+    ctx.stroke();
+
+    const rowShift = (Math.floor((y - bgOffset) / 40) % 2) * 32;
+    for (let x = CONFIG.WALL_WIDTH + rowShift; x < CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH; x += 64) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 40);
+      ctx.stroke();
+    }
+  }
+
+  // 每 10 層樓層標示
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+  ctx.font = 'bold 24px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  const drawnLabels = new Set();
+  for (const p of platforms) {
+    if (p.floor > 0 && p.floor % 10 === 0 && !drawnLabels.has(p.floor)) {
+      drawnLabels.add(p.floor);
+      const screenY = p.y - cameraY;
+      ctx.fillText(`${p.floor}F`, CONFIG.CANVAS_WIDTH / 2, screenY - 10);
+    }
+  }
+
+  // 2. 繪製 6 種平台階梯
+  for (const p of platforms) {
+    if (p.broken) continue;
+    const sy = Math.round(p.y - cameraY);
+    if (sy < -30 || sy > CONFIG.CANVAS_HEIGHT + 30) continue;
+
+    if (p.type === 'normal') {
+      // [1] 經典灰白石階
+      ctx.fillStyle = '#9e9e9e';
+      ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#e0e0e0';
+      ctx.fillRect(p.x, sy, p.w, 3);
+      ctx.fillStyle = '#555555';
+      ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+      ctx.fillStyle = '#666';
+      for (let bx = p.x + 18; bx < p.x + p.w - 6; bx += 20) {
+        ctx.fillRect(bx, sy + 2, 1, p.h - 4);
+      }
+    } else if (p.type === 'moving') {
+      // [2] 藍綠色移動平台
+      ctx.fillStyle = '#2b7a9b';
+      ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#64d2ff';
+      ctx.fillRect(p.x, sy, p.w, 3);
+      ctx.fillStyle = '#144459';
+      ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+    } else if (p.type === 'belt_left' || p.type === 'belt_right') {
+      // [3] 輸送帶平台 (黃黑滾輪條紋)
+      ctx.fillStyle = '#c88a1e';
+      ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.strokeStyle = '#332200';
+      ctx.lineWidth = 2;
+      const shift = Math.floor((animFrame * (p.type === 'belt_right' ? 1.5 : -1.5)) % 12);
+      for (let cx = p.x + 6 + shift; cx < p.x + p.w - 4; cx += 12) {
+        if (cx > p.x + 2 && cx < p.x + p.w - 2) {
+          ctx.beginPath();
+          ctx.moveTo(cx, sy + 3);
+          ctx.lineTo(cx, sy + p.h - 3);
+          ctx.stroke();
+        }
+      }
+    } else if (p.type === 'spring') {
+      // [4] 紅色彈簧跳板
+      const bounceOffset = p.springAnim > 0 ? Math.sin(p.springAnim * 0.6) * 4 : 0;
+      ctx.fillStyle = '#616161';
+      ctx.fillRect(p.x, sy + 6, p.w, p.h - 6);
+      // 彈簧線圈
+      ctx.strokeStyle = '#ffd54f';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let sx = p.x + 8; sx < p.x + p.w - 8; sx += 10) {
+        ctx.moveTo(sx, sy + 6);
+        ctx.lineTo(sx + 5, sy + 2 - bounceOffset);
+      }
+      ctx.stroke();
+      // 紅色頂板
+      ctx.fillStyle = '#e53935';
+      ctx.fillRect(p.x, sy - bounceOffset, p.w, 5);
+      ctx.fillStyle = '#ff8a80';
+      ctx.fillRect(p.x, sy - bounceOffset, p.w, 2);
+    } else if (p.type === 'fragile') {
+      // [5] 棕色脆弱木板 (踩到後震動並顯示裂痕)
+      const shakeX = p.cracked ? (Math.random() - 0.5) * 3 : 0;
+      const shakeY = p.cracked ? (Math.random() - 0.5) * 2 : 0;
+      const dx = p.x + shakeX;
+      const dy = sy + shakeY;
+
+      ctx.fillStyle = p.cracked ? '#6d4c41' : '#8d6e63';
+      ctx.fillRect(dx, dy, p.w, p.h);
+      ctx.fillStyle = '#bcaaa4';
+      ctx.fillRect(dx, dy, p.w, 2);
+      ctx.fillStyle = '#4e342e';
+      ctx.fillRect(dx, dy + p.h - 3, p.w, 3);
+
+      // 木板裂紋線條
+      ctx.strokeStyle = '#3e2723';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(dx + p.w * 0.35, dy);
+      ctx.lineTo(dx + p.w * 0.42, dy + 7);
+      ctx.lineTo(dx + p.w * 0.32, dy + p.h);
+      if (p.cracked) {
+        ctx.moveTo(dx + p.w * 0.68, dy);
+        ctx.lineTo(dx + p.w * 0.60, dy + 8);
+        ctx.lineTo(dx + p.w * 0.72, dy + p.h);
+      }
+      ctx.stroke();
+    } else if (p.type === 'ice') {
+      // [6] 淺藍色結冰滑板
+      ctx.fillStyle = '#80deea';
+      ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#e0f7fa';
+      ctx.fillRect(p.x, sy, p.w, 4);
+      ctx.fillStyle = '#00acc1';
+      ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+      // 冰晶斜線反光
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      for (let ix = p.x + 12; ix < p.x + p.w - 10; ix += 24) {
+        ctx.beginPath();
+        ctx.moveTo(ix, sy + 9);
+        ctx.lineTo(ix + 6, sy + 3);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 3. 繪製兩側高塔石牆
+  const wallOffset = Math.floor((-cameraY) % 24);
+  for (let wy = wallOffset - 24; wy < CONFIG.CANVAS_HEIGHT + 24; wy += 24) {
+    ctx.fillStyle = '#757575';
+    ctx.fillRect(0, wy, CONFIG.WALL_WIDTH, 22);
+    ctx.fillStyle = '#bdbdbd';
+    ctx.fillRect(0, wy, CONFIG.WALL_WIDTH - 2, 2);
+    ctx.fillStyle = '#424242';
+    ctx.fillRect(CONFIG.WALL_WIDTH - 2, wy, 2, 22);
+
+    const rx = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+    ctx.fillStyle = '#757575';
+    ctx.fillRect(rx, wy, CONFIG.WALL_WIDTH, 22);
+    ctx.fillStyle = '#bdbdbd';
+    ctx.fillRect(rx + 2, wy, CONFIG.WALL_WIDTH - 2, 2);
+    ctx.fillStyle = '#424242';
+    ctx.fillRect(rx, wy, 2, 22);
+  }
+
+  // 4. 繪製主角
+  drawPlayer();
+
+  // 5. 覆蓋提示層
+  if (state === 'IDLE') {
+    drawOverlayBox('小朋友上樓梯', '密集階梯 + 6種板子！按 [空白鍵] 開始');
+  } else if (state === 'GAMEOVER') {
+    drawOverlayBox(`GAME OVER - ${highestFloor} 樓`, `總跳躍次數: ${jumpCount} 次 | 按 [空白鍵] 再玩一次`);
+  }
+}
+
+function drawPlayer() {
+  const px = Math.round(player.x);
+  const squat = (isCharging && player.grounded) ? Math.min(5, Math.floor(chargePower / 22)) : 0;
+  const py = Math.round(player.y - cameraY) + squat;
+  const pw = player.w;
+  const ph = player.h - squat;
+
+  // 身體
+  ctx.fillStyle = '#1e6bd6';
+  ctx.fillRect(px + 4, py + 13, pw - 8, ph - 17);
+
+  // 頭部
+  ctx.fillStyle = '#ffcc99';
+  ctx.fillRect(px + 4, py + 5, pw - 8, 9);
+
+  // 紅帽
+  ctx.fillStyle = '#e52521';
+  ctx.fillRect(px + 3, py, pw - 6, 6);
+  if (player.dir === 1) {
+    ctx.fillRect(px + 12, py + 3, 11, 3);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(px + 15, py + 7, 2, 3);
+  } else {
+    ctx.fillRect(px + 1, py + 3, 11, 3);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(px + 7, py + 7, 2, 3);
+  }
+
+  // 雙腳
+  ctx.fillStyle = '#793a18';
+  const step = player.grounded ? Math.round(Math.sin(player.walkCycle) * 3) : 2;
+  ctx.fillRect(px + 4 + step, py + ph - 5, 6, 5);
+  ctx.fillRect(px + pw - 10 - step, py + ph - 5, 6, 5);
+}
+
+function drawOverlayBox(title, subtitle) {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+  ctx.fillRect(26, CONFIG.CANVAS_HEIGHT / 2 - 48, CONFIG.CANVAS_WIDTH - 52, 96);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(26, CONFIG.CANVAS_HEIGHT / 2 - 48, CONFIG.CANVAS_WIDTH - 52, 96);
+
+  ctx.fillStyle = '#ffeb3b';
+  ctx.font = 'bold 20px "Microsoft JhengHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 10);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '13px "Microsoft JhengHei", sans-serif';
+  ctx.fillText(subtitle, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 22);
+}
+
+/**
+ * ==========================================
+ * UI 更新與本地排行榜系統
+ * ==========================================
+ */
+function updateHUD() {
+  document.getElementById('floorDisplay').textContent = String(highestFloor).padStart(3, '0');
+  document.getElementById('jumpDisplay').textContent = String(jumpCount).padStart(3, '0');
+}
+
+function updatePowerUI() {
+  const fill = document.getElementById('powerFill');
+  const pct = Math.round(chargePower);
+  if (window.innerWidth <= 530) {
+    fill.style.width = `${pct}%`;
+    fill.style.height = '100%';
+  } else {
+    fill.style.height = `${pct}%`;
+    fill.style.width = '100%';
+  }
+  document.getElementById('powerPercent').textContent = `${pct}%`;
+}
+
+function saveHighScore(diff, floor, jumps) {
+  if (floor <= 0) return;
+  const key = 'ns_tower_dense_scores_v1';
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({ diff: CONFIG.DIFFICULTY[diff].label, floor, jumps });
+  list.sort((a, b) => b.floor - a.floor || a.jumps - b.jumps);
+  localStorage.setItem(key, JSON.stringify(list.slice(0, 5)));
+}
+
+function openRankModal() {
+  const key = 'ns_tower_dense_scores_v1';
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  const tbody = document.getElementById('rankTableBody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const item = list[i];
+    const tr = document.createElement('tr');
+    tr.innerHTML = item
+      ? `<td>#${i + 1}</td><td>${item.diff}</td><td><b>${item.floor} F</b></td><td>${item.jumps}</td>`
+      : `<td>#${i + 1}</td><td>-</td><td>0 F</td><td>-</td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('rankModal').style.display = 'flex';
+}
+
+function closeModals() {
+  document.getElementById('rankModal').style.display = 'none';
+  document.getElementById('helpModal').style.display = 'none';
+}
+
+/**
+ * ==========================================
+ * 事件監聽與主迴圈啟動
+ * ==========================================
+ */
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (state !== 'PLAYING') {
+      resetGame();
+    } else if (!e.repeat) {
+      startCharge();
+    }
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    releaseCharge();
+  }
+});
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 0) startCharge();
+});
+window.addEventListener('mouseup', (e) => {
+  if (e.button === 0) releaseCharge();
+});
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  startCharge();
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  releaseCharge();
+});
+
+document.getElementById('btnStart').addEventListener('click', resetGame);
+document.getElementById('menuNew').addEventListener('click', resetGame);
+document.getElementById('menuRank').addEventListener('click', openRankModal);
+document.getElementById('menuAbout').addEventListener('click', () => {
+  document.getElementById('helpModal').style.display = 'flex';
+});
+document.getElementById('btnHelp').addEventListener('click', () => {
+  document.getElementById('helpModal').style.display = 'flex';
+});
+document.getElementById('btnMute').addEventListener('click', (e) => {
+  audio.muted = !audio.muted;
+  e.target.textContent = audio.muted ? '🔇' : '🔊';
+});
+document.getElementById('menuGimmick').addEventListener('click', (e) => {
+  gimmicksEnabled = !gimmicksEnabled;
+  e.target.textContent = `特殊板: ${gimmicksEnabled ? '開啟' : '關閉'}`;
+});
+document.getElementById('difficultySelect').addEventListener('change', () => {
+  if (state === 'PLAYING') resetGame();
+});
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+resetGame();
+state = 'IDLE';
+gameLoop();
+</script>
+</body>
+</html>

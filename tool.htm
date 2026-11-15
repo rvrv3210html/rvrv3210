@@ -253,7 +253,7 @@
         <button onclick="openshownew()">其他小工具</button>      
     </div>
 
-    <!-- 紀錄頁面 -->
+    <!-- 抽籤頁面 -->
     <div id="record">
         <input type="text" id="uplond" placeholder="請輸入要紀錄的內容"><br><br>
         <button onclick="uploadRecord()">上傳資料</button><br><br>
@@ -263,7 +263,8 @@
         模式:<select id="recordtype">
             <option>普通</option>
             <option>不儲存一樣資訊</option>
-        </select><hr>
+        </select><br>
+        <button onclick="Drawinglots()">抽籤</button><hr>
         <button onclick="openshowIndex()">返回首頁</button><br><br>
         <button onclick="openshownew()">其他小工具</button>          
     </div>
@@ -274,10 +275,10 @@
         <button onclick="openshowComputer()" id="bComputer">計算機</button>
         <button onclick="openshowTimer()" id="bTimer">計時器</button>
         <button onclick="openqrcode()" id="bqrcode">生成QR Code</button>
-        <button onclick="openrecord()" id="brecord">紀錄</button>
+        <button onclick="openrecord()" id="brecord">紀錄/隨機抽籤</button>
         <button onclick="opensettings()" id="bsettings">設定</button>
         <br><br>
-        <a href="https://rvrv3210html.github.io/rvrv3210/tool/rvrv3210小工具.exe" download="rvrv3210小工具.exe">
+        <a href="https://rvrv3210html.github.io/rvrv3210/rvrv3210小工具.zip" download="rvrv3210小工具.exe">
             <button style="font-size: 20px; padding: 10px 20px; background-color: #27ae60; color: white; border-radius: 8px; border: none; cursor: pointer;">
                 下載 Desktop .exe 桌面版(此版本為測試版)
             </button>
@@ -376,7 +377,7 @@
         }
 
         function openrecord(){
-            document.getElementById('pageTitle').innerHTML = '紀錄';
+            document.getElementById('pageTitle').innerHTML = '紀錄/隨機抽籤';
             document.getElementById('record').style.display = 'block';
             document.getElementById('new').style.display = 'none';
             document.getElementById('notes').style.display = 'none';
@@ -816,6 +817,13 @@
         function Deleteall(){
             record = []
             document.getElementById('dontlond').innerHTML = "已全部刪除！";
+        }
+        function Drawinglots(){
+            if (record.length === 0){
+                document.getElementById('dontlond').innerHTML = "目前沒有任何紀錄喔！";
+            } else {
+                document.getElementById('dontlond').innerHTML = record[Math.floor(Math.random() * record.length)];
+            }
         }
         loadNoteFromWeb();
         setInterval(time, 1000);

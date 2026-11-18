@@ -1,1218 +1,1802 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>小朋友下樓梯 - 重製版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小朋友上下樓梯合輯 (NS-TOWER & NS-SHAFT)</title>
+<style>
+  :root {
+    --win-bg: #c0c0c0;
+    --win-light: #ffffff;
+    --win-dark: #808080;
+    --win-darker: #000000;
+    --win-blue: #000080;
+  }
 
-        body {
-            font-family: 'Press Start 2P', 'Noto Sans TC', sans-serif;
-            background-color: #0f172a;
-            color: #ffffff;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    margin: 0;
+    padding: 0;
+  }
 
-        /* 遊戲畫布陰影與外框 */
-        #game-container {
-            position: relative;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-            border: 4px solid #3b82f6;
-            border-radius: 12px;
-            overflow: hidden;
-            max-height: 90vh;
-            max-width: 100vw;
-            aspect-ratio: 2 / 3;
-        }
+  body {
+    background-color: #2b2b2b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: "MS Sans Serif", "Microsoft JhengHei", sans-serif;
+    overflow-x: hidden;
+  }
 
-        canvas {
-            display: block;
-            background: #020617;
-            width: 100%;
-            height: 100%;
-        }
+  .win-window {
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    box-shadow: inset 1px 1px 0 #dfdfdf, inset -1px -1px 0 var(--win-dark), 4px 4px 15px rgba(0,0,0,0.6);
+    padding: 3px;
+    width: 100%;
+    max-width: 560px;
+  }
 
-        /* 經典復古按鈕懸浮效果 */
-        .btn-retro {
-            transition: all 0.1s ease;
-            box-shadow: 0 6px 0 #1e40af;
-        }
-        .btn-retro:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #1e40af;
-        }
+  .title-bar {
+    background: linear-gradient(90deg, var(--win-blue), #1084d0);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
 
-        /* 手機按鍵按壓效果 */
-        .touch-btn:active, .touch-btn.active {
-            background-color: rgba(56, 189, 248, 0.25);
-        }
+  .title-bar-controls {
+    display: flex;
+    gap: 2px;
+  }
 
-        .inventory-slot {
-            width: 36px;
-            height: 36px;
-            border: 2px solid #475569;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .inventory-slot:hover {
-            border-color: #38bdf8;
-            transform: scale(1.05);
-        }
-        .inventory-slot:active {
-            transform: scale(0.95);
-        }
-    </style>
+  .win-btn-small {
+    width: 20px;
+    height: 18px;
+    background: var(--win-bg);
+    border-top: 1px solid var(--win-light);
+    border-left: 1px solid var(--win-light);
+    border-right: 1px solid var(--win-darker);
+    border-bottom: 1px solid var(--win-darker);
+    color: black;
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .win-btn-small:active {
+    border-top: 1px solid var(--win-darker);
+    border-left: 1px solid var(--win-darker);
+    border-right: 1px solid var(--win-light);
+    border-bottom: 1px solid var(--win-light);
+  }
+
+  /* 遊戲模式切換分頁列 */
+  .mode-tabs {
+    display: flex;
+    gap: 3px;
+    padding: 2px 4px 0;
+    border-bottom: 2px solid var(--win-light);
+    margin-bottom: 4px;
+  }
+
+  .mode-tab {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    background: #a8a8a8;
+    color: #333;
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+  }
+
+  .mode-tab.active {
+    background: var(--win-bg);
+    color: var(--win-blue);
+    padding-bottom: 6px;
+    margin-bottom: -2px;
+    border-bottom: 2px solid var(--win-bg);
+  }
+
+  .menu-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 2px 6px 4px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--win-dark);
+    margin-bottom: 6px;
+  }
+
+  .menu-item {
+    cursor: pointer;
+    padding: 1px 4px;
+  }
+
+  .menu-item:hover {
+    background: var(--win-blue);
+    color: white;
+  }
+
+  .game-body {
+    display: flex;
+    gap: 8px;
+    padding: 4px;
+    justify-content: center;
+    align-items: stretch;
+  }
+
+  .sunken-box {
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    background: #000;
+    position: relative;
+  }
+
+  canvas {
+    display: block;
+    background: #1a1512;
+    touch-action: none;
+  }
+
+  .side-panel {
+    width: 178px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .panel-box {
+    border: 1px solid var(--win-dark);
+    box-shadow: inset 1px 1px 0 var(--win-light);
+    padding: 5px;
+    text-align: center;
+  }
+
+  .panel-label {
+    font-size: 11px;
+    color: #222;
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+
+  .lcd-display {
+    background: #000;
+    color: #ff2a2a;
+    font-family: "Courier New", monospace;
+    font-size: 21px;
+    font-weight: bold;
+    padding: 2px;
+    letter-spacing: 2px;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+  }
+
+  .lcd-green {
+    color: #00ff44;
+    font-size: 17px;
+  }
+
+  /* 16格亮黃分段式 POWER 蓄力條 */
+  .power-panel {
+    background: #08080c;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    padding: 5px 5px 7px;
+    text-align: center;
+  }
+
+  .power-title-cyan {
+    font-family: "Arial Black", "Impact", sans-serif;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    color: #5ce6ff;
+    text-shadow: 0 0 4px #0088cc, 1px 1px 0 #002244;
+    margin-bottom: 4px;
+  }
+
+  .power-segments-frame {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 1.5px;
+    background: #000000;
+    border: 2px solid #2848c8;
+    box-shadow: inset 0 0 2px #102070;
+    padding: 2px;
+    height: 22px;
+    width: 100%;
+  }
+
+  .power-seg {
+    background: #000000;
+    border-right: 1px solid #182c7a;
+    height: 100%;
+  }
+
+  .power-seg:last-child {
+    border-right: none;
+  }
+
+  .power-seg.active {
+    background: #ffff00;
+    box-shadow: 0 0 4px rgba(255, 255, 0, 0.75);
+  }
+
+  /* 下樓梯模式：10格血量條與物品欄 */
+  .life-segments-frame {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+    background: #000;
+    border: 2px solid var(--win-dark);
+    padding: 2px;
+    height: 20px;
+  }
+
+  .life-seg {
+    background: #222;
+    height: 100%;
+  }
+
+  .life-seg.active {
+    background: #00e676;
+  }
+
+  .life-seg.low {
+    background: #ff1744;
+  }
+
+  .inv-slots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .inv-slot {
+    width: 42px;
+    height: 36px;
+    background: #181818;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    position: relative;
+  }
+
+  .inv-slot span.key-hint {
+    position: absolute;
+    top: 1px;
+    left: 3px;
+    font-size: 9px;
+    color: #aaa;
+  }
+
+  .win-btn {
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .win-btn:active {
+    border-top: 2px solid var(--win-darker);
+    border-left: 2px solid var(--win-darker);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    padding: 7px 7px 5px 9px;
+  }
+
+  .touch-jump-btn {
+    background: linear-gradient(to bottom, #ffd54f, #ffb300);
+    color: #222;
+    font-size: 14px;
+    padding: 11px 6px;
+    margin-top: auto;
+    touch-action: none;
+  }
+
+  .touch-jump-btn.charging {
+    background: linear-gradient(to bottom, #ff7043, #e64a19);
+    color: #fff;
+  }
+
+  .shaft-dir-btns {
+    display: flex;
+    gap: 6px;
+    margin-top: auto;
+  }
+
+  .shaft-dir-btn {
+    flex: 1;
+    padding: 12px 4px;
+    font-size: 15px;
+    background: #d0d0d0;
+    touch-action: none;
+  }
+
+  .win-select {
+    width: 100%;
+    padding: 3px;
+    background: white;
+    border-top: 2px solid var(--win-dark);
+    border-left: 2px solid var(--win-dark);
+    border-right: 2px solid var(--win-light);
+    border-bottom: 2px solid var(--win-light);
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .modal-box {
+    width: 340px;
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-light);
+    border-left: 2px solid var(--win-light);
+    border-right: 2px solid var(--win-darker);
+    border-bottom: 2px solid var(--win-darker);
+    padding: 3px;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.7);
+  }
+
+  .modal-content {
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    background: white;
+    border: 1px solid var(--win-dark);
+  }
+
+  .rank-table th, .rank-table td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .rank-table th {
+    background: #e0e0e0;
+  }
+
+  .status-bar {
+    margin-top: 4px;
+    border-top: 1px solid var(--win-dark);
+    padding: 3px 6px;
+    font-size: 12px;
+    color: #222;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 540px) {
+    body {
+      align-items: flex-start;
+      padding: 4px;
+    }
+    .game-body {
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .side-panel {
+      width: 340px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .panel-box {
+      flex: 1;
+      min-width: 98px;
+      padding: 4px;
+    }
+    .power-panel {
+      width: 100%;
+      flex: 1 1 100%;
+    }
+    .touch-jump-btn, .shaft-dir-btns {
+      flex: 1 1 60%;
+    }
+    #btnStart {
+      flex: 1 1 35%;
+    }
+  }
+</style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
+<body>
 
-    <!-- 主遊戲區域包裝器 -->
-    <div id="game-container" class="relative bg-slate-900 flex flex-col items-center">
-        
-        <!-- 頂部資訊列 (UI Header) -->
-        <div class="absolute top-0 left-0 w-full p-2 sm:p-3 bg-slate-950/80 backdrop-blur-md flex justify-between items-center z-20 border-b border-slate-800 text-xs sm:text-sm">
-            <!-- 生命值條 -->
-            <div class="flex items-center space-x-2">
-                <span class="text-red-400 font-bold text-xs">HP</span>
-                <div class="w-20 sm:w-32 h-3.5 bg-slate-800 rounded-full border border-slate-700 overflow-hidden p-0.5">
-                    <div id="hp-bar" class="h-full bg-gradient-to-r from-red-600 via-yellow-500 to-green-500 rounded-full transition-all duration-200" style="width: 100%;"></div>
-                </div>
-                <span id="hp-text" class="text-[10px] sm:text-xs text-slate-300 font-mono">10/10</span>
-            </div>
+<div class="win-window">
+  <div class="title-bar">
+    <span id="windowTitle">🏰 小朋友上樓梯 (NS-TOWER)</span>
+    <div class="title-bar-controls">
+      <div class="win-btn-small" id="btnMute" title="音效開關">🔊</div>
+      <div class="win-btn-small" id="btnHelp" title="操作與板子圖鑑">?</div>
+    </div>
+  </div>
 
-            <!-- 3 格物品欄 (Inventory) -->
-            <div class="flex items-center space-x-1.5 bg-slate-900/90 p-1 rounded-lg border border-slate-700/60">
-                <div id="slot-0" class="inventory-slot text-xs" onclick="useInventoryItem(0)" title="點擊使用道具 1"></div>
-                <div id="slot-1" class="inventory-slot text-xs" onclick="useInventoryItem(1)" title="點擊使用道具 2"></div>
-                <div id="slot-2" class="inventory-slot text-xs" onclick="useInventoryItem(2)" title="點擊使用道具 3"></div>
-            </div>
-            
-            <!-- 目前深度 / 分數 -->
-            <div class="flex items-center space-x-2">
-                <div class="text-sky-400 font-bold text-xs sm:text-sm">
-                    <span class="text-slate-400 text-[10px]">FLOOR:</span> 
-                    <span id="depth-text" class="text-amber-400">B0</span>
-                </div>
-            </div>
-        </div>
+  <!-- 雙遊戲切換分頁 -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tabTower" onclick="switchGameMode('tower')">📈 小朋友上樓梯 (NS-TOWER)</div>
+    <div class="mode-tab" id="tabShaft" onclick="switchGameMode('shaft')">📉 小朋友下樓梯 (NS-SHAFT)</div>
+  </div>
 
-        <!-- 遊戲 Canvas -->
-        <canvas id="gameCanvas" width="400" height="600" class="max-w-full h-auto"></canvas>
+  <div class="menu-bar">
+    <div class="menu-item" id="menuNew">開新局(N)</div>
+    <div class="menu-item" id="menuRank">排行榜(H)</div>
+    <div class="menu-item" id="menuGimmick">特殊板: 開啟</div>
+    <div class="menu-item" id="menuStairs">斜坡樓梯: 開啟</div>
+    <div class="menu-item" id="menuAbout">圖鑑說明(A)</div>
+  </div>
 
-        <!-- 開始畫面 Overlay -->
-        <div id="start-screen" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-5 z-30 text-center">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-emerald-400 mb-2 tracking-wider">
-                小朋友下樓梯重製版
-            </h1>
-            <p class="text-[10px] text-slate-400 mb-4 font-mono">NS-SHAFT RETRO EDITION</p>
-
-            <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 mb-4 max-w-xs text-left text-xs space-y-1.5 text-slate-300">
-                <p class="text-amber-400 font-bold text-center mb-1.5">🎮 操作說明</p>
-                <p>• <span class="text-sky-400 font-bold">← / →</span> 或 <span class="text-sky-400 font-bold">點擊螢幕左右側</span>：移動</p>
-                <p>• 避開 <span class="text-red-400">尖刺階梯</span> 與 <span class="text-slate-400">頂部天花板刺</span></p>
-                <p>• <span class="text-purple-400">黏液膠水板</span> 定身 1~3 秒（踩一次變普通板）</p>
-                <p>• 點擊物品欄或按 <span class="text-amber-300 font-bold">1 / 2 / 3</span> 使用道具！</p>
-            </div>
-
-            <!-- 樓梯選擇開關 -->
-            <label class="flex items-center justify-center space-x-2 bg-slate-900/90 px-4 py-2.5 rounded-lg border border-orange-500/40 mb-4 cursor-pointer hover:border-orange-400 transition-colors">
-                <input type="checkbox" id="enable-stairs-checkbox" checked class="w-4 h-4 accent-orange-500 rounded cursor-pointer">
-                <span class="text-xs text-orange-300 font-bold">包含斜坡樓梯階梯</span>
-            </label>
-
-            <div class="text-xs text-slate-400 mb-4">
-                最高紀錄：<span id="high-score-start" class="text-amber-400 font-bold">B0</span>
-            </div>
-
-            <button id="start-btn" class="btn-retro bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-blue-400 text-sm tracking-wider cursor-pointer">
-                開始遊戲
-            </button>
-        </div>
-
-        <!-- 遊戲結束畫面 Overlay -->
-        <div id="game-over-screen" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 z-30 text-center hidden">
-            <h2 class="text-3xl font-extrabold text-red-500 mb-2 animate-bounce">GAME OVER</h2>
-            <p id="game-over-reason" class="text-xs text-slate-400 mb-6">掉落到底部深淵了！</p>
-
-            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-6 w-64 space-y-3">
-                <div>
-                    <div class="text-xs text-slate-400">本次成績</div>
-                    <div id="final-depth" class="text-2xl font-bold text-amber-400">B0</div>
-                </div>
-                <div class="border-t border-slate-800 pt-2">
-                    <div class="text-xs text-slate-400">歷史最高</div>
-                    <div id="high-score-end" class="text-lg font-bold text-sky-400">B0</div>
-                </div>
-            </div>
-
-            <button id="restart-btn" class="btn-retro bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg border-2 border-emerald-400 text-sm tracking-wider cursor-pointer">
-                再玩一次
-            </button>
-        </div>
-
-        <!-- 手機與觸控控制區 (覆蓋下方半部區域，不遮擋頂部物品欄) -->
-        <div id="touch-controls" class="absolute bottom-0 left-0 w-full h-3/4 flex justify-between z-10">
-            <div id="btn-left" class="touch-btn w-1/2 h-full border-r border-white/5 flex items-end justify-start p-4">
-                <span class="text-2xl opacity-25 pointer-events-none">◀</span>
-            </div>
-            <div id="btn-right" class="touch-btn w-1/2 h-full flex items-end justify-end p-4">
-                <span class="text-2xl opacity-25 pointer-events-none">▶</span>
-            </div>
-        </div>
+  <div class="game-body">
+    <div class="sunken-box">
+      <canvas id="gameCanvas" width="340" height="450"></canvas>
     </div>
 
-    <script>
-        /**
-         * Web Audio API 音效合成器
-         */
-        class SoundFX {
-            constructor() {
-                this.ctx = null;
-            }
+    <div class="side-panel">
+      <!-- 上樓梯專用：16格 POWER 蓄力條 -->
+      <div class="power-panel" id="towerPowerBox">
+        <div class="power-title-cyan">POWER</div>
+        <div class="power-segments-frame" id="powerSegments"></div>
+      </div>
 
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            }
+      <!-- 下樓梯專用：LIFE 10格血量條 -->
+      <div class="panel-box hidden" id="shaftLifeBox">
+        <div class="panel-label">LIFE (生命值)</div>
+        <div class="life-segments-frame" id="lifeSegments"></div>
+      </div>
 
-            playJump() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.1);
-            }
+      <!-- 樓層顯示 -->
+      <div class="panel-box">
+        <div class="panel-label" id="floorLabel">FLOOR (樓層)</div>
+        <div class="lcd-display" id="floorDisplay">000</div>
+      </div>
 
-            playHurt() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
-            }
+      <!-- 上樓梯專用：跳躍次數 -->
+      <div class="panel-box" id="towerJumpBox">
+        <div class="panel-label">JUMPS (跳躍數)</div>
+        <div class="lcd-display lcd-green" id="jumpDisplay">000</div>
+      </div>
 
-            playHeal() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
-            }
+      <!-- 下樓梯專用：3格道具欄 -->
+      <div class="panel-box hidden" id="shaftInvBox">
+        <div class="panel-label">ITEMS (1~3鍵使用)</div>
+        <div class="inv-slots">
+          <div class="inv-slot" id="inv-0" onclick="useShaftItem(0)"><span class="key-hint">1</span></div>
+          <div class="inv-slot" id="inv-1" onclick="useShaftItem(1)"><span class="key-hint">2</span></div>
+          <div class="inv-slot" id="inv-2" onclick="useShaftItem(2)"><span class="key-hint">3</span></div>
+        </div>
+      </div>
 
-            playSpring() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
-            }
+      <div class="panel-box">
+        <div class="panel-label">LEVEL (難度)</div>
+        <select class="win-select" id="difficultySelect">
+          <option value="easy" selected>EASY (簡單)</option>
+          <option value="normal">NORMAL (普通)</option>
+          <option value="hard">HARD (困難)</option>
+        </select>
+      </div>
 
-            playBreak() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(100, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(30, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
-            }
+      <!-- 上樓梯專用蓄力鈕 -->
+      <button class="win-btn touch-jump-btn" id="btnTouchJump">⬆️ 按住蓄力 / 放開跳</button>
 
-            playTeleport() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
-            }
+      <!-- 下樓梯專用左右方向鈕 -->
+      <div class="shaft-dir-btns hidden" id="shaftDirBtns">
+        <button class="win-btn shaft-dir-btn" id="btnShaftLeft">◀ 左移</button>
+        <button class="win-btn shaft-dir-btn" id="btnShaftRight">右移 ▶</button>
+      </div>
 
-            playItem() {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1000, this.ctx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
+      <button class="win-btn" id="btnStart">▶ 開始 / 重來</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="statusText">按住 [空白鍵] / [畫面] / [蓄力鈕] 蓄力，放開跳躍！</span>
+    <span>NS-COMBO</span>
+  </div>
+</div>
+
+<!-- 排行榜彈窗 -->
+<div class="modal-overlay" id="rankModal">
+  <div class="modal-box">
+    <div class="title-bar">
+      <span id="rankModalTitle">🏆 高分排行榜 (TOP 5)</span>
+      <div class="win-btn-small" onclick="closeModals()">✕</div>
+    </div>
+    <div class="modal-content">
+      <table class="rank-table">
+        <thead>
+          <tr>
+            <th>名次</th>
+            <th>難度</th>
+            <th>最高樓層</th>
+            <th id="rankExtraCol">跳躍數</th>
+          </tr>
+        </thead>
+        <tbody id="rankTableBody"></tbody>
+      </table>
+      <button class="win-btn" onclick="closeModals()">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 板子圖鑑與說明彈窗 -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-box">
+    <div class="title-bar">
+      <span>📖 雙模式操作與板子圖鑑</span>
+      <div class="win-btn-small" onclick="closeModals()">✕</div>
+    </div>
+    <div class="modal-content">
+      <p><b>【📈 小朋友上樓梯 (NS-TOWER)】</b></p>
+      <p>• 角色自動左右巡邏，按住 <code>空白鍵</code> / <code>滑鼠</code> 蓄力，放開起跳。</p>
+      <p>• 包含移動石階、輸送帶、彈簧、脆弱木板與結冰滑板。</p>
+      <br>
+      <p><b>【📉 小朋友下樓梯 (NS-SHAFT)】</b></p>
+      <p>• 使用 <code>←</code> <code>→</code> 或 <code>A</code> <code>D</code> 鍵左右移動，閃避頂部尖刺與深淵。</p>
+      <p>• <b>斜坡樓梯</b>：階梯式斜面，順著走會隨高度滑動。</p>
+      <p>• <b>膠水陷阱</b>：踩到會暫時定身，可用 <b>✨解除藥水</b> 脫困。</p>
+      <p>• <b>針刺階梯</b>：踩到扣 3 格血；一般板子可回復 1 格血。</p>
+      <p>• <b>道具欄</b>：按 <code>1</code> <code>2</code> <code>3</code> 或直接點擊使用補血、解除與加速。</p>
+      <br>
+      <button class="win-btn" onclick="closeModals()">開始挑戰</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * ==========================================
+ * 共用參數設定 (CONFIG)
+ * ==========================================
+ */
+const CONFIG = {
+  CANVAS_WIDTH: 340,
+  CANVAS_HEIGHT: 450,
+  WALL_WIDTH: 18,
+  GRAVITY: 0.42,
+  FLOOR_SPACING: 48,
+  MIN_JUMP_VY: -5.2,
+  MAX_JUMP_VY: -15.2,
+  SPRING_JUMP_VY: -15.8,
+  FRAGILE_BREAK_FRAMES: 36,
+  PLAYER_WIDTH: 24,
+  PLAYER_HEIGHT: 30,
+  POWER_SEGMENTS: 16,
+  CHARGE_RATE: 3.1,
+  DIFFICULTY: {
+    easy:   { label: 'EASY',   walkSpeed: 2.0, shaftSpeed: 1.65, platMinW: 118, platMaxW: 165, extraPlatChance: 0.35, gimmickStart: 2 },
+    normal: { label: 'NORMAL', walkSpeed: 2.0, shaftSpeed: 2.15, platMinW: 98,  platMaxW: 145, extraPlatChance: 0.25, gimmickStart: 2 },
+    hard:   { label: 'HARD',   walkSpeed: 2.0, shaftSpeed: 2.75, platMinW: 80,  platMaxW: 120, extraPlatChance: 0.18, gimmickStart: 1 }
+  }
+};
+
+// 初始化 16 格 POWER 能量條
+const powerSegmentsContainer = document.getElementById('powerSegments');
+const powerSegElements = [];
+for (let i = 0; i < CONFIG.POWER_SEGMENTS; i++) {
+  const seg = document.createElement('div');
+  seg.className = 'power-seg';
+  powerSegmentsContainer.appendChild(seg);
+  powerSegElements.push(seg);
+}
+
+// 初始化 10 格 LIFE 生命條
+const lifeSegmentsContainer = document.getElementById('lifeSegments');
+const lifeSegElements = [];
+for (let i = 0; i < 10; i++) {
+  const seg = document.createElement('div');
+  seg.className = 'life-seg active';
+  lifeSegmentsContainer.appendChild(seg);
+  lifeSegElements.push(seg);
+}
+
+/**
+ * ==========================================
+ * 8-bit 復古音效合成器
+ * ==========================================
+ */
+class RetroAudio {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+  init() {
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  }
+  playTone(freqStart, freqEnd, duration, type = 'square', volume = 0.12) {
+    if (this.muted) return;
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freqStart, this.ctx.currentTime);
+    if (freqEnd !== freqStart) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), this.ctx.currentTime + duration);
+    }
+    gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  }
+  playChargeTick(step) { this.playTone(260 + step * 28, 280 + step * 28, 0.03, 'square', 0.05); }
+  playJump(powerRatio) { const b = 220 + powerRatio * 260; this.playTone(b, b * 1.9, 0.16, 'square', 0.12); }
+  playSpring() { this.playTone(260, 880, 0.24, 'triangle', 0.18); }
+  playCrack() { this.playTone(190, 95, 0.08, 'sawtooth', 0.12); }
+  playBreak() { this.playTone(140, 45, 0.14, 'square', 0.14); }
+  playLand() { this.playTone(150, 90, 0.06, 'triangle', 0.15); }
+  playHurt() { this.playTone(220, 75, 0.22, 'sawtooth', 0.18); }
+  playHeal() { this.playTone(320, 640, 0.14, 'triangle', 0.14); }
+  playItem() { this.playTone(440, 980, 0.18, 'sine', 0.15); }
+  playTeleport() { this.playTone(300, 1100, 0.2, 'sine', 0.16); }
+  playWallBounce() { this.playTone(280, 220, 0.04, 'sine', 0.08); }
+  playMilestone() {
+    if (this.muted) return;
+    [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.playTone(f, f, 0.09, 'square', 0.1), i * 65));
+  }
+  playGameOver() {
+    if (this.muted) return;
+    [330, 294, 262, 196].forEach((f, i) => setTimeout(() => this.playTone(f, f * 0.85, 0.18, 'sawtooth', 0.12), i * 140));
+  }
+}
+
+const audio = new RetroAudio();
+
+/**
+ * ==========================================
+ * 遊戲全域狀態
+ * ==========================================
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let gameMode = 'tower'; // 'tower' = 上樓梯, 'shaft' = 下樓梯
+let state = 'IDLE';
+let difficultyKey = 'easy';
+let gimmicksEnabled = true;
+let stairsEnabled = true;
+
+let player = {};
+let platforms = [];
+let items = [];
+let cameraY = 0;
+let highestFloor = 0;
+let jumpCount = 0;
+let isCharging = false;
+let chargePower = 0;
+let lastActiveSegments = 0;
+let animFrame = 0;
+let lastMilestone = 0;
+let lastPlatCenter = 170;
+
+// 下樓梯專用狀態
+let shaftInventory = [null, null, null];
+const keys = { left: false, right: false };
+
+function switchGameMode(mode) {
+  gameMode = mode;
+  const tabTower = document.getElementById('tabTower');
+  const tabShaft = document.getElementById('tabShaft');
+  const windowTitle = document.getElementById('windowTitle');
+
+  if (mode === 'tower') {
+    tabTower.classList.add('active');
+    tabShaft.classList.remove('active');
+    windowTitle.textContent = '🏰 小朋友上樓梯 (NS-TOWER)';
+    document.getElementById('towerPowerBox').classList.remove('hidden');
+    document.getElementById('towerJumpBox').classList.remove('hidden');
+    document.getElementById('btnTouchJump').classList.remove('hidden');
+
+    document.getElementById('shaftLifeBox').classList.add('hidden');
+    document.getElementById('shaftInvBox').classList.add('hidden');
+    document.getElementById('shaftDirBtns').classList.add('hidden');
+    document.getElementById('floorLabel').textContent = 'FLOOR (樓層)';
+  } else {
+    tabShaft.classList.add('active');
+    tabTower.classList.remove('active');
+    windowTitle.textContent = '🕳️ 小朋友下樓梯 (NS-SHAFT)';
+    document.getElementById('towerPowerBox').classList.add('hidden');
+    document.getElementById('towerJumpBox').classList.add('hidden');
+    document.getElementById('btnTouchJump').classList.add('hidden');
+
+    document.getElementById('shaftLifeBox').classList.remove('hidden');
+    document.getElementById('shaftInvBox').classList.remove('hidden');
+    document.getElementById('shaftDirBtns').classList.remove('hidden');
+    document.getElementById('floorLabel').textContent = 'BASEMENT (地下層)';
+  }
+
+  resetGame();
+  state = 'IDLE';
+  updateHUD();
+}
+
+function resetGame() {
+  difficultyKey = document.getElementById('difficultySelect').value;
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+
+  platforms = [];
+  items = [];
+  highestFloor = 0;
+  jumpCount = 0;
+  isCharging = false;
+  chargePower = 0;
+  lastActiveSegments = 0;
+  lastMilestone = 0;
+  lastPlatCenter = CONFIG.CANVAS_WIDTH / 2;
+  shaftInventory = [null, null, null];
+  keys.left = false;
+  keys.right = false;
+
+  updatePowerUI();
+  updateShaftInvUI();
+
+  if (gameMode === 'tower') {
+    // 上樓梯初始化
+    const startY = CONFIG.CANVAS_HEIGHT - 32;
+    platforms.push({
+      floor: 0, x: CONFIG.WALL_WIDTH, y: startY,
+      w: CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH * 2, h: 16,
+      type: 'normal', vx: 0, vy: 0, beltSpeed: 0,
+      cracked: false, breakTimer: 0, broken: false, springAnim: 0
+    });
+
+    for (let f = 1; f <= 35; f++) {
+      generateTowerFloor(f);
+    }
+
+    player = {
+      x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_WIDTH / 2,
+      y: startY - CONFIG.PLAYER_HEIGHT,
+      w: CONFIG.PLAYER_WIDTH, h: CONFIG.PLAYER_HEIGHT,
+      vx: diff.walkSpeed, vy: 0, dir: 1,
+      grounded: true, currentPlatform: platforms[0], walkCycle: 0,
+      hp: 10, hurtTimer: 0, trapTimer: 0, speedBuffTimer: 0
+    };
+    cameraY = 0;
+    document.getElementById('statusText').textContent = '按住 [空白鍵] / [畫面] / [蓄力鈕] 蓄力，放開跳躍！';
+  } else {
+    // 下樓梯初始化
+    const startPlatY = 260;
+    platforms.push({
+      floor: 0, x: CONFIG.CANVAS_WIDTH / 2 - 55, y: startPlatY,
+      w: 110, h: 14, type: 'normal',
+      vx: 0, vy: 0, originX: CONFIG.CANVAS_WIDTH / 2 - 55, originY: startPlatY,
+      moveTimer: 0, beltSpeed: 0, cracked: false, breakTimer: 0, broken: false,
+      springAnim: 0, hasLanded: true, stairDir: 'right'
+    });
+
+    for (let i = 1; i <= 9; i++) {
+      generateShaftPlatform(i, startPlatY + i * 62);
+    }
+
+    player = {
+      x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_WIDTH / 2,
+      y: startPlatY - CONFIG.PLAYER_HEIGHT,
+      w: CONFIG.PLAYER_WIDTH, h: CONFIG.PLAYER_HEIGHT,
+      vx: 0, vy: 0, dir: 1,
+      grounded: true, currentPlatform: platforms[0], walkCycle: 0,
+      hp: 10, hurtTimer: 0, trapTimer: 0, speedBuffTimer: 0,
+      touchingSpikePlat: null, barrierTouching: false
+    };
+    cameraY = 0;
+    document.getElementById('statusText').textContent = '使用 [←][→] 鍵左右移動，閃避頂部尖刺與深淵！';
+  }
+
+  state = 'PLAYING';
+  updateHUD();
+}
+
+/**
+ * ==========================================
+ * 上樓梯 (NS-TOWER) 平台生成與更新
+ * ==========================================
+ */
+function pickTowerPlatformType(floor) {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+  if (!gimmicksEnabled || floor < diff.gimmickStart) return 'normal';
+  const r = Math.random();
+  if (r < 0.34) return 'moving';
+  if (r < 0.56) return 'normal';
+  if (r < 0.70) return Math.random() < 0.5 ? 'belt_left' : 'belt_right';
+  if (r < 0.82) return 'spring';
+  if (r < 0.92) return 'fragile';
+  return 'ice';
+}
+
+function createTowerPlat(floor, x, y, w) {
+  const type = pickTowerPlatformType(floor);
+  let vx = 0, beltSpeed = 0;
+  if (type === 'moving') vx = (Math.random() < 0.5 ? 1 : -1) * (1.0 + Math.min(0.8, floor * 0.006));
+  else if (type === 'belt_left' || type === 'belt_right') beltSpeed = (type === 'belt_right' ? 1 : -1) * 1.25;
+  return { floor, x, y, w, h: 14, type, vx, beltSpeed, cracked: false, breakTimer: 0, broken: false, springAnim: 0 };
+}
+
+function generateTowerFloor(floor) {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+  const y = (CONFIG.CANVAS_HEIGHT - 32) - floor * CONFIG.FLOOR_SPACING;
+  const leftBound = CONFIG.WALL_WIDTH;
+  const rightBound = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+  const shrink = Math.min(14, Math.floor(floor / 25) * 2);
+  const w = Math.max(70, Math.floor(diff.platMinW + Math.random() * (diff.platMaxW - diff.platMinW) - shrink));
+
+  let targetCenter = lastPlatCenter < CONFIG.CANVAS_WIDTH / 2
+    ? CONFIG.CANVAS_WIDTH * (0.48 + Math.random() * 0.34)
+    : CONFIG.CANVAS_WIDTH * (0.18 + Math.random() * 0.34);
+  let x = Math.max(leftBound, Math.min(rightBound - w, Math.round(targetCenter - w / 2)));
+  lastPlatCenter = x + w / 2;
+
+  platforms.push(createTowerPlat(floor, x, y, w));
+
+  if (Math.random() < diff.extraPlatChance) {
+    const subW = Math.max(56, Math.floor(w * 0.65));
+    const gap = 24;
+    if (x - leftBound >= subW + gap) {
+      platforms.push(createTowerPlat(floor, leftBound + Math.floor(Math.random() * (x - leftBound - subW - gap + 1)), y, subW));
+    } else if (rightBound - (x + w) >= subW + gap) {
+      platforms.push(createTowerPlat(floor, x + w + gap + Math.floor(Math.random() * (rightBound - (x + w + gap) - subW + 1)), y, subW));
+    }
+  }
+}
+
+/**
+ * ==========================================
+ * 下樓梯 (NS-SHAFT) 平台與道具生成
+ * ==========================================
+ */
+function pickShaftPlatformType(floor) {
+  if (!gimmicksEnabled || floor < 2) return 'normal';
+  const pool = ['normal', 'normal', 'spike', 'belt_left', 'belt_right', 'spring', 'fragile', 'trap', 'moving', 'moving_v'];
+  if (stairsEnabled) pool.push('stairs');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function generateShaftPlatform(floorIndex, y) {
+  const leftBound = CONFIG.WALL_WIDTH + 4;
+  const rightBound = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH - 4;
+  const w = 86;
+  let x = lastPlatCenter + (Math.random() * 150 - 75) - w / 2;
+  x = Math.max(leftBound, Math.min(rightBound - w, Math.round(x)));
+  lastPlatCenter = x + w / 2;
+
+  const type = pickShaftPlatformType(floorIndex);
+  const p = {
+    floor: floorIndex,
+    x, y, w, h: 14,
+    type,
+    originX: x,
+    originY: y,
+    moveTimer: Math.random() * 10,
+    beltSpeed: type === 'belt_right' ? 1.8 : (type === 'belt_left' ? -1.8 : 0),
+    cracked: false,
+    breakTimer: 0,
+    broken: false,
+    springAnim: 0,
+    hasLanded: false,
+    stairDir: Math.random() < 0.5 ? 'right' : 'left'
+  };
+  platforms.push(p);
+
+  // 28% 機率生成道具（非針刺板）
+  if (type !== 'spike' && Math.random() < 0.28) {
+    const r = Math.random();
+    const itemType = r < 0.45 ? 'heal' : (r < 0.72 ? 'untrap' : 'speed');
+    items.push({
+      x: x + w / 2 - 8,
+      y: y - 22,
+      w: 16, h: 18,
+      type: itemType,
+      healAmt: Math.random() < 0.75 ? 1 : 2,
+      bob: Math.random() * 6
+    });
+  }
+}
+
+function getPlatformSurfaceY(p, footX) {
+  if (p.type !== 'stairs') return p.y;
+  const clamped = Math.max(p.x, Math.min(p.x + p.w, footX));
+  const ratio = (clamped - p.x) / p.w;
+  const drop = 14;
+  return p.stairDir === 'right' ? (p.y + drop / 2 - ratio * drop) : (p.y - drop / 2 + ratio * drop);
+}
+
+/**
+ * ==========================================
+ * 蓄力控制 (上樓梯專用)
+ * ==========================================
+ */
+function startCharge() {
+  if (gameMode !== 'tower' || state !== 'PLAYING') return;
+  if (!isCharging) {
+    isCharging = true;
+    document.getElementById('btnTouchJump').classList.add('charging');
+  }
+}
+
+function releaseCharge() {
+  document.getElementById('btnTouchJump').classList.remove('charging');
+  if (gameMode !== 'tower' || state !== 'PLAYING' || !isCharging) return;
+  isCharging = false;
+
+  if (player.grounded) {
+    const activeSegs = Math.max(1, Math.round((chargePower / 100) * CONFIG.POWER_SEGMENTS));
+    const ratio = activeSegs / CONFIG.POWER_SEGMENTS;
+    player.vy = CONFIG.MIN_JUMP_VY + ratio * (CONFIG.MAX_JUMP_VY - CONFIG.MIN_JUMP_VY);
+    player.grounded = false;
+    player.currentPlatform = null;
+    jumpCount++;
+    audio.playJump(ratio);
+  }
+
+  chargePower = 0;
+  lastActiveSegments = 0;
+  updatePowerUI();
+}
+
+/**
+ * ==========================================
+ * 主邏輯更新迴圈
+ * ==========================================
+ */
+function update() {
+  animFrame++;
+  if (state !== 'PLAYING') return;
+
+  if (gameMode === 'tower') {
+    updateTower();
+  } else {
+    updateShaft();
+  }
+  updateHUD();
+}
+
+function updateTower() {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+
+  if (isCharging) {
+    if (chargePower < 100) chargePower = Math.min(100, chargePower + CONFIG.CHARGE_RATE);
+    const activeSegs = Math.round((chargePower / 100) * CONFIG.POWER_SEGMENTS);
+    if (activeSegs !== lastActiveSegments) {
+      lastActiveSegments = activeSegs;
+      audio.playChargeTick(activeSegs);
+      updatePowerUI();
+    }
+  }
+
+  const leftWall = CONFIG.WALL_WIDTH;
+  const rightWall = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+
+  for (const p of platforms) {
+    if (p.broken) continue;
+    if (p.type === 'moving') {
+      p.x += p.vx;
+      if (p.x <= leftWall) { p.x = leftWall; p.vx = Math.abs(p.vx); }
+      else if (p.x + p.w >= rightWall) { p.x = rightWall - p.w; p.vx = -Math.abs(p.vx); }
+    }
+    if (p.type === 'fragile' && p.cracked) {
+      p.breakTimer++;
+      if (p.breakTimer >= CONFIG.FRAGILE_BREAK_FRAMES) {
+        p.broken = true;
+        audio.playBreak();
+        if (player.currentPlatform === p) { player.grounded = false; player.currentPlatform = null; }
+      }
+    }
+    if (p.springAnim > 0) p.springAnim--;
+  }
+
+  let speedMult = (player.grounded && player.currentPlatform && player.currentPlatform.type === 'ice') ? 1.4 : 1.0;
+  let moveX = player.dir * diff.walkSpeed * speedMult;
+  if (player.grounded && player.currentPlatform && !player.currentPlatform.broken) {
+    moveX += player.currentPlatform.vx + player.currentPlatform.beltSpeed;
+  }
+  player.x += moveX;
+
+  if (player.x <= leftWall) { player.x = leftWall; player.dir = 1; audio.playWallBounce(); }
+  else if (player.x + player.w >= rightWall) { player.x = rightWall - player.w; player.dir = -1; audio.playWallBounce(); }
+
+  const prevBottom = player.y + player.h;
+  if (!player.grounded) {
+    player.vy += CONFIG.GRAVITY;
+    player.y += player.vy;
+
+    if (player.vy >= 0) {
+      const currBottom = player.y + player.h;
+      const footCenter = player.x + player.w / 2;
+      for (const p of platforms) {
+        if (p.broken) continue;
+        if (footCenter >= p.x - 4 && footCenter <= p.x + p.w + 4 && prevBottom <= p.y + 6 && currBottom >= p.y) {
+          if (p.floor > highestFloor) {
+            highestFloor = p.floor;
+            if (highestFloor >= lastMilestone + 50) {
+              lastMilestone = Math.floor(highestFloor / 50) * 50;
+              audio.playMilestone();
             }
+          }
+          if (p.type === 'spring') {
+            player.y = p.y - player.h;
+            player.vy = CONFIG.SPRING_JUMP_VY;
+            player.grounded = false;
+            player.currentPlatform = null;
+            p.springAnim = 14;
+            audio.playSpring();
+            break;
+          }
+          player.y = p.y - player.h;
+          player.vy = 0;
+          player.grounded = true;
+          player.currentPlatform = p;
+          if (p.type === 'fragile' && !p.cracked) { p.cracked = true; audio.playCrack(); }
+          else audio.playLand();
+          break;
         }
+      }
+    }
+  } else {
+    const p = player.currentPlatform;
+    const footCenter = player.x + player.w / 2;
+    if (!p || p.broken || footCenter < p.x - 4 || footCenter > p.x + p.w + 4) {
+      player.grounded = false;
+      player.currentPlatform = null;
+    } else {
+      player.y = p.y - player.h;
+    }
+  }
 
-        const soundFX = new SoundFX();
+  if (player.grounded) player.walkCycle += 0.25 * speedMult;
 
-        // 遊戲核心常數
-        const CANVAS_WIDTH = 400;
-        const CANVAS_HEIGHT = 600;
-        const MAX_HP = 10;
-        const CEILING_SPIKE_HEIGHT = 30;
+  const targetCamY = Math.min(cameraY, player.y - CONFIG.CANVAS_HEIGHT * 0.42);
+  if (targetCamY < cameraY) cameraY += (targetCamY - cameraY) * 0.14;
 
-        // Platform 種類列舉
-        const PLATFORM_TYPES = {
-            NORMAL: 'NORMAL',
-            SPIKE: 'SPIKE',
-            CONVEYOR_LEFT: 'CONVEYOR_LEFT',
-            CONVEYOR_RIGHT: 'CONVEYOR_RIGHT',
-            SPRING: 'SPRING',
-            CRUMBLE: 'CRUMBLE',
-            TRAP: 'TRAP',
-            STAIRS: 'STAIRS'
-        };
+  const topGeneratedFloor = platforms[platforms.length - 1].floor;
+  const visibleTopFloor = Math.ceil((-cameraY + CONFIG.CANVAS_HEIGHT) / CONFIG.FLOOR_SPACING) + 15;
+  for (let f = topGeneratedFloor + 1; f <= visibleTopFloor; f++) generateTowerFloor(f);
+  platforms = platforms.filter(p => p.y - cameraY < CONFIG.CANVAS_HEIGHT + 120);
 
-        // 道具種類列舉
-        const ITEM_TYPES = {
-            HEAL: 'HEAL',
-            UNTRAP: 'UNTRAP',
-            SPEED: 'SPEED'
-        };
+  if (player.y - cameraY > CONFIG.CANVAS_HEIGHT + 10) triggerGameOver();
+}
 
-        // 取得 HTML 元素
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const hpBar = document.getElementById('hp-bar');
-        const hpText = document.getElementById('hp-text');
-        const depthText = document.getElementById('depth-text');
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over-screen');
-        const startBtn = document.getElementById('start-btn');
-        const restartBtn = document.getElementById('restart-btn');
-        const finalDepthText = document.getElementById('final-depth');
-        const highScoreStartText = document.getElementById('high-score-start');
-        const highScoreEndText = document.getElementById('high-score-end');
-        const gameOverReason = document.getElementById('game-over-reason');
-        const enableStairsCheckbox = document.getElementById('enable-stairs-checkbox');
+function updateShaft() {
+  const diff = CONFIG.DIFFICULTY[difficultyKey];
+  const scrollSpeed = diff.shaftSpeed + Math.min(1.4, highestFloor * 0.008);
+  const leftWall = CONFIG.WALL_WIDTH;
+  const rightWall = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+  const ceilingHeight = 18;
 
-        // 觸控控制區域
-        const btnLeft = document.getElementById('btn-left');
-        const btnRight = document.getElementById('btn-right');
+  if (player.hurtTimer > 0) player.hurtTimer--;
+  if (player.trapTimer > 0) player.trapTimer--;
+  if (player.speedBuffTimer > 0) player.speedBuffTimer--;
 
-        // 遊戲狀態變數
-        let isGameRunning = false;
-        let animationFrameId = null;
-        let score = 0;
-        let highScore = parseInt(localStorage.getItem('ns_shaft_highscore') || '0', 10);
-        let platformSpeed = 2.0;
-        let lastPlatformY = CANVAS_HEIGHT;
-        let lastPlatformX = CANVAS_WIDTH / 2 - 40;
-        let allowStairs = true;
+  // 更新平台往上捲動與動態移動
+  for (const p of platforms) {
+    if (p.broken) continue;
+    const prevX = p.x;
+    p.y -= scrollSpeed;
+    p.originY -= scrollSpeed;
 
-        // 3 格物品欄 (Inventory)
-        let inventory = [null, null, null];
+    if (p.type === 'moving') {
+      p.moveTimer += 0.04;
+      p.x = Math.max(leftWall, Math.min(rightWall - p.w, p.originX + Math.sin(p.moveTimer) * 42));
+    } else if (p.type === 'moving_v') {
+      p.moveTimer += 0.035;
+      p.y = p.originY + Math.sin(p.moveTimer) * 22;
+    }
+    p.deltaX = p.x - prevX;
 
-        // 輸入狀態
-        const keys = {
-            left: false,
-            right: false
-        };
+    if (p.type === 'fragile' && p.cracked) {
+      p.breakTimer++;
+      if (p.breakTimer >= CONFIG.FRAGILE_BREAK_FRAMES) {
+        p.broken = true;
+        audio.playBreak();
+        if (player.currentPlatform === p) { player.grounded = false; player.currentPlatform = null; }
+      }
+    }
+    if (p.springAnim > 0) p.springAnim--;
+  }
 
-        // 玩家角色物件
-        const player = {
-            x: 190,
-            y: 100,
-            width: 24,
-            height: 30,
-            vx: 0,
-            vy: 0,
-            baseSpeed: 4.5,
-            speed: 4.5,
-            gravity: 0.4,
-            maxFallSpeed: 8,
-            hp: MAX_HP,
-            isGrounded: false,
-            facing: 'right',
-            hurtTimer: 0, 
-            trapTimer: 0, 
-            trapMaxTime: 0, 
-            speedBuffTimer: 0,
-            animFrame: 0,
-            touchingCeilingSpike: false,
-            touchingSpikePlatform: null,
+  // 生成新平台
+  const lastPlat = platforms[platforms.length - 1];
+  if (!lastPlat || lastPlat.originY < CONFIG.CANVAS_HEIGHT + 40) {
+    const nextFloor = lastPlat ? lastPlat.floor + 1 : 1;
+    const nextY = lastPlat ? lastPlat.originY + 62 : CONFIG.CANVAS_HEIGHT + 30;
+    generateShaftPlatform(nextFloor, nextY);
+  }
+  platforms = platforms.filter(p => p.y > -40);
 
-            reset() {
-                this.x = CANVAS_WIDTH / 2 - 12;
-                this.y = 100;
-                this.vx = 0;
-                this.vy = 0;
-                this.speed = this.baseSpeed;
-                this.hp = MAX_HP;
-                this.isGrounded = false;
-                this.facing = 'right';
-                this.hurtTimer = 0;
-                this.trapTimer = 0;
-                this.trapMaxTime = 0;
-                this.speedBuffTimer = 0;
-                this.touchingCeilingSpike = false;
-                this.touchingSpikePlatform = null;
-            },
+  // 更新道具
+  for (const item of items) {
+    item.y -= scrollSpeed;
+    item.bob += 0.1;
+  }
+  items = items.filter(i => i.y > -30 && !i.collected);
 
-            update() {
-                if (this.speedBuffTimer > 0) {
-                    this.speedBuffTimer--;
-                    this.speed = this.baseSpeed * 1.5;
-                } else {
-                    this.speed = this.baseSpeed;
-                }
+  // 玩家左右移動控制
+  const moveSpeed = (player.speedBuffTimer > 0 ? 4.8 : 3.4);
+  if (player.trapTimer > 0) {
+    player.vx = 0;
+  } else {
+    if (keys.left && !keys.right) { player.vx = -moveSpeed; player.dir = -1; }
+    else if (keys.right && !keys.left) { player.vx = moveSpeed; player.dir = 1; }
+    else player.vx = 0;
+  }
 
-                if (this.trapTimer > 0) {
-                    this.trapTimer--;
-                }
+  player.x += player.vx;
+  if (player.x < leftWall) player.x = leftWall;
+  if (player.x + player.w > rightWall) player.x = rightWall - player.w;
 
-                if (this.trapTimer > 0) {
-                    this.vx = 0;
-                } else {
-                    let moveInput = 0;
-                    if (keys.left) moveInput -= 1;
-                    if (keys.right) moveInput += 1;
+  // 重力與平台碰撞
+  const prevBottom = player.y + player.h;
+  player.vy = Math.min(8.5, player.vy + CONFIG.GRAVITY);
+  player.y += player.vy;
+  player.grounded = false;
+  player.currentPlatform = null;
 
-                    if (moveInput < 0) {
-                        this.vx = -this.speed;
-                        this.facing = 'left';
-                    } else if (moveInput > 0) {
-                        this.vx = this.speed;
-                        this.facing = 'right';
-                    } else {
-                        this.vx = 0;
-                    }
-                }
+  const footCenter = player.x + player.w / 2;
+  const currBottom = player.y + player.h;
+  let onSpike = null;
 
-                this.x += this.vx;
+  for (const p of platforms) {
+    if (p.broken) continue;
+    const surfY = getPlatformSurfaceY(p, footCenter);
+    const tol = p.type === 'stairs' ? 12 : 7;
 
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.width > CANVAS_WIDTH) this.x = CANVAS_WIDTH - this.width;
+    if (
+      player.x + player.w - 3 > p.x &&
+      player.x + 3 < p.x + p.w &&
+      prevBottom <= surfY + tol &&
+      currBottom >= surfY - 2 &&
+      player.vy >= 0
+    ) {
+      player.y = surfY - player.h;
+      player.vy = 0;
+      player.grounded = true;
+      player.currentPlatform = p;
 
-                this.vy += this.gravity;
-                if (this.vy > this.maxFallSpeed) this.vy = this.maxFallSpeed;
-                this.y += this.vy;
+      // 跟隨移動板與輸送帶
+      if (p.deltaX) player.x = Math.max(leftWall, Math.min(rightWall - player.w, player.x + p.deltaX));
+      if (p.beltSpeed) player.x = Math.max(leftWall, Math.min(rightWall - player.w, player.x + p.beltSpeed));
 
-                if (this.hurtTimer > 0) {
-                    this.hurtTimer--;
-                }
-
-                if (this.trapTimer > 0) {
-                    this.animFrame += 0.3;
-                } else {
-                    this.animFrame = 0;
-                }
-            },
-
-            draw(ctx) {
-                if (this.hurtTimer > 0 && Math.floor(this.hurtTimer / 4) % 2 === 0) {
-                    return;
-                }
-
-                ctx.save();
-
-                const bounceY = this.trapTimer > 0 ? Math.sin(this.animFrame) * 3 : 0;
-                const drawY = this.y + bounceY;
-                
-                if (this.speedBuffTimer > 0 && Math.abs(this.vx) > 0) {
-                    ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
-                    ctx.fillRect(this.x - (this.vx * 2), drawY + 10, this.width, this.height - 10);
-                }
-
-                ctx.fillStyle = this.speedBuffTimer > 0 ? '#f59e0b' : '#38bdf8';
-                ctx.fillRect(this.x, drawY + 10, this.width, this.height - 10);
-
-                ctx.fillStyle = '#ffed4a';
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, drawY + 8, 9, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#0f172a';
-                const eyeOffset = this.facing === 'right' ? 3 : -3;
-                ctx.fillRect(this.x + this.width / 2 + eyeOffset, drawY + 6, 3, 4);
-
-                ctx.fillStyle = '#0284c7';
-                ctx.fillRect(this.x + 3, drawY + this.height - 4, 6, 4);
-                ctx.fillRect(this.x + 15, drawY + this.height - 4, 6, 4);
-
-                if (this.trapTimer > 0) {
-                    ctx.fillStyle = 'rgba(168, 85, 247, 0.7)';
-                    ctx.beginPath();
-                    ctx.ellipse(this.x + this.width / 2, this.y + this.height - 2, 14, 6, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.font = '9px "Press Start 2P", monospace';
-                    ctx.fillStyle = '#c084fc';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('TRAPPED!', this.x + this.width / 2, drawY - 10);
-
-                    const progress = this.trapTimer / this.trapMaxTime;
-                    ctx.fillStyle = '#581c87';
-                    ctx.fillRect(this.x - 2, drawY - 20, this.width + 4, 3);
-                    ctx.fillStyle = '#c084fc';
-                    ctx.fillRect(this.x - 2, drawY - 20, (this.width + 4) * progress, 3);
-                }
-
-                ctx.restore();
-            }
-        };
-
-        // 道具物件類別
-        class Item {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.width = 16;
-                this.height = 20;
-                this.type = type;
-                this.markedForDeletion = false;
-                this.floatOffset = 0;
-                
-                if (this.type === ITEM_TYPES.HEAL) {
-                    const r = Math.random();
-                    if (r < 0.80) this.healAmount = 1;
-                    else if (r < 0.96) this.healAmount = 2;
-                    else this.healAmount = 3;
-                }
-            }
-
-            update() {
-                this.y -= platformSpeed;
-                this.floatOffset += 0.08;
-
-                if (this.y + this.height < 0) {
-                    this.markedForDeletion = true;
-                }
-            }
-
-            draw(ctx) {
-                ctx.save();
-                const drawY = this.y + Math.sin(this.floatOffset) * 3;
-                ctx.shadowBlur = 6;
-
-                if (this.type === ITEM_TYPES.HEAL) {
-                    ctx.shadowColor = '#ef4444';
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.fillRect(this.x + 5, drawY, 6, 4);
-                    ctx.fillStyle = '#ef4444';
-                    ctx.beginPath();
-                    ctx.arc(this.x + 8, drawY + 12, 7, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 9px monospace';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`+${this.healAmount}`, this.x + 8, drawY + 15);
-
-                } else if (this.type === ITEM_TYPES.UNTRAP) {
-                    ctx.shadowColor = '#c084fc';
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.fillRect(this.x + 5, drawY, 6, 4);
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fillRect(this.x + 3, drawY + 4, 10, 12);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText('✨', this.x + 1, drawY + 14);
-
-                } else if (this.type === ITEM_TYPES.SPEED) {
-                    ctx.shadowColor = '#fde047';
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.fillRect(this.x + 5, drawY, 6, 4);
-                    ctx.fillStyle = '#eab308';
-                    ctx.beginPath();
-                    ctx.moveTo(this.x + 8, drawY + 4);
-                    ctx.lineTo(this.x + 15, drawY + 16);
-                    ctx.lineTo(this.x + 1, drawY + 16);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText('⚡', this.x + 2, drawY + 14);
-                }
-
-                ctx.restore();
-            }
+      if (!p.hasLanded) {
+        p.hasLanded = true;
+        if (p.floor > highestFloor) {
+          highestFloor = p.floor;
+          if (highestFloor > 0 && highestFloor % 25 === 0) audio.playMilestone();
         }
-
-        let platforms = [];
-        let items = [];
-
-        /**
-         * 隨機取得階梯種類 (依勾選狀態決定是否包含樓梯)
-         */
-        function getRandomPlatformType() {
-            const rand = Math.random();
-            if (allowStairs) {
-                if (rand < 0.34) return PLATFORM_TYPES.NORMAL;         // 34%
-                else if (rand < 0.48) return PLATFORM_TYPES.SPIKE;     // 14%
-                else if (rand < 0.61) return PLATFORM_TYPES.CONVEYOR_LEFT;  // 13%
-                else if (rand < 0.73) return PLATFORM_TYPES.CONVEYOR_RIGHT; // 12%
-                else if (rand < 0.83) return PLATFORM_TYPES.STAIRS;    // 10% 樓梯
-                else if (rand < 0.90) return PLATFORM_TYPES.SPRING;    // 7%
-                else if (rand < 0.95) return PLATFORM_TYPES.CRUMBLE;   // 5%
-                else return PLATFORM_TYPES.TRAP;                      // 5%
-            } else {
-                if (rand < 0.40) return PLATFORM_TYPES.NORMAL;         // 40%
-                else if (rand < 0.55) return PLATFORM_TYPES.SPIKE;     // 15%
-                else if (rand < 0.70) return PLATFORM_TYPES.CONVEYOR_LEFT;  // 15%
-                else if (rand < 0.82) return PLATFORM_TYPES.CONVEYOR_RIGHT; // 12%
-                else if (rand < 0.90) return PLATFORM_TYPES.SPRING;    // 8%
-                else if (rand < 0.95) return PLATFORM_TYPES.CRUMBLE;   // 5%
-                else return PLATFORM_TYPES.TRAP;                      // 5%
-            }
+        if (p.type !== 'spike' && player.hp < 10) {
+          player.hp = Math.min(10, player.hp + 1);
+          audio.playLand();
+        } else {
+          audio.playLand();
         }
+      }
 
-        // 階梯類別
-        class Platform {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.width = 90;
-                this.height = 14;
-                this.type = type;
-                this.markedForDeletion = false;
-                this.isCrumbled = false;
-                this.crumbleTimer = 0;
-                this.springState = 0;
-                this.conveyorAnim = 0;
-                this.hasLanded = false;
-                this.stairDir = Math.random() < 0.5 ? 'right' : 'left';
-            }
-
-            update() {
-                this.y -= platformSpeed;
-                if (this.y + this.height < 0) {
-                    this.markedForDeletion = true;
-                }
-
-                if (this.type === PLATFORM_TYPES.CONVEYOR_LEFT || this.type === PLATFORM_TYPES.CONVEYOR_RIGHT) {
-                    this.conveyorAnim = (this.conveyorAnim + 0.3) % 10;
-                }
-
-                if (this.springState > 0) {
-                    this.springState--;
-                }
-
-                if (this.isCrumbled) {
-                    this.crumbleTimer++;
-                    if (this.crumbleTimer > 120) {
-                        this.markedForDeletion = true;
-                    }
-                }
-            }
-
-            draw(ctx) {
-                if (this.markedForDeletion) return;
-
-                ctx.save();
-
-                if (this.type === PLATFORM_TYPES.CRUMBLE && this.isCrumbled) {
-                    const shakeX = (Math.random() - 0.5) * 4;
-                    ctx.translate(shakeX, 0);
-                }
-
-                switch (this.type) {
-                    case PLATFORM_TYPES.NORMAL:
-                        ctx.fillStyle = '#475569';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.fillRect(this.x, this.y, this.width, 3);
-                        ctx.fillStyle = '#1e293b';
-                        ctx.fillRect(this.x, this.y + this.height - 3, this.width, 3);
-                        break;
-
-                    case PLATFORM_TYPES.SPIKE:
-                        ctx.fillStyle = '#64748b';
-                        ctx.fillRect(this.x, this.y + 6, this.width, this.height - 6);
-                        ctx.fillStyle = '#ef4444';
-                        const spikeCount = 6;
-                        const spikeW = this.width / spikeCount;
-                        for (let i = 0; i < spikeCount; i++) {
-                            ctx.beginPath();
-                            ctx.moveTo(this.x + i * spikeW, this.y + 6);
-                            ctx.lineTo(this.x + (i + 0.5) * spikeW, this.y - 2);
-                            ctx.lineTo(this.x + (i + 1) * spikeW, this.y + 6);
-                            ctx.closePath();
-                            ctx.fill();
-                        }
-                        break;
-
-                    case PLATFORM_TYPES.CONVEYOR_LEFT:
-                        ctx.fillStyle = '#0f766e';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#2dd4bf';
-                        ctx.fillRect(this.x, this.y, this.width, 2);
-                        ctx.fillStyle = '#115e59';
-                        for (let i = 0; i < this.width; i += 12) {
-                            const offset = (i - this.conveyorAnim + 120) % this.width;
-                            ctx.fillRect(this.x + offset, this.y + 3, 5, this.height - 6);
-                        }
-                        break;
-
-                    case PLATFORM_TYPES.CONVEYOR_RIGHT:
-                        ctx.fillStyle = '#0369a1';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#38bdf8';
-                        ctx.fillRect(this.x, this.y, this.width, 2);
-                        ctx.fillStyle = '#075985';
-                        for (let i = 0; i < this.width; i += 12) {
-                            const offset = (i + this.conveyorAnim) % this.width;
-                            ctx.fillRect(this.x + offset, this.y + 3, 5, this.height - 6);
-                        }
-                        break;
-
-                    case PLATFORM_TYPES.STAIRS:
-                        const steps = 6;
-                        const stepW = this.width / steps;
-                        const stepMaxDrop = 16;
-                        for (let i = 0; i < steps; i++) {
-                            const ratio = this.stairDir === 'right' ? (steps - 1 - i) : i;
-                            const stepOffsetY = (ratio / (steps - 1)) * stepMaxDrop;
-                            const sx = this.x + i * stepW;
-                            const sy = this.y - stepMaxDrop / 2 + stepOffsetY;
-
-                            ctx.fillStyle = '#ea580c';
-                            ctx.fillRect(sx, sy, stepW + 1, this.height);
-                            ctx.fillStyle = '#fdba74';
-                            ctx.fillRect(sx, sy, stepW + 1, 3);
-                            ctx.fillStyle = '#7c2d12';
-                            ctx.fillRect(sx, sy + 3, 2, this.height - 3);
-                        }
-                        break;
-
-                    case PLATFORM_TYPES.SPRING:
-                        ctx.fillStyle = '#d97706';
-                        ctx.fillRect(this.x, this.y + 8, this.width, 6);
-                        const compress = this.springState > 0 ? 5 : 0;
-                        ctx.fillStyle = '#fbbf24';
-                        ctx.fillRect(this.x + 4, this.y + 2 + compress, this.width - 8, 6);
-                        ctx.strokeStyle = '#f59e0b';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.moveTo(this.x + 20, this.y + 8);
-                        ctx.lineTo(this.x + 35, this.y + 2 + compress);
-                        ctx.lineTo(this.x + 50, this.y + 8);
-                        ctx.lineTo(this.x + 70, this.y + 2 + compress);
-                        ctx.stroke();
-                        break;
-
-                    case PLATFORM_TYPES.CRUMBLE:
-                        ctx.fillStyle = this.isCrumbled ? '#713f12' : '#854d0e';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#ca8a04';
-                        ctx.fillRect(this.x + 10, this.y + 4, 25, 2);
-                        ctx.fillRect(this.x + 45, this.y + 8, 30, 2);
-                        if (this.isCrumbled) {
-                            ctx.strokeStyle = '#fef08a';
-                            ctx.lineWidth = 1.5;
-                            ctx.beginPath();
-                            ctx.moveTo(this.x + 30, this.y);
-                            ctx.lineTo(this.x + 42, this.y + 7);
-                            ctx.lineTo(this.x + 35, this.y + this.height);
-                            ctx.stroke();
-                        }
-                        break;
-
-                    case PLATFORM_TYPES.TRAP:
-                        ctx.fillStyle = '#581c87';
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#a855f7';
-                        ctx.fillRect(this.x, this.y, this.width, 3);
-                        ctx.fillStyle = '#c084fc';
-                        ctx.beginPath();
-                        ctx.arc(this.x + 15, this.y + 7, 3, 0, Math.PI * 2);
-                        ctx.arc(this.x + 45, this.y + 6, 4, 0, Math.PI * 2);
-                        ctx.arc(this.x + 75, this.y + 8, 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                }
-
-                ctx.restore();
-            }
-
-            getSurfaceY(playerCenterX) {
-                if (this.type !== PLATFORM_TYPES.STAIRS) {
-                    return this.y;
-                }
-                const clampedX = Math.max(this.x, Math.min(this.x + this.width, playerCenterX));
-                const progress = (clampedX - this.x) / this.width;
-                const stepMaxDrop = 16;
-                if (this.stairDir === 'right') {
-                    return this.y + stepMaxDrop / 2 - progress * stepMaxDrop;
-                } else {
-                    return this.y - stepMaxDrop / 2 + progress * stepMaxDrop;
-                }
-            }
+      if (p.type === 'spike') {
+        onSpike = p;
+        if (player.touchingSpikePlat !== p) {
+          player.touchingSpikePlat = p;
+          player.hp = Math.max(0, player.hp - 3);
+          player.hurtTimer = 30;
+          audio.playHurt();
+          if (player.hp <= 0) { triggerGameOver('踩到針刺階梯生命歸零！'); return; }
         }
+      } else if (p.type === 'spring') {
+        p.springAnim = 12;
+        player.vy = -10.5;
+        player.grounded = false;
+        audio.playSpring();
+      } else if (p.type === 'fragile' && !p.cracked) {
+        p.cracked = true;
+        audio.playCrack();
+      } else if (p.type === 'trap' && player.trapTimer <= 0) {
+        player.trapTimer = 85;
+        p.type = 'normal';
+        audio.playCrack();
+      }
+      break;
+    }
+  }
+  player.touchingSpikePlat = onSpike;
 
-        function drawCeilingSpikes(ctx) {
-            ctx.save();
-            const spikeWidth = 20;
-            const count = Math.ceil(CANVAS_WIDTH / spikeWidth);
+  if (player.grounded && Math.abs(player.vx) > 0) player.walkCycle += 0.3;
 
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, CANVAS_WIDTH, 6);
+  // 拾取道具
+  for (const item of items) {
+    if (
+      !item.collected &&
+      player.x < item.x + item.w && player.x + player.w > item.x &&
+      player.y < item.y + item.h && player.y + player.h > item.y
+    ) {
+      const slot = shaftInventory.findIndex(s => s === null);
+      if (slot !== -1) {
+        shaftInventory[slot] = item;
+        item.collected = true;
+        audio.playItem();
+        updateShaftInvUI();
+      }
+    }
+  }
 
-            for (let i = 0; i < count; i++) {
-                ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#94a3b8';
-                ctx.beginPath();
-                ctx.moveTo(i * spikeWidth, 6);
-                ctx.lineTo((i + 0.5) * spikeWidth, CEILING_SPIKE_HEIGHT);
-                ctx.lineTo((i + 1) * spikeWidth, 6);
-                ctx.closePath();
-                ctx.fill();
-            }
-            ctx.restore();
+  // 頂部尖刺判定
+  if (player.y <= ceilingHeight) {
+    if (!player.barrierTouching) {
+      player.barrierTouching = true;
+      player.hp = Math.max(0, player.hp - 3);
+      player.hurtTimer = 30;
+      player.trapTimer = 0;
+      audio.playHurt();
+      if (player.hp <= 0) { triggerGameOver('被頂部天花板尖刺刺穿！'); return; }
+
+      // 傳送至安全中段板子
+      const safePlats = platforms.filter(p => !p.broken && p.type !== 'spike' && p.y > 140 && p.y < 360);
+      if (safePlats.length > 0) {
+        const target = safePlats[0];
+        player.x = target.x + target.w / 2 - player.w / 2;
+        player.y = target.y - player.h;
+        player.vy = 0;
+        audio.playTeleport();
+      } else {
+        player.y = ceilingHeight + 16;
+        player.vy = 2;
+      }
+    }
+  } else {
+    player.barrierTouching = false;
+  }
+
+  // 掉落底部深淵判定
+  if (player.y > CONFIG.CANVAS_HEIGHT) {
+    triggerGameOver('失足掉落無底深淵！');
+  }
+}
+
+function useShaftItem(index) {
+  if (gameMode !== 'shaft' || state !== 'PLAYING') return;
+  const item = shaftInventory[index];
+  if (!item) return;
+
+  if (item.type === 'heal') {
+    player.hp = Math.min(10, player.hp + item.healAmt);
+    audio.playHeal();
+  } else if (item.type === 'untrap') {
+    player.trapTimer = 0;
+    audio.playItem();
+  } else if (item.type === 'speed') {
+    player.speedBuffTimer = 300;
+    audio.playItem();
+  }
+  shaftInventory[index] = null;
+  updateShaftInvUI();
+  updateHUD();
+}
+
+function triggerGameOver(customMsg = null) {
+  state = 'GAMEOVER';
+  isCharging = false;
+  chargePower = 0;
+  lastActiveSegments = 0;
+  document.getElementById('btnTouchJump').classList.remove('charging');
+  updatePowerUI();
+  audio.playGameOver();
+  saveHighScore(gameMode, difficultyKey, highestFloor, jumpCount);
+
+  const prefix = gameMode === 'shaft' ? 'B' : '';
+  const suffix = gameMode === 'shaft' ? ' 層' : ' 樓';
+  const reason = customMsg || `最高到達 ${prefix}${highestFloor}${suffix}`;
+  document.getElementById('statusText').textContent = `遊戲結束！${reason}。按 [開始 / 重來] 再次挑戰！`;
+}
+
+/**
+ * ==========================================
+ * 畫面繪製
+ * ==========================================
+ */
+function draw() {
+  ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+
+  const bgOffset = Math.floor((-cameraY * 0.4) % 40);
+  ctx.fillStyle = gameMode === 'tower' ? '#1b1715' : '#12151e';
+  ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+
+  ctx.strokeStyle = gameMode === 'tower' ? '#28221e' : '#1e2433';
+  ctx.lineWidth = 1;
+  for (let y = bgOffset - 40; y < CONFIG.CANVAS_HEIGHT + 40; y += 40) {
+    ctx.beginPath();
+    ctx.moveTo(CONFIG.WALL_WIDTH, y);
+    ctx.lineTo(CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH, y);
+    ctx.stroke();
+
+    const rowShift = (Math.floor((y - bgOffset) / 40) % 2) * 32;
+    for (let x = CONFIG.WALL_WIDTH + rowShift; x < CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH; x += 64) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 40);
+      ctx.stroke();
+    }
+  }
+
+  // 樓層浮水印
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.font = 'bold 24px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  const drawnLabels = new Set();
+  for (const p of platforms) {
+    if (p.floor > 0 && p.floor % 10 === 0 && !drawnLabels.has(p.floor)) {
+      drawnLabels.add(p.floor);
+      const screenY = p.y - cameraY;
+      const label = gameMode === 'tower' ? `${p.floor}F` : `B${p.floor}`;
+      ctx.fillText(label, CONFIG.CANVAS_WIDTH / 2, screenY - 10);
+    }
+  }
+
+  // 繪製所有平台
+  for (const p of platforms) {
+    if (p.broken) continue;
+    const sy = Math.round(p.y - cameraY);
+    if (sy < -30 || sy > CONFIG.CANVAS_HEIGHT + 30) continue;
+
+    if (p.type === 'normal') {
+      ctx.fillStyle = '#9e9e9e'; ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#e0e0e0'; ctx.fillRect(p.x, sy, p.w, 3);
+      ctx.fillStyle = '#555555'; ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+      ctx.fillStyle = '#666';
+      for (let bx = p.x + 18; bx < p.x + p.w - 6; bx += 20) ctx.fillRect(bx, sy + 2, 1, p.h - 4);
+    } else if (p.type === 'moving' || p.type === 'moving_v') {
+      ctx.fillStyle = p.type === 'moving' ? '#2b7a9b' : '#2e7d32';
+      ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = p.type === 'moving' ? '#64d2ff' : '#81c784';
+      ctx.fillRect(p.x, sy, p.w, 3);
+      ctx.fillStyle = '#144459';
+      ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.type === 'moving' ? '◄ ►' : '▲ ▼', p.x + p.w / 2, sy + 10);
+    } else if (p.type === 'belt_left' || p.type === 'belt_right') {
+      ctx.fillStyle = '#c88a1e'; ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.strokeStyle = '#332200'; ctx.lineWidth = 2;
+      const shift = Math.floor((animFrame * (p.type === 'belt_right' ? 1.5 : -1.5)) % 12);
+      for (let cx = p.x + 6 + shift; cx < p.x + p.w - 4; cx += 12) {
+        if (cx > p.x + 2 && cx < p.x + p.w - 2) {
+          ctx.beginPath(); ctx.moveTo(cx, sy + 3); ctx.lineTo(cx, sy + p.h - 3); ctx.stroke();
         }
-
-        function generatePlatforms() {
-            const minSpacing = 75;
-            let highestPlatformY = platforms.length > 0 
-                ? platforms[platforms.length - 1].y 
-                : CANVAS_HEIGHT;
-
-            if (highestPlatformY < CANVAS_HEIGHT + minSpacing) {
-                const y = highestPlatformY + minSpacing;
-                const isDoublePlatform = Math.random() < 0.15;
-
-                if (isDoublePlatform) {
-                    const p1 = new Platform(15 + Math.random() * 80, y, getRandomPlatformType());
-                    const p2 = new Platform(215 + Math.random() * 80, y, getRandomPlatformType());
-                    platforms.push(p1, p2);
-
-                    trySpawnItem(p1);
-                    trySpawnItem(p2);
-                } else {
-                    let x = lastPlatformX + (Math.random() * 160 - 80);
-                    if (x < 10) x = 10;
-                    if (x > CANVAS_WIDTH - 100) x = CANVAS_WIDTH - 100;
-
-                    const p = new Platform(x, y, getRandomPlatformType());
-                    platforms.push(p);
-                    lastPlatformX = x;
-
-                    trySpawnItem(p);
-                }
-            }
-        }
-
-        function trySpawnItem(platform) {
-            if (platform.type === PLATFORM_TYPES.SPIKE) return;
-
-            if (Math.random() < 0.30) {
-                const itemX = platform.x + platform.width / 2 - 8;
-                const itemY = platform.y - 25;
-
-                const rand = Math.random();
-                let itemType = ITEM_TYPES.HEAL;
-
-                if (rand < 0.30) {
-                    itemType = ITEM_TYPES.HEAL;
-                } else if (rand < 0.45) {
-                    itemType = ITEM_TYPES.UNTRAP;
-                } else {
-                    itemType = ITEM_TYPES.SPEED;
-                }
-
-                items.push(new Item(itemX, itemY, itemType));
-            }
-        }
-
-        function handleCollisions() {
-            player.isGrounded = false;
-
-            if (player.y <= CEILING_SPIKE_HEIGHT) {
-                if (!player.touchingCeilingSpike) {
-                    player.touchingCeilingSpike = true;
-                    player.hp -= 3;
-                    player.hurtTimer = 30;
-
-                    if (player.trapTimer > 0) {
-                        player.trapTimer = 0;
-                    }
-
-                    soundFX.playHurt();
-                    updateUI();
-
-                    if (player.hp <= 0) {
-                        endGame('被頂部尖刺刺穿了！');
-                        return;
-                    }
-
-                    const validPlatforms = platforms
-                        .filter(p => !p.markedForDeletion && p.y > CEILING_SPIKE_HEIGHT + 10)
-                        .sort((a, b) => a.y - b.y);
-
-                    if (validPlatforms.length > 0) {
-                        const targetPlatform = validPlatforms[Math.min(2, validPlatforms.length - 1)];
-                        player.x = targetPlatform.x + targetPlatform.width / 2 - player.width / 2;
-                        player.y = targetPlatform.getSurfaceY(player.x + player.width / 2) - player.height;
-                        player.vy = 0;
-                        soundFX.playTeleport();
-                    } else {
-                        player.y = CEILING_SPIKE_HEIGHT + 2;
-                        player.vy = 2;
-                    }
-                }
-            } else {
-                player.touchingCeilingSpike = false;
-            }
-
-            let currentlyOnSpikePlatform = null;
-
-            for (let p of platforms) {
-                if (p.markedForDeletion) continue;
-
-                const playerCenterX = player.x + player.width / 2;
-                const surfaceY = p.getSurfaceY(playerCenterX);
-                const playerFeet = player.y + player.height;
-                const prevPlayerFeet = playerFeet - player.vy;
-                const tolerance = p.type === PLATFORM_TYPES.STAIRS ? 12 : 4;
-
-                if (
-                    player.x + player.width > p.x &&
-                    player.x < p.x + p.width &&
-                    prevPlayerFeet <= surfaceY + tolerance &&
-                    playerFeet >= surfaceY - 2 &&
-                    player.vy >= 0
-                ) {
-                    player.y = surfaceY - player.height;
-                    player.vy = 0;
-                    player.isGrounded = true;
-
-                    if (!p.hasLanded) {
-                        p.hasLanded = true;
-                        if (p.type === PLATFORM_TYPES.NORMAL) {
-                            score += 1;
-                            soundFX.playJump();
-                            updateUI();
-                        }
-                    }
-
-                    switch (p.type) {
-                        case PLATFORM_TYPES.SPIKE:
-                            currentlyOnSpikePlatform = p;
-                            if (player.touchingSpikePlatform !== p) {
-                                player.touchingSpikePlatform = p;
-                                player.hp -= 3;
-                                player.hurtTimer = 30;
-                                soundFX.playHurt();
-                                updateUI();
-                                if (player.hp <= 0) {
-                                    endGame('踩到針刺階梯失血過多！');
-                                    return;
-                                }
-                            }
-                            break;
-
-                        case PLATFORM_TYPES.CONVEYOR_LEFT:
-                            player.x -= 2.5;
-                            break;
-
-                        case PLATFORM_TYPES.CONVEYOR_RIGHT:
-                            player.x += 2.5;
-                            break;
-
-                        case PLATFORM_TYPES.SPRING:
-                            p.springState = 8;
-                            player.vy = -10;
-                            soundFX.playSpring();
-                            break;
-
-                        case PLATFORM_TYPES.CRUMBLE:
-                            if (!p.isCrumbled) {
-                                p.isCrumbled = true;
-                                soundFX.playBreak();
-                            }
-                            break;
-
-                        case PLATFORM_TYPES.TRAP:
-                            if (player.trapTimer <= 0) {
-                                const randomFrames = Math.floor(60 + Math.random() * 120);
-                                player.trapTimer = randomFrames;
-                                player.trapMaxTime = randomFrames;
-                                p.type = PLATFORM_TYPES.NORMAL;
-                            }
-                            break;
-                    }
-                }
-            }
-
-            player.touchingSpikePlatform = currentlyOnSpikePlatform;
-
-            for (let item of items) {
-                if (item.markedForDeletion) continue;
-
-                if (
-                    player.x < item.x + item.width &&
-                    player.x + player.width > item.x &&
-                    player.y < item.y + item.height &&
-                    player.y + player.height > item.y
-                ) {
-                    const emptySlot = inventory.findIndex(slot => slot === null);
-                    if (emptySlot !== -1) {
-                        inventory[emptySlot] = { type: item.type, healAmount: item.healAmount };
-                        item.markedForDeletion = true;
-                        soundFX.playItem();
-                        updateInventoryUI();
-                    }
-                }
-            }
-
-            if (player.y > CANVAS_HEIGHT) {
-                endGame('摔落到深淵了！');
-            }
-        }
-
-        function useInventoryItem(index) {
-            if (!isGameRunning || index < 0 || index >= 3) return;
-            const item = inventory[index];
-            if (!item) return;
-
-            if (item.type === ITEM_TYPES.HEAL) {
-                player.hp = Math.min(MAX_HP, player.hp + item.healAmount);
-                soundFX.playHeal();
-            } else if (item.type === ITEM_TYPES.UNTRAP) {
-                player.trapTimer = 0;
-                soundFX.playItem();
-            } else if (item.type === ITEM_TYPES.SPEED) {
-                player.speedBuffTimer = 300;
-                soundFX.playItem();
-            }
-
-            inventory[index] = null;
-            updateInventoryUI();
-            updateUI();
-        }
-
-        function updateInventoryUI() {
-            for (let i = 0; i < 3; i++) {
-                const slotEl = document.getElementById(`slot-${i}`);
-                const item = inventory[i];
-
-                if (!item) {
-                    slotEl.innerHTML = '';
-                    slotEl.style.borderColor = '#475569';
-                    continue;
-                }
-
-                if (item.type === ITEM_TYPES.HEAL) {
-                    slotEl.innerHTML = `<span class="text-green-400 font-bold text-xs">+${item.healAmount}</span>`;
-                    slotEl.style.borderColor = '#22c55e';
-                } else if (item.type === ITEM_TYPES.UNTRAP) {
-                    slotEl.innerHTML = `<span class="text-purple-400 text-sm">✨</span>`;
-                    slotEl.style.borderColor = '#a855f7';
-                } else if (item.type === ITEM_TYPES.SPEED) {
-                    slotEl.innerHTML = `<span class="text-yellow-400 text-sm">⚡</span>`;
-                    slotEl.style.borderColor = '#eab308';
-                }
-            }
-        }
-
-        function updateUI() {
-            const hpPercent = Math.max(0, (player.hp / MAX_HP) * 100);
-            hpBar.style.width = `${hpPercent}%`;
-            hpText.textContent = `${Math.max(0, player.hp)}/${MAX_HP}`;
-
-            if (player.hp <= 3) {
-                hpBar.className = "h-full bg-red-600 rounded-full transition-all duration-200 animate-pulse";
-            } else {
-                hpBar.className = "h-full bg-gradient-to-r from-red-600 via-yellow-500 to-green-500 rounded-full transition-all duration-200";
-            }
-
-            depthText.textContent = `B${score}`;
-        }
-
-        function gameLoop() {
-            if (!isGameRunning) return;
-
-            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-            ctx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
-            ctx.lineWidth = 1;
-            for (let y = 0; y < CANVAS_HEIGHT; y += 30) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(CANVAS_WIDTH, y);
-                ctx.stroke();
-            }
-
-            for (let p of platforms) {
-                p.update();
-                p.draw(ctx);
-            }
-
-            platforms = platforms.filter(p => !p.markedForDeletion);
-
-            generatePlatforms();
-
-            for (let item of items) {
-                item.update();
-                item.draw(ctx);
-            }
-            items = items.filter(i => !i.markedForDeletion);
-
-            player.update();
-            player.draw(ctx);
-
-            drawCeilingSpikes(ctx);
-
-            handleCollisions();
-
-            updateUI();
-
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-
-        function startGame() {
-            soundFX.init();
-            isGameRunning = true;
-            score = 0;
-            lastPlatformY = CANVAS_HEIGHT - 60;
-            lastPlatformX = CANVAS_WIDTH / 2 - 45;
-            allowStairs = enableStairsCheckbox.checked;
-
-            keys.left = false;
-            keys.right = false;
-
-            inventory = [null, null, null];
-            updateInventoryUI();
-
-            platforms = [];
-            items = [];
-
-            const initPlatform = new Platform(CANVAS_WIDTH / 2 - 45, CANVAS_HEIGHT - 120, PLATFORM_TYPES.NORMAL);
-            platforms.push(initPlatform);
-
-            player.reset();
-            updateUI();
-
-            startScreen.classList.add('hidden');
-            gameOverScreen.classList.add('hidden');
-
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            gameLoop();
-        }
-
-        function endGame(reason) {
-            isGameRunning = false;
-            keys.left = false;
-            keys.right = false;
-            soundFX.playHurt();
-
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('ns_shaft_highscore', highScore.toString());
-            }
-
-            finalDepthText.textContent = `B${score}`;
-            highScoreEndText.textContent = `B${highScore}`;
-            gameOverReason.textContent = reason;
-
-            gameOverScreen.classList.remove('hidden');
-        }
-
-        // 事件監聽 - 鍵盤按鍵
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                keys.left = true;
-            }
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                keys.right = true;
-            }
-            if (e.key === '1') {
-                useInventoryItem(0);
-            }
-            if (e.key === '2') {
-                useInventoryItem(1);
-            }
-            if (e.key === '3') {
-                useInventoryItem(2);
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                keys.left = false;
-            }
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                keys.right = false;
-            }
-        });
-
-        // 完整手機觸控與滑鼠點擊控制綁定
-        function bindDirectionControl(element, dir) {
-            const press = (e) => {
-                if (e.cancelable) e.preventDefault();
-                keys[dir] = true;
-                element.classList.add('active');
-            };
-            const release = (e) => {
-                if (e.cancelable) e.preventDefault();
-                keys[dir] = false;
-                element.classList.remove('active');
-            };
-
-            element.addEventListener('touchstart', press, { passive: false });
-            element.addEventListener('touchend', release, { passive: false });
-            element.addEventListener('touchcancel', release, { passive: false });
-            element.addEventListener('mousedown', press);
-            element.addEventListener('mouseup', release);
-            element.addEventListener('mouseleave', release);
-        }
-
-        bindDirectionControl(btnLeft, 'left');
-        bindDirectionControl(btnRight, 'right');
-
-        // 按鈕點擊監聽
-        startBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('click', startGame);
-
-        // 初始化最高分顯示
-        highScoreStartText.textContent = `B${highScore}`;
-    </script>
+      }
+    } else if (p.type === 'spring') {
+      const bounceOffset = p.springAnim > 0 ? Math.sin(p.springAnim * 0.6) * 4 : 0;
+      ctx.fillStyle = '#616161'; ctx.fillRect(p.x, sy + 6, p.w, p.h - 6);
+      ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let sx = p.x + 8; sx < p.x + p.w - 8; sx += 10) {
+        ctx.moveTo(sx, sy + 6); ctx.lineTo(sx + 5, sy + 2 - bounceOffset);
+      }
+      ctx.stroke();
+      ctx.fillStyle = '#e53935'; ctx.fillRect(p.x, sy - bounceOffset, p.w, 5);
+      ctx.fillStyle = '#ff8a80'; ctx.fillRect(p.x, sy - bounceOffset, p.w, 2);
+    } else if (p.type === 'fragile') {
+      const shakeX = p.cracked ? (Math.random() - 0.5) * 3 : 0;
+      const dx = p.x + shakeX;
+      ctx.fillStyle = p.cracked ? '#6d4c41' : '#8d6e63'; ctx.fillRect(dx, sy, p.w, p.h);
+      ctx.fillStyle = '#bcaaa4'; ctx.fillRect(dx, sy, p.w, 2);
+      ctx.fillStyle = '#4e342e'; ctx.fillRect(dx, sy + p.h - 3, p.w, 3);
+      ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(dx + p.w * 0.35, sy); ctx.lineTo(dx + p.w * 0.42, sy + 7); ctx.lineTo(dx + p.w * 0.32, sy + p.h);
+      ctx.stroke();
+    } else if (p.type === 'ice') {
+      ctx.fillStyle = '#80deea'; ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#e0f7fa'; ctx.fillRect(p.x, sy, p.w, 4);
+      ctx.fillStyle = '#00acc1'; ctx.fillRect(p.x, sy + p.h - 3, p.w, 3);
+    } else if (p.type === 'spike') {
+      ctx.fillStyle = '#757575'; ctx.fillRect(p.x, sy + 6, p.w, p.h - 6);
+      ctx.fillStyle = '#e53935';
+      const teeth = 7, tw = p.w / teeth;
+      for (let i = 0; i < teeth; i++) {
+        ctx.beginPath();
+        ctx.moveTo(p.x + i * tw, sy + 6);
+        ctx.lineTo(p.x + (i + 0.5) * tw, sy - 3);
+        ctx.lineTo(p.x + (i + 1) * tw, sy + 6);
+        ctx.fill();
+      }
+    } else if (p.type === 'trap') {
+      ctx.fillStyle = '#6a1b9a'; ctx.fillRect(p.x, sy, p.w, p.h);
+      ctx.fillStyle = '#ce93d8'; ctx.fillRect(p.x, sy, p.w, 3);
+    } else if (p.type === 'stairs') {
+      const steps = 6, stepW = p.w / steps, drop = 14;
+      for (let i = 0; i < steps; i++) {
+        const ratio = p.stairDir === 'right' ? (steps - 1 - i) : i;
+        const sx = p.x + i * stepW;
+        const stepY = sy - drop / 2 + (ratio / (steps - 1)) * drop;
+        ctx.fillStyle = '#ef6c00'; ctx.fillRect(sx, stepY, stepW + 1, p.h);
+        ctx.fillStyle = '#ffcc80'; ctx.fillRect(sx, stepY, stepW + 1, 3);
+      }
+    }
+  }
+
+  // 下樓梯道具繪製
+  if (gameMode === 'shaft') {
+    for (const item of items) {
+      if (item.collected) continue;
+      const iy = item.y + Math.sin(item.bob) * 2.5;
+      if (item.type === 'heal') {
+        ctx.fillStyle = '#ff1744'; ctx.beginPath(); ctx.arc(item.x + 8, iy + 10, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('+', item.x + 8, iy + 13);
+      } else if (item.type === 'untrap') {
+        ctx.fillStyle = '#ab47bc'; ctx.fillRect(item.x + 2, iy + 3, 12, 13);
+        ctx.fillStyle = '#fff'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('✨', item.x + 8, iy + 13);
+      } else if (item.type === 'speed') {
+        ctx.fillStyle = '#ffd600'; ctx.beginPath();
+        ctx.moveTo(item.x + 8, iy + 2); ctx.lineTo(item.x + 15, iy + 15); ctx.lineTo(item.x + 1, iy + 15); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('⚡', item.x + 8, iy + 14);
+      }
+    }
+
+    // 頂部天花板整排尖刺
+    ctx.fillStyle = '#616161';
+    ctx.fillRect(CONFIG.WALL_WIDTH, 0, CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH * 2, 6);
+    ctx.fillStyle = '#d50000';
+    for (let sx = CONFIG.WALL_WIDTH; sx < CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH; sx += 12) {
+      ctx.beginPath();
+      ctx.moveTo(sx, 6);
+      ctx.lineTo(sx + 6, 18);
+      ctx.lineTo(sx + 12, 6);
+      ctx.fill();
+    }
+  }
+
+  // 兩側高塔石牆
+  const wallOffset = Math.floor((-cameraY) % 24);
+  for (let wy = wallOffset - 24; wy < CONFIG.CANVAS_HEIGHT + 24; wy += 24) {
+    ctx.fillStyle = '#757575'; ctx.fillRect(0, wy, CONFIG.WALL_WIDTH, 22);
+    ctx.fillStyle = '#bdbdbd'; ctx.fillRect(0, wy, CONFIG.WALL_WIDTH - 2, 2);
+    ctx.fillStyle = '#424242'; ctx.fillRect(CONFIG.WALL_WIDTH - 2, wy, 2, 22);
+
+    const rx = CONFIG.CANVAS_WIDTH - CONFIG.WALL_WIDTH;
+    ctx.fillStyle = '#757575'; ctx.fillRect(rx, wy, CONFIG.WALL_WIDTH, 22);
+    ctx.fillStyle = '#bdbdbd'; ctx.fillRect(rx + 2, wy, CONFIG.WALL_WIDTH - 2, 2);
+    ctx.fillStyle = '#424242'; ctx.fillRect(rx, wy, 2, 22);
+  }
+
+  drawPlayer();
+
+  if (state === 'IDLE') {
+    if (gameMode === 'tower') {
+      drawOverlayBox('小朋友上樓梯 (NS-TOWER)', '按 [開始] 或點畫面，按住蓄力放開跳！');
+    } else {
+      drawOverlayBox('小朋友下樓梯 (NS-SHAFT)', '按 [開始] 或 [←][→] 鍵開始往下層挑戰！');
+    }
+  } else if (state === 'GAMEOVER') {
+    const sub = gameMode === 'tower'
+      ? `到達 ${highestFloor} 樓 (跳躍 ${jumpCount} 次) | 點擊重玩`
+      : `深入地下 B${highestFloor} 層 | 點擊畫面或 [空白鍵] 重玩`;
+    drawOverlayBox('GAME OVER', sub);
+  }
+}
+
+function drawPlayer() {
+  if (player.hurtTimer > 0 && Math.floor(player.hurtTimer / 3) % 2 === 0) return;
+
+  const px = Math.round(player.x);
+  const squat = (gameMode === 'tower' && isCharging && player.grounded) ? Math.min(5, Math.floor(chargePower / 22)) : 0;
+  const py = Math.round(player.y - cameraY) + squat;
+  const pw = player.w;
+  const ph = player.h - squat;
+
+  // 身體衣服（加速狀態變金色）
+  ctx.fillStyle = player.speedBuffTimer > 0 ? '#ffb300' : '#1e6bd6';
+  ctx.fillRect(px + 4, py + 13, pw - 8, ph - 17);
+
+  // 臉部
+  ctx.fillStyle = '#ffcc99';
+  ctx.fillRect(px + 4, py + 5, pw - 8, 9);
+
+  // 帽子與眼睛
+  ctx.fillStyle = '#e52521';
+  ctx.fillRect(px + 3, py, pw - 6, 6);
+  if (player.dir === 1) {
+    ctx.fillRect(px + 12, py + 3, 11, 3);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(px + 15, py + 7, 2, 3);
+  } else {
+    ctx.fillRect(px + 1, py + 3, 11, 3);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(px + 7, py + 7, 2, 3);
+  }
+
+  // 雙腳
+  ctx.fillStyle = '#793a18';
+  const step = (player.grounded && (gameMode === 'tower' || Math.abs(player.vx) > 0)) ? Math.round(Math.sin(player.walkCycle) * 3) : 2;
+  ctx.fillRect(px + 4 + step, py + ph - 5, 6, 5);
+  ctx.fillRect(px + pw - 10 - step, py + ph - 5, 6, 5);
+
+  // 膠水定身特效
+  if (player.trapTimer > 0) {
+    ctx.fillStyle = 'rgba(171, 71, 188, 0.75)';
+    ctx.fillRect(px + 2, py + ph - 6, pw - 4, 6);
+  }
+}
+
+function drawOverlayBox(title, subtitle) {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+  ctx.fillRect(22, CONFIG.CANVAS_HEIGHT / 2 - 48, CONFIG.CANVAS_WIDTH - 44, 96);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(22, CONFIG.CANVAS_HEIGHT / 2 - 48, CONFIG.CANVAS_WIDTH - 44, 96);
+
+  ctx.fillStyle = '#ffeb3b';
+  ctx.font = 'bold 18px "Microsoft JhengHei", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 10);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '12px "Microsoft JhengHei", sans-serif';
+  ctx.fillText(subtitle, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 22);
+}
+
+/**
+ * ==========================================
+ * UI 與排行榜管理
+ * ==========================================
+ */
+function updateHUD() {
+  if (gameMode === 'tower') {
+    document.getElementById('floorDisplay').textContent = String(highestFloor).padStart(3, '0');
+    document.getElementById('jumpDisplay').textContent = String(jumpCount).padStart(3, '0');
+  } else {
+    document.getElementById('floorDisplay').textContent = 'B' + String(highestFloor).padStart(3, '0');
+    for (let i = 0; i < 10; i++) {
+      lifeSegElements[i].className = 'life-seg';
+      if (i < player.hp) {
+        lifeSegElements[i].classList.add(player.hp <= 3 ? 'low' : 'active');
+      }
+    }
+  }
+}
+
+function updatePowerUI() {
+  const activeCount = Math.round((chargePower / 100) * CONFIG.POWER_SEGMENTS);
+  for (let i = 0; i < CONFIG.POWER_SEGMENTS; i++) {
+    powerSegElements[i].classList.toggle('active', i < activeCount);
+  }
+}
+
+function updateShaftInvUI() {
+  for (let i = 0; i < 3; i++) {
+    const el = document.getElementById(`inv-${i}`);
+    const item = shaftInventory[i];
+    if (!item) {
+      el.innerHTML = `<span class="key-hint">${i + 1}</span>`;
+    } else if (item.type === 'heal') {
+      el.innerHTML = `<span class="key-hint">${i + 1}</span><span style="color:#ff5252">+${item.healAmt}</span>`;
+    } else if (item.type === 'untrap') {
+      el.innerHTML = `<span class="key-hint">${i + 1}</span><span>✨</span>`;
+    } else if (item.type === 'speed') {
+      el.innerHTML = `<span class="key-hint">${i + 1}</span><span>⚡</span>`;
+    }
+  }
+}
+
+function saveHighScore(mode, diff, floor, jumps) {
+  if (floor <= 0) return;
+  const key = mode === 'tower' ? 'ns_tower_mobile_scores_v1' : 'ns_shaft_scores_v1';
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({ diff: CONFIG.DIFFICULTY[diff].label, floor, jumps });
+  list.sort((a, b) => b.floor - a.floor || a.jumps - b.jumps);
+  localStorage.setItem(key, JSON.stringify(list.slice(0, 5)));
+}
+
+function openRankModal() {
+  const isTower = gameMode === 'tower';
+  const key = isTower ? 'ns_tower_mobile_scores_v1' : 'ns_shaft_scores_v1';
+  document.getElementById('rankModalTitle').textContent = isTower ? '🏆 上樓梯排行榜 (TOP 5)' : '🏆 下樓梯排行榜 (TOP 5)';
+  document.getElementById('rankExtraCol').textContent = isTower ? '跳躍數' : '狀態';
+
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  const tbody = document.getElementById('rankTableBody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const item = list[i];
+    const tr = document.createElement('tr');
+    if (item) {
+      const floorStr = isTower ? `${item.floor} F` : `B${item.floor}`;
+      const extraStr = isTower ? item.jumps : '通關紀錄';
+      tr.innerHTML = `<td>#${i + 1}</td><td>${item.diff}</td><td><b>${floorStr}</b></td><td>${extraStr}</td>`;
+    } else {
+      tr.innerHTML = `<td>#${i + 1}</td><td>-</td><td>${isTower ? '0 F' : 'B0'}</td><td>-</td>`;
+    }
+    tbody.appendChild(tr);
+  }
+  document.getElementById('rankModal').style.display = 'flex';
+}
+
+function closeModals() {
+  document.getElementById('rankModal').style.display = 'none';
+  document.getElementById('helpModal').style.display = 'none';
+}
+
+/**
+ * ==========================================
+ * 鍵盤與觸控事件監聽
+ * ==========================================
+ */
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+    keys.left = true;
+    if (gameMode === 'shaft' && state !== 'PLAYING') resetGame();
+  }
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+    keys.right = true;
+    if (gameMode === 'shaft' && state !== 'PLAYING') resetGame();
+  }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (state !== 'PLAYING') {
+      resetGame();
+    } else if (gameMode === 'tower' && !e.repeat) {
+      startCharge();
+    }
+  }
+  if (gameMode === 'shaft') {
+    if (e.key === '1') useShaftItem(0);
+    if (e.key === '2') useShaftItem(1);
+    if (e.key === '3') useShaftItem(2);
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+  if (e.code === 'Space' && gameMode === 'tower') {
+    e.preventDefault();
+    releaseCharge();
+  }
+});
+
+function handlePointerDown(e) {
+  if (e.cancelable) e.preventDefault();
+  if (state !== 'PLAYING') {
+    resetGame();
+    return;
+  }
+  if (gameMode === 'tower') {
+    startCharge();
+  } else {
+    // 下樓梯點擊畫布左半邊/右半邊移動
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    if (clientX - rect.left < rect.width / 2) keys.left = true;
+    else keys.right = true;
+  }
+}
+
+function handlePointerUp() {
+  if (gameMode === 'tower' && isCharging) {
+    releaseCharge();
+  } else if (gameMode === 'shaft') {
+    keys.left = false;
+    keys.right = false;
+  }
+}
+
+canvas.addEventListener('mousedown', (e) => { if (e.button === 0) handlePointerDown(e); });
+canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+
+const touchJumpBtn = document.getElementById('btnTouchJump');
+touchJumpBtn.addEventListener('mousedown', (e) => { if (e.button === 0) handlePointerDown(e); });
+touchJumpBtn.addEventListener('touchstart', handlePointerDown, { passive: false });
+
+function bindShaftBtn(btnId, dirKey) {
+  const btn = document.getElementById(btnId);
+  const down = (e) => {
+    if (e.cancelable) e.preventDefault();
+    if (state !== 'PLAYING') resetGame();
+    keys[dirKey] = true;
+  };
+  const up = (e) => {
+    if (e.cancelable) e.preventDefault();
+    keys[dirKey] = false;
+  };
+  btn.addEventListener('mousedown', down);
+  btn.addEventListener('touchstart', down, { passive: false });
+  btn.addEventListener('mouseup', up);
+  btn.addEventListener('mouseleave', up);
+  btn.addEventListener('touchend', up, { passive: false });
+}
+bindShaftBtn('btnShaftLeft', 'left');
+bindShaftBtn('btnShaftRight', 'right');
+
+window.addEventListener('mouseup', (e) => { if (e.button === 0) handlePointerUp(); });
+window.addEventListener('touchend', handlePointerUp);
+window.addEventListener('touchcancel', handlePointerUp);
+
+document.getElementById('btnStart').addEventListener('click', resetGame);
+document.getElementById('menuNew').addEventListener('click', resetGame);
+document.getElementById('menuRank').addEventListener('click', openRankModal);
+document.getElementById('menuAbout').addEventListener('click', () => { document.getElementById('helpModal').style.display = 'flex'; });
+document.getElementById('btnHelp').addEventListener('click', () => { document.getElementById('helpModal').style.display = 'flex'; });
+document.getElementById('btnMute').addEventListener('click', (e) => {
+  audio.muted = !audio.muted;
+  e.target.textContent = audio.muted ? '🔇' : '🔊';
+});
+document.getElementById('menuGimmick').addEventListener('click', (e) => {
+  gimmicksEnabled = !gimmicksEnabled;
+  e.target.textContent = `特殊板: ${gimmicksEnabled ? '開啟' : '關閉'}`;
+});
+document.getElementById('menuStairs').addEventListener('click', (e) => {
+  stairsEnabled = !stairsEnabled;
+  e.target.textContent = `斜坡樓梯: ${stairsEnabled ? '開啟' : '關閉'}`;
+});
+document.getElementById('difficultySelect').addEventListener('change', () => {
+  if (state === 'PLAYING') resetGame();
+});
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+resetGame();
+state = 'IDLE';
+gameLoop();
+</script>
 </body>
 </html>
